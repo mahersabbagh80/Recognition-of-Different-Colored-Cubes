@@ -14,7 +14,7 @@ COLCON_IGNORE
 models/*
 !models/.gitkeep
 
-# YOLOv5 / training outputs (if fine-tuning locally or on Colab checkout)
+# YOLOv5 / training outputs (local fine-tune on dev PC)
 runs/
 wandb/
 

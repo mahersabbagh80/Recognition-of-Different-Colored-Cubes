@@ -8,7 +8,7 @@ Detect and classify red, green, and blue cubes in real time using the JetRover o
 
 This project runs real-time cube detection on a live camera feed from a HiWonder JetRover. A YOLOv5s model finds cube-shaped objects and classifies them as `red_cube`, `green_cube`, or `blue_cube` — not just any colored region in the scene. Inference runs on the Jetson GPU via TensorRT; results are published as ROS 2 `vision_msgs/Detection2DArray` plus an annotated debug image for visualization.
 
-Pretrained Roboflow weights are used by default; optional Colab fine-tuning applies only if accuracy on the robot camera needs improvement. Target operating distance: **20–80 cm** from the camera.
+Pretrained Roboflow weights are used by default; optional local fine-tuning on a dev PC (NVIDIA RTX 4070 Ti) applies only if accuracy on the robot camera needs improvement. Target operating distance: **20–80 cm** from the camera.
 
 Built on a HiWonder JetRover with NVIDIA Jetson Orin Nano.
 
@@ -65,10 +65,10 @@ _Evaluation protocol and per-class breakdown: [`docs/evaluation.md`](docs/evalua
 
 | | Jetson (robot) | Dev machine |
 |--|----------------|-------------|
-| **Role** | Runs detection | Edit code, visualize (RViz2) |
+| **Role** | Runs detection | Edit code, optional fine-tune, visualize (RViz2) |
 | **OS / ROS / Python** | 22.04 / Humble / 3.10 | 22.04 / Humble / 3.10 |
-| **Hardware** | JetRover, Orbbec depth camera | — |
-| **Key software** | TensorRT, YOLOv5, OpenCV, cv_bridge | RViz2 (optional) |
+| **Hardware** | JetRover, Orbbec depth camera | NVIDIA RTX 4070 Ti (CUDA training) |
+| **Key software** | TensorRT, YOLOv5, OpenCV, cv_bridge | PyTorch + CUDA, RViz2 (optional) |
 
 Full dependencies and model artifacts → [`docs/technical-stack.md`](docs/technical-stack.md)
 
@@ -130,7 +130,7 @@ Full ordered setup steps → [`docs/milestones.md`](docs/milestones.md)
 | `config/` | Node parameters (`params.yaml`) |
 | `scripts/` | ONNX export, TensorRT conversion, standalone inference test |
 | `models/` | `best.pt`, `best.onnx`, `.engine` — gitignored, not committed |
-| `training/` | Optional Colab fine-tune notebook |
+| `training/` | Optional local fine-tune notebook (`train.ipynb`) |
 | `evaluation/` | 50-frame structured test script |
 | `assets/` | Pipeline diagrams; `assets/results/` for evaluation screenshots |
 | `docs/` | Architecture, milestones, logbook, evaluation protocol |

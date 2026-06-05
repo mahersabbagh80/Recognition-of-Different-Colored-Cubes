@@ -8,7 +8,7 @@
 | Path | When | What |
 |------|------|------|
 | **Default** | Start here | Download pretrained `best.pt` from [Roboflow Universe](https://universe.roboflow.com/jakub-slof/red-green-blue-cube-detection/dataset/1) → ONNX → TensorRT → deploy |
-| **Fallback** | Only if robot-camera accuracy fails | Fine-tune on Colab — Roboflow dataset, 20–30 epochs; add robot images only if still below target |
+| **Fallback** | Only if robot-camera accuracy fails | Fine-tune locally on dev PC (RTX 4070 Ti) — Roboflow dataset, 20–30 epochs; add robot images only if still below target |
 
 Custom dataset collection and full 50–100 epoch training are **not** the default plan. TensorRT export on the Jetson is the main schedule risk — validate deployment before investing in training.
 
@@ -17,7 +17,7 @@ Custom dataset collection and full 50–100 epoch training are **not** the defau
 - Training / export pipeline: [`assets/concept2_training_pipeline.png`](../assets/concept2_training_pipeline.png) (full path; fine-tune branch is optional)
 
 **Steps:**
-1. Obtain `best.pt` — download pretrained weights from Roboflow (fine-tune on Colab only if step 6 fails).
+1. Obtain `best.pt` — download pretrained weights from Roboflow (fine-tune locally on dev PC only if step 6 fails).
 2. Export to ONNX (`best.pt` → `best.onnx`), then convert to a TensorRT FP16 engine on the Jetson.
 3. Test standalone inference on images from the robot camera.
 4. Subscribe to the camera image topic and convert frames using cv_bridge.

@@ -26,11 +26,11 @@ digraph Concept2TrainingPipeline {
 
     // ── Model Training ────────────────────────────────────────────────────────
     subgraph cluster_training {
-        label="Model Training  (Google Colab — GPU)";
+        label="Model Training  (Dev PC — RTX 4070 Ti)";
         fontsize=13; fontname="Helvetica-Bold";
         style=filled; fillcolor="#FBE9E7"; color="#BF360C";
 
-        yolo_train [label="YOLOv5 Training\n50–100 epochs\nClasses: red_cube | green_cube | blue_cube",
+        yolo_train [label="YOLOv5 Fine-Tune\n20–30 epochs\nClasses: red_cube | green_cube | blue_cube",
                     fillcolor="#FFCCBC", color="#BF360C"];
 
         best_pt    [label="best.pt\nTrained PyTorch weights",

@@ -4,7 +4,7 @@
 
 **Default path:** Use pretrained YOLOv5 weights from the [Roboflow Universe project](https://universe.roboflow.com/jakub-slof/red-green-blue-cube-detection/dataset/1) → export ONNX → TensorRT → deploy.
 
-**Fallback path:** If standalone inference on robot camera images is below target accuracy, fine-tune on Colab (20–30 epochs on the Roboflow dataset; add robot images only if still failing). Do not collect and annotate a custom dataset upfront.
+**Fallback path:** If standalone inference on robot camera images is below target accuracy, fine-tune locally on dev PC (RTX 4070 Ti, 20–30 epochs on the Roboflow dataset; add robot images only if still failing). Do not collect and annotate a custom dataset upfront.
 
 TensorRT export on the Jetson is the highest schedule risk — prioritize steps 2–6 before any training work.
 
@@ -41,7 +41,7 @@ TensorRT export on the Jetson is the highest schedule risk — prioritize steps 
 - [ ] Download pretrained YOLOv5 weights from Roboflow Universe (`best.pt`)
 - [ ] Save to `models/best.pt` on dev machine or Jetson
 
-**Done when:** `best.pt` is available locally. No Colab training or custom dataset required for this milestone.
+**Done when:** `best.pt` is available locally. No local training or custom dataset required for this milestone.
 
 **Fine-tune trigger (defer to M3):** Only if standalone inference (M4) fails accuracy checks.
 
@@ -49,8 +49,8 @@ TensorRT export on the Jetson is the highest schedule risk — prioritize steps 
 
 ## M3 — ONNX Export
 
-- [ ] Export `best.pt` → `best.onnx` (local script or Colab)
-- [ ] **If M4 accuracy is poor:** fine-tune on Colab — Roboflow dataset, 20–30 epochs, optional robot camera images — then re-export ONNX
+- [ ] Export `best.pt` → `best.onnx` (local script on dev PC)
+- [ ] **If M4 accuracy is poor:** fine-tune locally on dev PC (RTX 4070 Ti) — Roboflow dataset, 20–30 epochs, optional robot camera images — then re-export ONNX
 
 **Done when:** `best.onnx` export succeeds without errors.
 
@@ -104,7 +104,7 @@ TensorRT export on the Jetson is the highest schedule risk — prioritize steps 
 3. **Obtain weights** — download Roboflow pretrained `best.pt` (no custom training yet)
 4. **Export ONNX** — `best.pt` → `best.onnx`
 5. **TensorRT conversion** — ONNX → TensorRT FP16 `.engine` on Jetson
-6. **Standalone inference test** — `scripts/test_inference.py` on robot camera snapshots; if accuracy poor → fine-tune (Colab, 20–30 epochs) and repeat steps 4–6
+6. **Standalone inference test** — `scripts/test_inference.py` on robot camera snapshots; if accuracy poor → fine-tune locally (RTX 4070 Ti, 20–30 epochs) and repeat steps 4–6
 7. **Minimal ROS 2 node** — subscribe, infer, print detections to terminal
 8. **Add publishers** — `/cube_detections` and `/cube_detections/debug_image`
 9. **Visualize** — confirm bounding boxes in RViz2 or `rqt_image_view`

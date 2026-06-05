@@ -22,7 +22,7 @@
 ## Hard Constraints (non-negotiable)
 
 - **Approach:** YOLOv5s + TensorRT FP16 on Jetson. Do not suggest classical CV (HSV/LAB/contours) as an alternative.
-- **Model strategy:** Pretrained Roboflow `best.pt` first. Fine-tune on Colab (20–30 epochs) only if standalone inference on robot camera images fails accuracy target. Do not block on custom dataset collection or full training upfront.
+- **Model strategy:** Pretrained Roboflow `best.pt` first. Fine-tune locally on dev PC — RTX 4070 Ti, 20–30 epochs — only if standalone inference on robot camera images fails accuracy target. Do not block on custom dataset collection or full training upfront.
 - **Export chain:** `best.pt` → `best.onnx` → `.engine` (ONNX is required). Fallback: ONNX Runtime if TensorRT fails.
 - **Classes:** `red_cube`, `green_cube`, `blue_cube`
 - **Package:** `recognition_of_different_colored_cubes` · **Node:** `cube_detection_node`

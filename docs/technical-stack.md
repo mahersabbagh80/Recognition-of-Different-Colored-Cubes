@@ -34,24 +34,24 @@ If TensorRT conversion fails: ONNX Runtime inference (no GPU acceleration, slowe
 | Step | Where | Action |
 |------|-------|--------|
 | 1 | Roboflow Universe | Download pretrained `best.pt` from the [RGB cube detection project](https://universe.roboflow.com/jakub-slof/red-green-blue-cube-detection/dataset/1) |
-| 2 | Dev PC or Jetson | Export `best.pt` → `best.onnx` (script or Colab) |
+| 2 | Dev PC | Export `best.pt` → `best.onnx` via `scripts/export_onnx.py` |
 | 3 | Jetson | Convert `best.onnx` → TensorRT `.engine` |
 
-No Colab session required if pretrained weights meet accuracy on the robot camera.
+No local training required if pretrained weights meet accuracy on the robot camera.
 
-## Off-Robot Fine-Tuning (optional — Google Colab)
+## Dev Machine Training (optional)
 
 Use only if standalone inference on robot camera images is below target accuracy.
 
 | Component | Role |
 |-----------|------|
-| Google Colab | Cloud GPU for fine-tuning |
-| PyTorch | Training framework |
+| NVIDIA RTX 4070 Ti | Local CUDA GPU for fine-tuning |
+| PyTorch + CUDA | Training framework |
 | YOLOv5 (Ultralytics) | Object detection model (YOLOv5s) |
 | ONNX | Export intermediate format |
 | Roboflow | Pretrained weights and YOLOv5-format dataset |
 
-**Fine-tune recipe:** Roboflow dataset, 20–30 epochs. Add robot camera images only if accuracy is still below 80% after fine-tuning.
+**Fine-tune recipe:** Roboflow dataset, 20–30 epochs on dev PC. Add robot camera images only if accuracy is still below 80% after fine-tuning.
 
 **Training notebook:** [`training/train.ipynb`](../training/train.ipynb) (optional fallback)
 
@@ -87,13 +87,11 @@ Declared in `package.xml` (installed via `rosdep`):
 - `cv_bridge`
 - `std_msgs`
 
-Not in `package.xml` (system / pip, managed manually on Jetson):
+Not in `package.xml` (system / pip, managed manually):
 
-- OpenCV (`python3-opencv` or pip)
-- PyTorch (Jetson-specific wheel)
-- ONNX / ONNX Runtime
-- TensorRT (ships with JetPack)
-- YOLOv5 (cloned or pip-installed for export scripts)
+**Jetson:** OpenCV, PyTorch (Jetson wheel), ONNX / ONNX Runtime, TensorRT, YOLOv5
+
+**Dev PC (training/export):** PyTorch + CUDA, YOLOv5, ONNX
 
 ---
 

@@ -26,7 +26,7 @@ See also: [approach rationale](Concept-and-Approach.md)
 - **Default:** Download pretrained `best.pt` from [Roboflow Universe](https://universe.roboflow.com/jakub-slof/red-green-blue-cube-detection/dataset/1) — no custom training upfront.
 - Export `best.pt` → `best.onnx` (intermediate format; version compatibility checkpoint).
 - Convert `best.onnx` → TensorRT FP16 `.engine` on the Jetson.
-- **If robot-camera accuracy fails:** fine-tune on Colab (Roboflow dataset, 20–30 epochs) — see dashed path in the diagram above.
+- **If robot-camera accuracy fails:** fine-tune locally on dev PC (RTX 4070 Ti, Roboflow dataset, 20–30 epochs) — see optional path in the diagram above.
 
 **Fallback:** If TensorRT conversion fails, run inference via ONNX Runtime (slower but functional).
 
@@ -38,7 +38,7 @@ See also: [approach rationale](Concept-and-Approach.md)
 |-----------|------|----------------|
 | `cube_detection_node` | Single ROS 2 node for the full detection pipeline | Keeps the system simple for a one-week project; one node subscribes, infers, and publishes |
 | `cv_bridge` | ROS Image ↔ OpenCV conversion | Standard ROS 2 bridge; required to pass camera frames to OpenCV/YOLOv5 |
-| YOLOv5s | Object detection + classification | Learns shape and color jointly; industry-standard, good Colab support |
+| YOLOv5s | Object detection + classification | Learns shape and color jointly; industry-standard, runs on local CUDA GPU |
 | TensorRT | GPU-accelerated inference | Required for ≥ 5 fps on Jetson Orin Nano |
 | `vision_msgs/Detection2DArray` | Detection output format | Standard ROS 2 vision message; compatible with RViz2 and future robot integration |
 

@@ -36,7 +36,7 @@ Detect and classify colored cubes (red, green, blue) in real time using the robo
 
 A YOLOv5s model detects `red_cube`, `green_cube`, and `blue_cube`. Weights come from the [Roboflow Universe project](https://universe.roboflow.com/jakub-slof/red-green-blue-cube-detection/dataset/1) by default (pretrained — no custom training upfront). The model is exported to ONNX and converted to a TensorRT FP16 engine on the Jetson Orin Nano.
 
-**Fine-tune only if needed:** If inference on robot camera images falls below target accuracy, fine-tune on Colab (20–30 epochs on the Roboflow dataset). Custom dataset collection is a fallback, not the default plan.
+**Fine-tune only if needed:** If inference on robot camera images falls below target accuracy, fine-tune locally on dev PC (NVIDIA RTX 4070 Ti, 20–30 epochs on the Roboflow dataset). Custom dataset collection is a fallback, not the default plan.
 
 Classical CV methods (HSV/LAB thresholding, contour-based detection) are explicitly out of scope.
 
