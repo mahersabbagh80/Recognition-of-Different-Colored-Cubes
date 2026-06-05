@@ -1,12 +1,22 @@
 # Milestones
 
+## Model strategy (one-week timeline)
+
+**Default path:** Use pretrained YOLOv5 weights from the [Roboflow Universe project](https://universe.roboflow.com/jakub-slof/red-green-blue-cube-detection/dataset/1) → export ONNX → TensorRT → deploy.
+
+**Fallback path:** If standalone inference on robot camera images is below target accuracy, fine-tune on Colab (20–30 epochs on the Roboflow dataset; add robot images only if still failing). Do not collect and annotate a custom dataset upfront.
+
+TensorRT export on the Jetson is the highest schedule risk — prioritize steps 2–6 before any training work.
+
+---
+
 ## Overview
 
 | # | Milestone | Done when |
 |---|-----------|-----------|
 | M1 | Environment ready | Camera topic verified live, ROS 2 package scaffolding exists |
-| M2 | Dataset ready | Annotated cube images exported from Roboflow in YOLOv5 format |
-| M3 | Model trained | YOLOv5s trained on Colab, ONNX export successful |
+| M2 | Model weights ready | `best.pt` obtained (Roboflow pretrained — no custom training required) |
+| M3 | ONNX export | `best.pt` → `best.onnx` succeeds (fine-tune first only if needed) |
 | M4 | Model on Jetson | TensorRT engine running inference on saved images on Jetson |
 | M5 | ROS 2 node live | Node publishing to `/cube_detections` with live camera feed |
 | M6 | Evaluation complete | 50-frame test done, frame rate and distance range measured |
@@ -26,21 +36,21 @@
 
 ---
 
-## M2 — Dataset Ready
+## M2 — Model Weights Ready
 
-- [ ] Download starter dataset from Roboflow
-- [ ] Capture supplementary images from robot camera
-- [ ] Annotate and export in YOLOv5 format
+- [ ] Download pretrained YOLOv5 weights from Roboflow Universe (`best.pt`)
+- [ ] Save to `models/best.pt` on dev machine or Jetson
 
-**Done when:** YOLOv5-format dataset is ready for Colab training.
+**Done when:** `best.pt` is available locally. No Colab training or custom dataset required for this milestone.
+
+**Fine-tune trigger (defer to M3):** Only if standalone inference (M4) fails accuracy checks.
 
 ---
 
-## M3 — Model Trained
+## M3 — ONNX Export
 
-- [ ] Train YOLOv5s on Colab (50–100 epochs)
-- [ ] Validate on hold-out set
-- [ ] Export to ONNX
+- [ ] Export `best.pt` → `best.onnx` (local script or Colab)
+- [ ] **If M4 accuracy is poor:** fine-tune on Colab — Roboflow dataset, 20–30 epochs, optional robot camera images — then re-export ONNX
 
 **Done when:** `best.onnx` export succeeds without errors.
 
@@ -49,10 +59,11 @@
 ## M4 — Model on Jetson
 
 - [ ] Convert ONNX to TensorRT FP16 engine on Jetson
-- [ ] Run `scripts/test_inference.py` on saved test images
+- [ ] Run `scripts/test_inference.py` on saved images from the robot camera
 - [ ] Confirm detections with bounding boxes and correct class labels
+- [ ] If accuracy below target → return to M3 fine-tune path, then repeat M4
 
-**Done when:** Standalone inference detects cubes in saved images at acceptable accuracy.
+**Done when:** Standalone inference detects cubes in robot camera images at acceptable accuracy.
 
 ---
 
@@ -90,10 +101,10 @@
 
 1. **Verify camera** — `ros2 topic hz /depth_cam/rgb/image_raw`
 2. **Check versions** — PyTorch, ONNX, TensorRT on Jetson
-3. **Collect and annotate dataset** — robot camera images → Roboflow
-4. **Train on Colab** — YOLOv5s, 50–100 epochs, export ONNX
-5. **TensorRT conversion** — ONNX → TensorRT FP16 on Jetson
-6. **Standalone inference test** — `scripts/test_inference.py`, no ROS 2
+3. **Obtain weights** — download Roboflow pretrained `best.pt` (no custom training yet)
+4. **Export ONNX** — `best.pt` → `best.onnx`
+5. **TensorRT conversion** — ONNX → TensorRT FP16 `.engine` on Jetson
+6. **Standalone inference test** — `scripts/test_inference.py` on robot camera snapshots; if accuracy poor → fine-tune (Colab, 20–30 epochs) and repeat steps 4–6
 7. **Minimal ROS 2 node** — subscribe, infer, print detections to terminal
 8. **Add publishers** — `/cube_detections` and `/cube_detections/debug_image`
 9. **Visualize** — confirm bounding boxes in RViz2 or `rqt_image_view`

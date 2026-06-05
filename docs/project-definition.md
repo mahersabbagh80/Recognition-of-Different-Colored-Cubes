@@ -6,7 +6,7 @@ Recognition of Different Colored Cubes
 
 ## Duration
 
-1–2 weeks
+1 week
 
 ## Purpose
 
@@ -32,9 +32,11 @@ Detect and classify colored cubes (red, green, blue) in real time using the robo
 
 ## Approach
 
-**YOLOv5 + TensorRT** 
+**YOLOv5 + TensorRT**
 
-A custom YOLOv5s model is trained on cube images from the robot camera (supplemented by a Roboflow starter dataset), exported to ONNX, and converted to a TensorRT FP16 engine for GPU-accelerated inference on the Jetson Orin Nano.
+A YOLOv5s model detects `red_cube`, `green_cube`, and `blue_cube`. Weights come from the [Roboflow Universe project](https://universe.roboflow.com/jakub-slof/red-green-blue-cube-detection/dataset/1) by default (pretrained — no custom training upfront). The model is exported to ONNX and converted to a TensorRT FP16 engine on the Jetson Orin Nano.
+
+**Fine-tune only if needed:** If inference on robot camera images falls below target accuracy, fine-tune on Colab (20–30 epochs on the Roboflow dataset). Custom dataset collection is a fallback, not the default plan.
 
 Classical CV methods (HSV/LAB thresholding, contour-based detection) are explicitly out of scope.
 
@@ -76,7 +78,7 @@ Classical CV methods (HSV/LAB thresholding, contour-based detection) are explici
 | Risk | Mitigation |
 |------|------------|
 | TensorRT export fails (version mismatch) | Verify PyTorch/ONNX/TensorRT compatibility on Day 1 |
-| Model accuracy below 80% | Collect more images targeting failure cases, retrain |
+| Model accuracy below 80% | Fine-tune on Roboflow dataset (20–30 epochs); add robot images only if still failing |
 | Frame rate below 5 fps | Switch to YOLOv5n or reduce input resolution to 320×320 |
 | Camera topic name different | Check with `ros2 topic list` on robot before assuming |
 

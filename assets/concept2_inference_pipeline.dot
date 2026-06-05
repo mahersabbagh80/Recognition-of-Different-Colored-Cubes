@@ -1,0 +1,65 @@
+digraph Concept2InferencePipeline {
+
+    rankdir=TB;
+    graph [fontname="Helvetica", fontsize=12, pad="0.6", nodesep=0.7, ranksep=0.8];
+    node  [fontname="Helvetica", fontsize=11, style="filled,rounded", shape=box, margin="0.28,0.18"];
+    edge  [fontname="Helvetica", fontsize=10, color="#555555", arrowsize=0.9];
+
+    // ── Inputs ────────────────────────────────────────────────────────────────
+    subgraph cluster_inputs {
+        label="Inputs";
+        fontsize=13; fontname="Helvetica-Bold";
+        style=filled; fillcolor="#ECEFF1"; color="#90A4AE";
+
+        camera [label="Camera Hardware\nOrbbec depth camera",
+                shape=cylinder, fillcolor="#B0BEC5", color="#607D8B"];
+
+        topic  [label="/depth_cam/rgb/image_raw\nsensor_msgs/Image",
+                shape=note, style=filled, fillcolor="#E3F2FD", color="#1565C0"];
+    }
+
+    // ── Cube detection node ───────────────────────────────────────────────────
+    subgraph cluster_node {
+        label="Cube detection node\nPython / ROS2";
+        fontsize=13; fontname="Helvetica-Bold";
+        style=filled; fillcolor="#FBE9E7"; color="#BF360C";
+
+        cvbridge  [label="cv_bridge\nFormat conversion",
+                   fillcolor="#FFCCBC", color="#BF360C"];
+
+        yolo_trt  [label="YOLOv5 + TensorRT\nInference on Jetson GPU",
+                   fillcolor="#FF8A65", color="#BF360C"];
+
+        conf_filt [label="Confidence filter\nRemove weak detections",
+                   fillcolor="#FF7043", color="#BF360C"];
+    }
+
+    // ── Outputs ───────────────────────────────────────────────────────────────
+    subgraph cluster_outputs {
+        label="Outputs";
+        fontsize=13; fontname="Helvetica-Bold";
+        style=filled; fillcolor="#FCE4EC"; color="#AD1457";
+
+        cube_det  [label="/cube_detections\nvision_msgs/Detection2DArray",
+                   style="filled,rounded", fillcolor="#80CBC4", color="#00695C"];
+
+        robot_sys [label="Robot systems\nFuture integration",
+                   style="filled,rounded", fillcolor="#CFD8DC", color="#607D8B"];
+
+        debug_img [label="/cube_detections/debug_image\nsensor_msgs/Image",
+                   style="filled,rounded", fillcolor="#80CBC4", color="#00695C"];
+
+        rviz      [label="RViz2 / rqt\nLive visualization",
+                   style="filled,rounded", fillcolor="#CFD8DC", color="#607D8B"];
+    }
+
+    // ── Edges ─────────────────────────────────────────────────────────────────
+    camera    -> topic;
+    topic     -> cvbridge;
+    cvbridge  -> yolo_trt;
+    yolo_trt  -> conf_filt;
+    conf_filt -> cube_det;
+    conf_filt -> debug_img;
+    cube_det  -> robot_sys;
+    debug_img -> rviz;
+}

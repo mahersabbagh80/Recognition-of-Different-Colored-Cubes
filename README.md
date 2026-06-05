@@ -4,198 +4,160 @@ Detect and classify red, green, and blue cubes in real time using the JetRover o
 
 ---
 
-## Project Overview
+## What it does
 
-A custom YOLOv5s model detects and classifies colored cubes (`red_cube`, `green_cube`, `blue_cube`) from the Orbbec depth camera feed. The model distinguishes cubes from non-cube objects in the scene — not just any colored blob. Results are published as ROS 2 messages for visualization and future robot integration.
+This project runs real-time cube detection on a live camera feed from a HiWonder JetRover. A YOLOv5s model finds cube-shaped objects and classifies them as `red_cube`, `green_cube`, or `blue_cube` — not just any colored region in the scene. Inference runs on the Jetson GPU via TensorRT; results are published as ROS 2 `vision_msgs/Detection2DArray` plus an annotated debug image for visualization.
 
-This is **Project 2** in a progressive JetRover series. Duration: 1–2 weeks. Purpose: learning robotics software engineering and building portfolio evidence for GitHub.
+Pretrained Roboflow weights are used by default; optional Colab fine-tuning applies only if accuracy on the robot camera needs improvement. Target operating distance: **20–80 cm** from the camera.
 
-> **Status:** Package scaffolding complete. Inference logic is not implemented yet. Next step: Milestone 1 — verify camera topic on hardware.
-
----
-
-## Problem Statement
-
-Given a live RGB image stream from the robot's onboard camera, the system must:
-
-1. Detect cube-shaped objects in the scene
-2. Classify each detection as `red_cube`, `green_cube`, or `blue_cube`
-3. Publish bounding boxes and class labels as `vision_msgs/Detection2DArray`
-4. Publish an annotated debug image for live visualization
-
-Operating distance: **20–80 cm** from the camera.
+Built on a HiWonder JetRover with NVIDIA Jetson Orin Nano.
 
 ---
 
-## Hardware
+## What I built
 
-| Component | Details |
-|-----------|---------|
-| Robot | HiWonder JetRover (Orin Nano version), Mecanum chassis |
-| Compute | NVIDIA Jetson Orin Nano |
-| Camera | Orbbec depth camera (onboard) |
-| OS | Ubuntu 22.04 LTS |
-| SDK | NVIDIA JetPack |
-
----
-
-## Software
-
-| Machine | Ubuntu | ROS 2 | Python |
-|---------|--------|-------|--------|
-| Jetson Orin Nano | 22.04 LTS | Humble | 3.10 |
-| Host (dev machine) | 22.04 LTS | Humble | 3.10 |
-
-**On-robot runtime:** OpenCV, cv_bridge, vision_msgs, TensorRT  
-**Off-robot training:** Google Colab, PyTorch, YOLOv5, ONNX, Roboflow
-
-See [`docs/technical-stack.md`](docs/technical-stack.md) for the full stack and export chain.
+- Real-time object detection on edge hardware (Jetson Orin Nano)
+- ML deployment pipeline: PyTorch weights → ONNX → TensorRT FP16
+- ROS 2 perception node (`cube_detection_node`) publishing detections and a debug image
+- Documented optional fine-tune path if the pretrained model underperforms on the robot camera
 
 ---
 
 ## Architecture
 
-![Pipeline](assets/pipeline_diagram.png)
+![Inference pipeline](assets/concept2_inference_pipeline.png)
 
-```
-Camera hardware (Orbbec)
-    ↓
-/depth_cam/rgb/image_raw  [sensor_msgs/Image]
-    ↓
-cube_detection_node  (Python / ROS 2 Humble)
-    ├── cv_bridge        → converts ROS 2 image to OpenCV frame
-    ├── YOLOv5 + TensorRT → runs inference, outputs bounding boxes + class labels
-    └── Confidence filter → discards detections below threshold
-    ↓                          ↓
-/cube_detections           /cube_detections/debug_image
-[vision_msgs/              [sensor_msgs/Image]
- Detection2DArray]
-    ↓                          ↓
-Robot systems              RViz2 / rqt_image_view
-(future integration)       (live visualization)
-```
-
-See [`docs/architecture.md`](docs/architecture.md) for detailed pipeline documentation.
-
-### Topics
-
-| Topic | Message Type | Direction |
-|-------|-------------|-----------|
-| `/depth_cam/rgb/image_raw` | `sensor_msgs/Image` | Input |
-| `/cube_detections` | `vision_msgs/Detection2DArray` | Output |
-| `/cube_detections/debug_image` | `sensor_msgs/Image` | Output |
+Full pipeline details, ROS 2 topics, and training/export path → [`docs/architecture.md`](docs/architecture.md)
 
 ---
 
-## Success Criteria
+## Results
 
-| Metric | Target |
-|--------|--------|
-| Color classification accuracy | ≥ 80% on a structured 50-frame test |
-| Detection frame rate | ≥ 5 fps on Jetson (inference rate) |
-| Operating distance | 20–80 cm from camera |
+> **TODO:** Fill this section after running the pipeline on hardware and completing the 50-frame evaluation.
 
----
+### Summary
 
-## Directory Structure
+<!-- One short paragraph: did it work, what accuracy/fps achieved, any fine-tuning needed -->
 
-```
-Recognition-of-Different-Colored-Cubes/
-├── README.md
-├── package.xml
-├── setup.py
-├── setup.cfg
-├── .gitignore
-├── LICENSE
-├── docs/
-│   ├── architecture.md
-│   ├── Concept-and-Approach.md
-│   ├── LOGBOOK.md
-│   ├── ROADMAP.md
-│   ├── project-definition.md
-│   ├── technical-stack.md
-│   ├── milestones.md
-│   └── evaluation.md
-├── recognition_of_different_colored_cubes/
-│   ├── __init__.py
-│   └── cube_detection_node.py
-├── launch/
-│   └── detection.launch.py
-├── config/
-│   └── params.yaml
-├── training/
-│   └── train.ipynb
-├── scripts/
-│   ├── test_inference.py
-│   ├── export_onnx.py
-│   └── convert_tensorrt.py
-├── evaluation/
-│   └── evaluate.py
-├── models/                        # model artifacts not committed to git
-├── assets/
-│   └── pipeline_diagram.png
-├── resource/
-├── test/
-└── vendor/
-```
+_TBD — add after project completion._
+
+### Metrics
+
+| Metric | Target | Result |
+|--------|--------|--------|
+| Classification accuracy | ≥ 80% (50-frame test) | TBD |
+| Inference rate | ≥ 5 fps on Jetson | TBD |
+| Operating distance | 20–80 cm | TBD |
+
+### Demo
+
+<!-- Optional TODO: add assets/results/detection_screenshot.png and uncomment the line below -->
+
+<!-- ![Live detection with bounding boxes](assets/results/detection_screenshot.png) -->
+
+_Screenshot or clip of live detections — add here after Milestone 5/6._
+
+_Evaluation protocol and per-class breakdown: [`docs/evaluation.md`](docs/evaluation.md)_
 
 ---
 
-## Dependencies
+## Requirements
 
-**ROS 2 packages** (declared in `package.xml`, installed via `rosdep`):
+| | Jetson (robot) | Dev machine |
+|--|----------------|-------------|
+| **Role** | Runs detection | Edit code, visualize (RViz2) |
+| **OS / ROS / Python** | 22.04 / Humble / 3.10 | 22.04 / Humble / 3.10 |
+| **Hardware** | JetRover, Orbbec depth camera | — |
+| **Key software** | TensorRT, YOLOv5, OpenCV, cv_bridge | RViz2 (optional) |
 
-- `rclpy`, `sensor_msgs`, `vision_msgs`, `cv_bridge`, `std_msgs`
-
-**System / pip packages** (on Jetson, documented in `docs/technical-stack.md`):
-
-- OpenCV, PyTorch, ONNX, TensorRT, YOLOv5
-
-**Starting dataset:** [Roboflow — Red Green Blue Cube Detection](https://universe.roboflow.com/jakub-slof/red-green-blue-cube-detection/dataset/1)
+Full dependencies and model artifacts → [`docs/technical-stack.md`](docs/technical-stack.md)
 
 ---
 
-## Getting Started
+## Quick Start
+
+> **Note:** Inference is not live yet. Below: how to build the package today, and the intended workflow on the Jetson once the model and node are implemented.
+
+### Build the package (dev machine — works now)
 
 ```zsh
-# Build the package
-cd ~/maher_ws   # or your colcon workspace root
+cd ~/maher_ws
 colcon build --packages-select recognition_of_different_colored_cubes
 source install/setup.bash
-
-# Verify the scaffold node starts (no camera or model required yet)
 ros2 run recognition_of_different_colored_cubes cube_detection_node
 ```
 
 Expected: node logs a scaffold initialization message. Exits cleanly on Ctrl+C.
 
-**Launch file (after inference is implemented):**
+### Run on the Jetson (after model + node are implemented)
 
 ```zsh
+ssh ubuntu@192.168.2.138   # DHCP — update if changed
+
+sudo systemctl stop start_app_node.service
+
+cd ~/jetson_ws/src
+git clone <repo-url> Recognition-of-Different-Colored-Cubes
+
+cd ~/jetson_ws
+rosdep install --from-paths src --ignore-src -r -y
+colcon build --packages-select recognition_of_different_colored_cubes --symlink-install
+source install/setup.bash
+
 ros2 launch recognition_of_different_colored_cubes detection.launch.py
 ```
 
-### Milestone 1 — Camera verification (on Jetson)
+View detections: `ros2 run rqt_image_view rqt_image_view` → topic `/cube_detections/debug_image`
+
+### Verify camera (first hardware step)
 
 ```zsh
-sudo systemctl stop start_app_node.service
-ros2 topic list                                    # confirm camera topic name
-ros2 topic hz /depth_cam/rgb/image_raw             # confirm live publishing
-ros2 run rqt_image_view rqt_image_view             # view live feed
+ros2 topic list
+ros2 topic hz /depth_cam/rgb/image_raw
+ros2 run rqt_image_view rqt_image_view
 ```
+
+Full ordered setup steps → [`docs/milestones.md`](docs/milestones.md)
+
+---
+
+## Key Directories
+
+| Path | Purpose |
+|------|---------|
+| `recognition_of_different_colored_cubes/` | ROS 2 Python package — `cube_detection_node.py` |
+| `launch/` | `detection.launch.py` |
+| `config/` | Node parameters (`params.yaml`) |
+| `scripts/` | ONNX export, TensorRT conversion, standalone inference test |
+| `models/` | `best.pt`, `best.onnx`, `.engine` — gitignored, not committed |
+| `training/` | Optional Colab fine-tune notebook |
+| `evaluation/` | 50-frame structured test script |
+| `assets/` | Pipeline diagrams; `assets/results/` for evaluation screenshots |
+| `docs/` | Architecture, milestones, logbook, evaluation protocol |
+| `vendor/` | Reference notes for Hiwonder vendor code (not copied) |
+
+Browse the full tree on GitHub — this table only highlights non-obvious layout.
 
 ---
 
 ## Documentation
 
+### For visitors
+
+| Document | Description |
+|----------|-------------|
+| [`docs/architecture.md`](docs/architecture.md) | How the pipeline works — topics, node, diagrams |
+| [`docs/Concept-and-Approach.md`](docs/Concept-and-Approach.md) | Why YOLOv5 + TensorRT; model strategy |
+| [`docs/evaluation.md`](docs/evaluation.md) | How results are measured |
+
+### Development notes
+
 | Document | Description |
 |----------|-------------|
 | [`docs/project-definition.md`](docs/project-definition.md) | Problem definition, classes, constraints |
-| [`docs/technical-stack.md`](docs/technical-stack.md) | Runtime and training stack |
-| [`docs/milestones.md`](docs/milestones.md) | M1–M7 milestones and implementation steps |
-| [`docs/evaluation.md`](docs/evaluation.md) | 50-frame test protocol (placeholder) |
-| [`docs/ROADMAP.md`](docs/ROADMAP.md) | Early bringup roadmap |
-| [`docs/LOGBOOK.md`](docs/LOGBOOK.md) | Development session notes |
+| [`docs/technical-stack.md`](docs/technical-stack.md) | Runtime stack, dependencies, model artifacts |
+| [`docs/milestones.md`](docs/milestones.md) | Implementation milestones and ordered steps |
+| [`docs/LOGBOOK.md`](docs/LOGBOOK.md) | Session-by-session development log |
 
 ---
 

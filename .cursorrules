@@ -1,0 +1,95 @@
+# Recognition of Different Colored Cubes — AI session context
+# Hiwonder JetRover | ROS 2 Humble | YOLOv5 + TensorRT
+#
+# This file is the operating manual for AI sessions: how to work, where we are,
+# and what must never change. Project detail lives in docs/ — read those when needed.
+
+---
+
+## Behavior Rules
+
+- Implement incrementally — one step at a time. Never build ahead of the current milestone.
+- Before proposing or starting work on a milestone step, read `docs/milestones.md` and any other file from the Canonical Documentation table relevant to that step.
+- Do not write implementation code unless explicitly instructed (e.g. "do step 7" or "implement M5").
+- When debugging, ask for exact terminal output, file paths, error messages, and ROS 2 topic names before proposing a fix.
+- Keep all code inside this repository. Structure: see `README.md`.
+- **End of day:** When the user wraps up a session, add a dated entry to `docs/LOGBOOK.md` (use its template). If a milestone step advanced, update **Current Status** below.
+- **Commits:** Only when the user explicitly asks. Message format: `M?: short description` (e.g. `M1: verify camera topic on Jetson`).
+- **Do not modify:** Hiwonder vendor packages (`controller`, `peripherals`, `bringup`, etc.) or vendor files on the Jetson. Reference only — see `vendor/README.md`.
+
+---
+
+## Hard Constraints (non-negotiable)
+
+- **Approach:** YOLOv5s + TensorRT FP16 on Jetson. Do not suggest classical CV (HSV/LAB/contours) as an alternative.
+- **Model strategy:** Pretrained Roboflow `best.pt` first. Fine-tune on Colab (20–30 epochs) only if standalone inference on robot camera images fails accuracy target. Do not block on custom dataset collection or full training upfront.
+- **Export chain:** `best.pt` → `best.onnx` → `.engine` (ONNX is required). Fallback: ONNX Runtime if TensorRT fails.
+- **Classes:** `red_cube`, `green_cube`, `blue_cube`
+- **Package:** `recognition_of_different_colored_cubes` · **Node:** `cube_detection_node`
+- **Topics:** in `/depth_cam/rgb/image_raw` · out `/cube_detections`, `/cube_detections/debug_image`
+- Verify camera topic name on hardware with `ros2 topic list` — do not assume if bringup differs.
+
+---
+
+## Canonical Documentation
+
+Read these for full detail. Do not duplicate their content here.
+
+| Topic | File |
+|-------|------|
+| Overview, build, directory tree | `README.md` |
+| Problem, success criteria, risks | `docs/project-definition.md` |
+| Approach rationale + diagrams | `docs/Concept-and-Approach.md` |
+| Pipelines, topics, node | `docs/architecture.md` |
+| Stack, export chain, dependencies | `docs/technical-stack.md` |
+| Milestones M1–M7, ordered steps 1–10 | `docs/milestones.md` |
+| 50-frame evaluation protocol | `docs/evaluation.md` |
+| Session log (template + entries) | `docs/LOGBOOK.md` |
+| Vendor reference paths | `vendor/README.md` |
+| Cross-machine RViz2 / DDS | `../2D-LiDAR-Mapping-with-SLAM/docs/cross_machine_dds.md` |
+
+**Dataset:** https://universe.roboflow.com/jakub-slof/red-green-blue-cube-detection/dataset/1
+
+---
+
+## Jetson Development
+
+| Machine | Workspace | Access |
+|---------|-----------|--------|
+| Dev PC | `~/maher_ws` | local |
+| Jetson | `~/jetson_ws` | `ssh ubuntu@192.168.2.138` (DHCP — update if changed; alias `jetrover` may work) |
+
+**Bringup (Jetson, before ROS 2 work):**
+
+```bash
+sudo systemctl stop start_app_node.service
+cd ~/jetson_ws && source install/setup.bash
+```
+
+**Build this package on Jetson (once):**
+
+```bash
+cd ~/jetson_ws/src && git clone <repo-url> Recognition-of-Different-Colored-Cubes
+cd ~/jetson_ws
+colcon build --packages-select recognition_of_different_colored_cubes --symlink-install
+source install/setup.bash
+```
+
+---
+
+## Current Status
+
+**Active milestone:** M1 — Environment ready
+**Active step:** 1 of 10 — verify camera (`ros2 topic hz /depth_cam/rgb/image_raw`)
+**Last completed step:** Model strategy set to pretrained-first (fine-tune fallback); docs aligned
+**Next step:** On Jetson — stop auto-start, confirm camera topic:
+
+```bash
+ssh ubuntu@192.168.2.138
+sudo systemctl stop start_app_node.service
+ros2 topic list
+ros2 topic hz /depth_cam/rgb/image_raw
+ros2 run rqt_image_view rqt_image_view
+```
+
+> Update this section each time a milestone or step is completed.

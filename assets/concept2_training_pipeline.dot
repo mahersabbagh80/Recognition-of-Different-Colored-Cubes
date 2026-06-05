@@ -1,0 +1,76 @@
+digraph Concept2TrainingPipeline {
+
+    rankdir=TB;
+    graph [fontname="Helvetica", fontsize=12, pad="0.6", nodesep=0.6, ranksep=0.8];
+    node  [fontname="Helvetica", fontsize=11, style="filled,rounded", shape=box, margin="0.28,0.18"];
+    edge  [fontname="Helvetica", fontsize=10, color="#555555", arrowsize=0.9];
+
+    // ── Data Preparation ──────────────────────────────────────────────────────
+    subgraph cluster_data {
+        label="Data Preparation";
+        fontsize=13; fontname="Helvetica-Bold";
+        style=filled; fillcolor="#FFF8E1"; color="#E65100";
+
+        roboflow   [label="Roboflow RGB Cube Dataset\nBase training images",
+                    fillcolor="#FFE0B2", color="#E65100"];
+
+        robot_imgs [label="Robot Camera Images\nSupplementary captures\nfrom JetRover camera",
+                    fillcolor="#FFE0B2", color="#E65100"];
+
+        annotation [label="Data Annotation\nBounding boxes per image\nClasses: red_cube | green_cube | blue_cube",
+                    fillcolor="#FFCC80", color="#E65100"];
+
+        dataset    [label="Annotated Dataset\nTrain / Validation / Test split",
+                    shape=note, fillcolor="#FFB74D", color="#E65100"];
+    }
+
+    // ── Model Training ────────────────────────────────────────────────────────
+    subgraph cluster_training {
+        label="Model Training  (Google Colab — GPU)";
+        fontsize=13; fontname="Helvetica-Bold";
+        style=filled; fillcolor="#FBE9E7"; color="#BF360C";
+
+        yolo_train [label="YOLOv5 Training\n50–100 epochs\nClasses: red_cube | green_cube | blue_cube",
+                    fillcolor="#FFCCBC", color="#BF360C"];
+
+        best_pt    [label="best.pt\nTrained PyTorch weights",
+                    shape=note, fillcolor="#FF8A65", color="#BF360C"];
+    }
+
+    // ── Model Export ──────────────────────────────────────────────────────────
+    subgraph cluster_export {
+        label="Model Export";
+        fontsize=13; fontname="Helvetica-Bold";
+        style=filled; fillcolor="#E8EAF6"; color="#283593";
+
+        onnx_export [label="ONNX Export\nConvert best.pt → best.onnx\n(intermediate format)",
+                     fillcolor="#C5CAE9", color="#283593"];
+
+        best_onnx   [label="best.onnx\nONNX model file",
+                     shape=note, fillcolor="#9FA8DA", color="#283593"];
+    }
+
+    // ── Jetson Deployment ─────────────────────────────────────────────────────
+    subgraph cluster_deploy {
+        label="Jetson Deployment";
+        fontsize=13; fontname="Helvetica-Bold";
+        style=filled; fillcolor="#ECEFF1"; color="#E65100";
+
+        trt_export [label="TensorRT Conversion\nConvert best.onnx → .engine\nFP16 quantization",
+                    fillcolor="#CFD8DC", color="#E65100"];
+
+        model_file [label="YOLOv5 TensorRT Engine\n.engine file — ready for inference\non Jetson Orin Nano",
+                    shape=note, fillcolor="#90A4AE", fontcolor="white", color="#607D8B"];
+    }
+
+    // ── Edges ─────────────────────────────────────────────────────────────────
+    roboflow   -> annotation;
+    robot_imgs -> annotation;
+    annotation -> dataset;
+    dataset    -> yolo_train;
+    yolo_train -> best_pt;
+    best_pt    -> onnx_export;
+    onnx_export -> best_onnx;
+    best_onnx  -> trt_export;
+    trt_export -> model_file;
+}

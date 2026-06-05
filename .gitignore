@@ -9,3 +9,27 @@ __pycache__/
 *.egg-info/
 .built_by
 COLCON_IGNORE
+
+# Model artifacts (large; obtain via Roboflow or train locally)
+models/*
+!models/.gitkeep
+
+# YOLOv5 / training outputs (if fine-tuning locally or on Colab checkout)
+runs/
+wandb/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Captured test images and eval outputs (optional local data)
+evaluation/captures/
+evaluation/results/
+
+# Environment and secrets
+.env
+.venv/
+venv/
+
+# OS / editor
+.DS_Store
+*~

@@ -21,7 +21,7 @@ PyTorch (YOLOv5s weights)
     → TensorRT FP16 engine (Jetson GPU)
 ```
 
-Verify PyTorch, ONNX, and TensorRT versions on the Jetson **before training** to avoid conversion failures.
+Verify PyTorch, ONNX, and TensorRT versions on the Jetson **before export/conversion** to avoid failures.
 
 ### Fallback
 
@@ -29,21 +29,31 @@ If TensorRT conversion fails: ONNX Runtime inference (no GPU acceleration, slowe
 
 ---
 
-## Off-Robot Training (Google Colab)
+## Model Weights (default: pretrained)
+
+| Step | Where | Action |
+|------|-------|--------|
+| 1 | Roboflow Universe | Download pretrained `best.pt` from the [RGB cube detection project](https://universe.roboflow.com/jakub-slof/red-green-blue-cube-detection/dataset/1) |
+| 2 | Dev PC or Jetson | Export `best.pt` → `best.onnx` (script or Colab) |
+| 3 | Jetson | Convert `best.onnx` → TensorRT `.engine` |
+
+No Colab session required if pretrained weights meet accuracy on the robot camera.
+
+## Off-Robot Fine-Tuning (optional — Google Colab)
+
+Use only if standalone inference on robot camera images is below target accuracy.
 
 | Component | Role |
 |-----------|------|
-| Google Colab | Cloud GPU for training |
+| Google Colab | Cloud GPU for fine-tuning |
 | PyTorch | Training framework |
 | YOLOv5 (Ultralytics) | Object detection model (YOLOv5s) |
 | ONNX | Export intermediate format |
-| Roboflow | Dataset annotation and YOLOv5-format export |
+| Roboflow | Pretrained weights and YOLOv5-format dataset |
 
-**Starting dataset:** https://universe.roboflow.com/jakub-slof/red-green-blue-cube-detection/dataset/1
+**Fine-tune recipe:** Roboflow dataset, 20–30 epochs. Add robot camera images only if accuracy is still below 80% after fine-tuning.
 
-Supplement with images captured from the robot's own Orbbec camera for better generalization.
-
-**Training notebook:** [`training/train.ipynb`](../training/train.ipynb) (Milestone 3)
+**Training notebook:** [`training/train.ipynb`](../training/train.ipynb) (optional fallback)
 
 ---
 
@@ -93,6 +103,6 @@ Stored in `models/` (gitignored):
 
 | File | Description |
 |------|-------------|
-| `best.pt` | PyTorch weights from Colab training |
+| `best.pt` | PyTorch weights (Roboflow pretrained, or fine-tuned) |
 | `best.onnx` | ONNX export |
 | `best.engine` | TensorRT FP16 engine |
