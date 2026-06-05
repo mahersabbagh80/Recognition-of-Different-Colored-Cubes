@@ -1,0 +1,7 @@
+cube_detection_node:
+  ros__parameters:
+    image_topic: /depth_cam/rgb/image_raw
+    detections_topic: /cube_detections
+    debug_image_topic: /cube_detections/debug_image
+    confidence_threshold: 0.5
+    model_path: ""
