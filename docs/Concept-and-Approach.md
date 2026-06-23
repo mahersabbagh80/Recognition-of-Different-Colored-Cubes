@@ -59,10 +59,11 @@ YOLOv8 (Ultralytics) is a stronger model than YOLOv5 on accuracy benchmarks and 
 
 | Path | When | What |
 |------|------|------|
-| **Default** | Start here | Download pretrained `best.pt` from [Roboflow Universe](https://universe.roboflow.com/jakub-slof/red-green-blue-cube-detection/dataset/1) → ONNX → TensorRT → deploy |
-| **Fallback** | Only if robot-camera accuracy fails | Fine-tune locally on dev PC (RTX 4070 Ti) — Roboflow dataset, 20–30 epochs; add robot images only if still below target |
+| **Default decision gate** | Start here | Check whether the selected Roboflow Universe model exposes raw compatible weights (`.pt` preferred); see [`model-options.md`](model-options.md) |
+| **If raw weights are available** | After Maher/account approval | Save as `models/best.pt` → ONNX → TensorRT → deploy |
+| **If raw weights are not available** | Recommended fallback | Fine-tune YOLOv5s locally on dev PC (RTX 4070 Ti) from the approved Roboflow YOLOv5-format dataset, 20–30 epochs; add robot images only if still below target |
 
-Custom dataset collection and full 50–100 epoch training are **not** the default plan. TensorRT export on the Jetson is the main schedule risk — validate deployment before investing in training.
+Custom robot-image collection and full 50–100 epoch training are **not** the default plan. The M2 research pass found that hosted Roboflow Universe models are visible, but public raw `best.pt` download is not guaranteed. TensorRT export on the Jetson remains the main schedule risk — validate deployment before investing in extra training.
 
 ---
 
@@ -75,7 +76,7 @@ Custom dataset collection and full 50–100 epoch training are **not** the defau
 
 ## Steps
 
-1. Obtain `best.pt` — download pretrained weights from Roboflow (fine-tune locally on dev PC only if step 6 fails).
+1. Obtain `best.pt` — first check Roboflow raw-weights access; if unavailable, fine-tune YOLOv5s from the approved Roboflow YOLOv5-format dataset to create a local `best.pt`.
 2. Export to ONNX (`best.pt` → `best.onnx`), then convert to a TensorRT FP16 engine on the Jetson.
 3. Test standalone inference on images from the robot camera.
 4. Subscribe to the camera image topic and convert frames using cv_bridge.
@@ -88,13 +89,14 @@ Custom dataset collection and full 50–100 epoch training are **not** the defau
 ## Pros
 
 - Learns shape and color jointly; more robust to lighting, angle, and occlusion
-- Pretrained path keeps the one-week timeline realistic while still using YOLOv5 + TensorRT
+- The M2 source decision gate keeps the one-week timeline realistic while still targeting YOLOv5 + TensorRT
 - Teaches edge deployment (ONNX, quantization, ROS 2 integration) — the highest portfolio value per hour
-- Fine-tune option remains available if the Roboflow model does not generalise to the robot camera
+- Fine-tune option remains available if raw Roboflow weights are unavailable or the first model does not generalise to the robot camera
 
 ## Cons
 
-- Pretrained weights may not generalise perfectly to the JetRover Orbbec camera without fine-tuning
+- Public Roboflow Universe pages may not expose raw `best.pt`; account/plan access may be required
+- Any pretrained or dataset-trained model may not generalise perfectly to the JetRover Orbbec camera without fine-tuning
 - TensorRT export is fragile due to version compatibility; the main technical risk
 - Black box — failures may require fine-tuning and more data, not parameter tuning
-- Less impressive training story if pretrained weights work out of the box (mitigate by documenting eval results and any fine-tune you did)
+- Less impressive training story if pretrained weights work out of the box; mitigate by documenting source, access notes, eval results, and any fine-tune performed

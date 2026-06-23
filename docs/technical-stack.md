@@ -2,7 +2,7 @@
 
 This stack is revised for the vendor-first JetRover requirement: HiWonder packages under `src/vendor` provide camera bring-up and the vendor compatibility message contract; this project provides the cube-recognition package and must not modify vendor source.
 
-Primary architecture reference: [`architecture.md`](architecture.md). Vendor audit: [`vendor-audit.md`](vendor-audit.md).
+Primary architecture reference: [`architecture.md`](architecture.md). Vendor audit: [`vendor-audit.md`](vendor-audit.md). M2 model-source research: [`model-options.md`](model-options.md).
 
 ---
 
@@ -66,15 +66,19 @@ Fallback: ONNX Runtime inference if TensorRT conversion fails. This is slower an
 
 ---
 
-## Model Weights (default: pretrained)
+## Model Weights (M2 decision gate)
+
+See [`model-options.md`](model-options.md) for the current research decision. The earlier assumption that Roboflow Universe would expose a public YOLOv5 `best.pt` is not safe: the visible pages expose hosted Detection API access and dataset exports, while raw weight download appears account/plan-gated.
 
 | Step | Where | Action |
 |---|---|---|
-| 1 | Roboflow Universe | Download pretrained `best.pt` from the [RGB cube detection project](https://universe.roboflow.com/jakub-slof/red-green-blue-cube-detection/dataset/1) |
-| 2 | Dev PC or Jetson | Export `best.pt` -> `best.onnx` |
-| 3 | Jetson | Convert `best.onnx` -> TensorRT FP16 `.engine` |
+| 1 | Roboflow Universe / Maher's account | Check whether the selected model version exposes a raw compatible weights download (`.pt` preferred) |
+| 2 | If raw weights are available | Save the selected artifact locally as `models/best.pt` and record source/version/license |
+| 3 | If raw weights are not available | Download the approved YOLOv5-format dataset and fine-tune YOLOv5s locally to create a project-owned `models/best.pt` |
+| 4 | Dev PC or Jetson | Export `best.pt` -> `best.onnx` in M3 |
+| 5 | Jetson | Convert `best.onnx` -> TensorRT FP16 `.engine` in M4 |
 
-No local training is required if pretrained weights meet accuracy on the robot camera.
+No custom robot-image collection is required upfront. Add robot camera images only if standalone M4 inference fails the accuracy target.
 
 ---
 
