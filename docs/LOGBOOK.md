@@ -63,6 +63,34 @@ Copy the template block for each new entry. Replace `YYYY-MM-DD` with the sessio
 
 <!-- New entries go below this line, newest at the top. -->
 
+## 2026-06-24 — M2 Roboflow raw-weights access check
+
+- **Milestone:** M2 — Model weights ready
+- **Goal**
+  - Attempt the approved Roboflow-first path for obtaining a raw compatible model artifact and saving it as `models/best.pt` if accessible.
+
+- **Work done**
+  - Checked local credential availability without printing secrets: `ROBOFLOW_API_KEY` and `ROBOFLOW_WORKSPACE` are not set, and no local Roboflow config directory was present for this worker.
+  - Opened the original Jakub Slof Roboflow Universe model page and the Ezhil same-class candidate in a browser session.
+  - Checked Roboflow weight-download documentation and probed likely Roboflow API/model/weights endpoints without an API key.
+
+- **Results**
+  - No raw `.pt` / `weights.pt` / `best.pt` download was visible on either public Universe page. Both pages expose `Deploy Model`, `Fork Dataset`, hosted inference/API snippets, and dataset links.
+  - The original Jakub Slof page reports `red-green-blue-cube-detection/1` as Roboflow 3.0 Object Detection (Fast), COCO checkpoint, 103-image dataset, CC BY 4.0; the Ezhil candidate reports the same model family with a 461-image dataset, CC BY 4.0.
+  - Roboflow docs state manual raw weights download is a paid/account-gated feature and the SDK method `model.download()` requires an API key. Unauthenticated API probes returned HTTP 401 for model/weights endpoints.
+  - `models/best.pt` was not created because no compatible raw `.pt` artifact was accessible to this worker.
+
+- **Evidence**
+  - Browser-visible public actions: `Deploy Model`, `Fork Dataset`, API snippets; no `Download Weights` action while signed out.
+  - Roboflow docs: `https://docs.roboflow.com/deploy/download-roboflow-model-weights`
+  - API probe examples returned 401: `https://api.roboflow.com/jakub-slof/red-green-blue-cube-detection/1/weights`, `https://api.roboflow.com/ezhil-sdu5m/red-green-blue-cube-detection-tkoml/1/weights`.
+
+- **Blockers**
+  - Raw compatible Roboflow weights are credential/account/plan-gated and are not accessible in this worker environment.
+
+- **Next**
+  - Maher should sign in to Roboflow and check the selected model version for a `Download Weights` button. If it offers a PyTorch `.pt`, download it manually or provide a non-logged API-key setup path to the worker. If it does not, create the fallback implementation card: train YOLOv5s from the approved Roboflow YOLOv5-format dataset and save the resulting `models/best.pt`.
+
 ## 2026-06-23 — M2 outside-Roboflow model-source addendum
 
 - **Milestone:** M2 — Model weights ready

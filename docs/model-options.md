@@ -8,6 +8,8 @@ M2 originally assumed that a Roboflow Universe project would provide a directly 
 
 The key finding is that the relevant Roboflow Universe projects do provide hosted trained detection models and downloadable datasets, but the public pages do not expose a simple unauthenticated YOLOv5 `best.pt` download. Roboflow's current docs say manual raw weight download is a paid/Core-or-Enterprise feature, while Roboflow Inference can automatically fetch/cache model weights for local Roboflow runtime use. That is not the same as having a project-owned YOLOv5 `.pt` that can follow the current `best.pt -> best.onnx -> best.engine` path.
 
+Implementation access check update (2026-06-24): an implementer worker without Roboflow credentials could not access a raw compatible `.pt` from the original Jakub Slof project or the Ezhil same-class candidate. No `models/best.pt` was created. See the dated LOGBOOK entry for the exact evidence and handoff steps.
+
 Therefore, M2 should not blindly proceed as "download public `best.pt` from Universe". The next step needs a short account/access check.
 
 ## JetRover constraints from M1
@@ -35,6 +37,21 @@ These constraints favor a small YOLO-family detector with a reliable export path
 | HSV/LAB color thresholding baseline | Vendor examples already include LAB color detection, color tracking, and color sorting patterns. | No weights involved. | Not applicable to M2 weights path. Useful as diagnostic/baseline only. | Fast to test later. | Lighting-sensitive; detects colored blobs, not learned cube objects; violates the current main detector intent if used as the main path. | Keep as fallback/baseline only, not M2 model source. |
 
 ## Source links and access notes
+
+### Implementation access check: 2026-06-24
+
+- Worker environment check: `ROBOFLOW_API_KEY` and `ROBOFLOW_WORKSPACE` were not set, and no local Roboflow config directory was present.
+- Original Jakub Slof page inspected in browser: `https://universe.roboflow.com/jakub-slof/red-green-blue-cube-detection`
+  - Visible public actions: `Deploy Model`, `Fork Dataset`, hosted inference/API snippets, and dataset links.
+  - No public `Download Weights`, `weights.pt`, or `best.pt` action was visible while signed out.
+  - `More model info` reports Roboflow 3.0 Object Detection (Fast), dataset `red-green-blue-cube-detection/1` with 103 images, COCO checkpoint, Aug 16 2023.
+- Ezhil same-class candidate inspected in browser: `https://universe.roboflow.com/ezhil-sdu5m/red-green-blue-cube-detection-tkoml`
+  - Visible public actions were also hosted inference/API and dataset/fork flows, not raw weights.
+  - `More model info` reports Roboflow 3.0 Object Detection (Fast), dataset `red-green-blue-cube-detection-tkoml/1` with 461 images, COCO checkpoint, Mar 1 2025.
+- Unauthenticated Roboflow API probes for likely model/weights endpoints returned HTTP 401 with "This method requires your API key". Dataset export endpoints are not equivalent to a raw weights download and did not provide a `.pt` artifact.
+- Current decision: raw compatible Roboflow weights are not accessible to this worker. Do not force hosted API, Roboflow Inference cache, dataset export, ONNX, or any other incompatible artifact into `models/best.pt`.
+- Required Maher action if the raw-weights path should continue: sign in to Roboflow, open the selected model version in the dashboard/model page, check for `Download Weights`, and confirm the exact file format/model family/license. If a PyTorch `.pt` is available, provide the downloaded file or a non-secret API-key setup path to the worker.
+- Recommended fallback if no PyTorch `.pt` is available from Maher's account: create the next implementation card to train YOLOv5s from the approved Roboflow YOLOv5-format dataset and save the resulting project-owned `models/best.pt`.
 
 ### Roboflow Universe: current project reference
 
