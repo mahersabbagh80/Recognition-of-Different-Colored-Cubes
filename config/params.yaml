@@ -3,5 +3,8 @@ cube_detection_node:
     image_topic: /depth_cam/rgb/image_raw
     detections_topic: /cube_detections
     debug_image_topic: /cube_detections/debug_image
+    vendor_objects_topic: /cube_detections/vendor_objects
+    publish_vendor_objects: true
+    publish_debug_image: true
     confidence_threshold: 0.5
     model_path: ""
