@@ -1,6 +1,6 @@
 **Name:** YOLOv5 object detection with TensorRT (Machine Learning)
 
-**Idea:** A YOLOv5 neural network recognises red, green, and blue cubes as complete objects. Camera frames pass through the model, accelerated with TensorRT on the Jetson. The model outputs detected cubes with locations, colors, and confidence scores in a single step; results are published as standard ROS 2 vision messages. Shape and color are learned from training data rather than explicit rules.
+**Idea:** A YOLOv5 neural network recognises red, green, and blue cubes as complete objects. Camera frames come from the HiWonder vendor camera stack (`peripherals/depth_camera.launch.py` -> `/depth_cam/rgb/image_raw`) and pass through the model, accelerated with TensorRT on the Jetson. The model outputs detected cubes with locations, colors, and confidence scores in a single step; results are published as standard ROS 2 vision messages plus a vendor-compatible `interfaces/ObjectsInfo` topic. Shape and color are learned from training data rather than explicit rules.
 
 ---
 
@@ -46,7 +46,7 @@ YOLO satisfies all three:
 
 - **Speed:** single-stage architecture completes inference in one forward pass. YOLOv5s runs well above 5 fps on the Jetson with TensorRT.
 - **Edge hardware:** designed for deployment on constrained devices. The small model variant (YOLOv5s, ~7M parameters) fits comfortably within the Jetson's memory.
-- **TensorRT compatibility:** YOLOv5 has a well-documented, widely tested ONNX → TensorRT export path. The Hiwonder JetRover vendor documentation covers this pipeline specifically.
+- **TensorRT compatibility:** YOLOv5 has a well-documented, widely tested ONNX → TensorRT export path. The HiWonder JetRover vendor stack includes a YOLOv5/TensorRT reference node that subscribes to `/depth_cam/rgb/image_raw` and publishes `interfaces/ObjectsInfo`, reducing integration risk when used as a reference pattern.
 - **Task fit:** this is a simple, constrained detection task — three classes, indoor environment, fixed distance range (20–80 cm), no dense or overlapping objects. The accuracy advantage of two-stage detectors is not needed here.
 
 ### Note on YOLOv8
@@ -81,7 +81,7 @@ Custom dataset collection and full 50–100 epoch training are **not** the defau
 4. Subscribe to the camera image topic and convert frames using cv_bridge.
 5. Run each frame through YOLOv5 + TensorRT inference.
 6. Filter detections to keep only cube classes above a confidence threshold.
-7. Publish results as `vision_msgs/Detection2DArray` and a debug image on `/cube_detections/debug_image`.
+7. Publish results as `vision_msgs/Detection2DArray`, vendor-compatible `interfaces/ObjectsInfo`, and a debug image on `/cube_detections/debug_image`.
 
 ---
 

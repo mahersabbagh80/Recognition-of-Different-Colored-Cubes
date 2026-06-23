@@ -26,7 +26,7 @@
 - **Export chain:** `best.pt` → `best.onnx` → `.engine` (ONNX is required). Fallback: ONNX Runtime if TensorRT fails.
 - **Classes:** `red_cube`, `green_cube`, `blue_cube`
 - **Package:** `recognition_of_different_colored_cubes` · **Node:** `cube_detection_node`
-- **Topics:** in `/depth_cam/rgb/image_raw` · out `/cube_detections`, `/cube_detections/debug_image`
+- **Topics:** in `/depth_cam/rgb/image_raw` · out `/cube_detections`, `/cube_detections/vendor_objects`, `/cube_detections/debug_image`
 - Verify camera topic name on hardware with `ros2 topic list` — do not assume if bringup differs.
 
 ---
@@ -82,11 +82,20 @@ source install/setup.bash
 **Active milestone:** M1 — Environment ready
 **Active step:** 1 of 10 — verify camera (`ros2 topic hz /depth_cam/rgb/image_raw`)
 **Last completed step:** Model strategy set to pretrained-first (fine-tune fallback); docs aligned
-**Next step:** On Jetson — stop auto-start, confirm camera topic:
+**Next step:** On Jetson — stop auto-start, start/verify vendor camera topic:
 
 ```bash
 ssh ubuntu@192.168.2.138
 sudo systemctl stop start_app_node.service
+cd ~/jetson_ws && source install/setup.bash
+export need_compile=True
+export MACHINE_TYPE=JetRover_Mecanum
+export LIDAR_TYPE=LD19
+export HOST=/
+export MASTER=
+export DEPTH_CAMERA_TYPE=Dabai
+ros2 launch peripherals depth_camera.launch.py
+# in another sourced terminal:
 ros2 topic list
 ros2 topic hz /depth_cam/rgb/image_raw
 ros2 run rqt_image_view rqt_image_view

@@ -18,7 +18,7 @@ TensorRT export on the Jetson is the highest schedule risk — prioritize steps 
 | M2 | Model weights ready | `best.pt` obtained (Roboflow pretrained — no custom training required) |
 | M3 | ONNX export | `best.pt` → `best.onnx` succeeds (fine-tune first only if needed) |
 | M4 | Model on Jetson | TensorRT engine running inference on saved images on Jetson |
-| M5 | ROS 2 node live | Node publishing to `/cube_detections` with live camera feed |
+| M5 | ROS 2 node live | Node publishing to `/cube_detections`, `/cube_detections/vendor_objects`, and `/cube_detections/debug_image` with live vendor camera feed |
 | M6 | Evaluation complete | 50-frame test done, frame rate and distance range measured |
 | M7 | Repository complete | README, diagram, results, clean code all committed |
 
@@ -69,9 +69,10 @@ TensorRT export on the Jetson is the highest schedule risk — prioritize steps 
 
 ## M5 — ROS 2 Node Live
 
-- [ ] Subscribe to `/depth_cam/rgb/image_raw`
+- [ ] Subscribe to vendor camera topic `/depth_cam/rgb/image_raw`
 - [ ] Run TensorRT inference per frame
-- [ ] Publish `/cube_detections` and `/cube_detections/debug_image`
+- [ ] Publish `/cube_detections`, `/cube_detections/vendor_objects`, and `/cube_detections/debug_image`
+- [ ] Add `interfaces` to `package.xml` when vendor-compatible output is implemented
 - [ ] Visualize in RViz2 or `rqt_image_view`
 
 **Done when:** Live detections visible with bounding boxes overlaid on camera feed.
@@ -99,13 +100,13 @@ TensorRT export on the Jetson is the highest schedule risk — prioritize steps 
 
 ## Implementation Steps (ordered)
 
-1. **Verify camera** — `ros2 topic hz /depth_cam/rgb/image_raw`
+1. **Verify vendor camera** — with `peripherals/depth_camera.launch.py` running, confirm `ros2 topic hz /depth_cam/rgb/image_raw`
 2. **Check versions** — PyTorch, ONNX, TensorRT on Jetson
 3. **Obtain weights** — download Roboflow pretrained `best.pt` (no custom training yet)
 4. **Export ONNX** — `best.pt` → `best.onnx`
 5. **TensorRT conversion** — ONNX → TensorRT FP16 `.engine` on Jetson
 6. **Standalone inference test** — `scripts/test_inference.py` on robot camera snapshots; if accuracy poor → fine-tune locally (RTX 4070 Ti, 20–30 epochs) and repeat steps 4–6
 7. **Minimal ROS 2 node** — subscribe, infer, print detections to terminal
-8. **Add publishers** — `/cube_detections` and `/cube_detections/debug_image`
+8. **Add publishers** — `/cube_detections`, `/cube_detections/vendor_objects`, and `/cube_detections/debug_image`
 9. **Visualize** — confirm bounding boxes in RViz2 or `rqt_image_view`
 10. **Evaluate** — 50-frame structured test, measure fps and distance
