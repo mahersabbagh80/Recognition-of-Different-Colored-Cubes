@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Lesson 0001 — What a YOLOv5 model actually outputs</title>
+  <link rel="stylesheet" href="../assets/lesson.css">
+</head>
+<body>
+<main>
+
+<header>
+  <h1>Lesson 0001 — What a YOLOv5 model actually outputs</h1>
+  <div class="lesson-meta">
+    <span>~15 min</span>
+    <span class="tag">Foundations</span>
+    <span>Anchored to: <code>models/best.pt</code> (M2), <code>cube_detection_node.py</code></span>
+  </div>
+  <p class="lede">A "detection" is not a magic number. It's a tensor you can read, decode, and reason about — and the shape of that tensor is the first thing that makes the rest of the export chain make sense.</p>
+</header>
+
+<h2>The question this lesson answers</h2>
+<p>You have <code>models/best.pt</code> in your project. It detects red, green, and blue cubes. When you call it on a single frame from <code>/depth_cam/rgb/image_raw</code>, what comes back? Until you can answer that, the choice of ONNX, the choice of FP16, the choice of NMS, and the choice of ROS message types will all feel arbitrary. They aren't.</p>
+
+<h2>The one-pass idea</h2>
+<p>YOLO's defining property: <em>one forward pass per frame produces every detection in the scene simultaneously</em>. Older two-stage detectors (Faster R-CNN) make a first pass to <em>propose</em> candidate regions, then a second pass to classify each one. YOLO skips the proposal step by predicting every box from the whole image in one go.</p>
+<p>Why this matters for your project: the Jetson has limited compute. The difference between "one pass per frame" and "two passes per frame" is roughly 2× latency. For a ≥5 fps target on a 640×640 frame, you can spend maybe 200 ms total. That's tight enough that "two stages" would not be a safe choice — and your project's <code>docs/Concept-and-Approach.md</code> makes exactly this argument.</p>
+
+<h2>What the model actually predicts</h2>
+<p>For a 640×640 input image, YOLOv5s produces a single output tensor of shape <code>(1, 25200, 85)</code>. Three numbers to understand:</p>
+<ul>
+  <li><strong>1</strong> — batch size. You're passing one image, you get one batch back.</li>
+  <li><strong>25200</strong> — the number of <em>candidate boxes</em> the model proposes for this image. (This comes from three detection scales across a 640×640 feature grid: 80×80 + 40×40 + 20×20 = 6400 + 1600 + 400 = 8400 anchor points × 3 anchors per point = 25200 candidates. If you don't know what anchors are yet — fine, you don't need to for this lesson; the key fact is "lots of overlapping guesses".)</li>
+  <li><strong>85</strong> — the features per candidate. The 85 breaks down as: <code>4</code> (box coordinates) + <code>1</code> (objectness — "is there anything in this box at all") + <code>80</code> (class probabilities, one per COCO class).</li>
+</ul>
+<p>For your project's model, the 80 becomes 3 (your three classes: <code>red_cube</code>, <code>green_cube</code>, <code>blue_cube</code>) — the training script replaces the COCO head with a 3-class head. So your real output tensor is <code>(1, 25200, 8)</code> = <code>(1, 25200, 4 + 1 + 3)</code>.</p>
+
+<div class="callout">
+  <p class="callout-title">The shape is the contract</p>
+  <p>Every downstream decision in the export chain — ONNX export with a fixed input shape, TensorRT choosing a kernel for that exact tensor layout, even how you wire up NMS — exists because of this output shape. When someone says "YOLOv5 is well-supported by TensorRT," what they mean is "this exact tensor layout is what the TensorRT YOLO plugins expect."</p>
+</div>
+
+<h2>What the model does NOT do</h2>
+<p>Important for M5 (the node wiring): the raw output of a YOLOv5 model is <em>not</em> a list of clean bounding boxes. It's 25200 noisy candidates. Most of them say "objectness = 0.001, no cube here." Many of the rest say "objectness = 0.7, and one of the class scores is 0.4" — but they all point at the same physical cube, slightly offset.</p>
+<p>Two things have to happen between the raw tensor and the boxes you'll publish to <code>/cube_detections</code>:</p>
+<ol>
+  <li><strong>Decoding</strong> — the 4 numbers in each row are not absolute pixel coordinates. They're offsets relative to a grid cell. They have to be transformed into <code>(x_min, y_min, x_max, y_max)</code> in image-pixel space.</li>
+  <li><strong>Non-Maximum Suppression (NMS)</strong> — keep only the best box per object, throw away the duplicates that all point at the same cube.</li>
+</ol>
+<p>Where this lives in your project: in M5, the inference call inside <code>cube_detection_node.image_callback</code> (currently a placeholder returning <code>[]</code>) will return a list of <code>CubeDetection</code> dataclasses. The conversion from raw tensor → dataclass list <em>is</em> the decode + NMS step. That's the function you'll be writing next. It's also the function that Ultralytics' <code>model.predict()</code> handles for you on the dev PC — but on the Jetson under TensorRT, you do it by hand.</p>
+
+<div class="callout">
+  <p class="callout-title">Why this matters for the export chain</p>
+  <p>If you export <code>best.pt</code> to ONNX, by default the ONNX graph includes the NMS step. If you convert to TensorRT, the engine includes NMS. If you want to be able to read the raw 25200 candidates and filter them yourself (because you want a different confidence threshold at runtime, for example), you need to export <em>without</em> NMS. This is a flag in the <code>yolo export</code> command — we'll get to it in M3. For now: the existence of that flag should feel motivated, not arbitrary.</p>
+</div>
+
+<h2>Check your understanding</h2>
+
+<div class="quiz" data-correct="2" data-correct-text="The model proposes many candidate boxes per image; the postprocessing step (NMS) collapses them to one box per real object. The 25200 is the number of candidates, not the number of detections.">
+  <p class="quiz-q">YOLOv5s on a 640×640 frame produces an output tensor of shape <code>(1, 25200, 8)</code>. How many "detections" does that represent in the scene?</p>
+  <ol>
+    <li><label><input type="radio" name="q1" value="0"> Exactly 1 — it's a single image</label></li>
+    <li><label><input type="radio" name="q1" value="1"> Exactly 8 — the last dimension of the shape</label></li>
+    <li><label><input type="radio" name="q1" value="2"> A number between 0 and 25200, decided after NMS</label></li>
+    <li><label><input type="radio" name="q1" value="3"> Exactly 25200 — that's what the shape says</label></li>
+  </ol>
+  <button class="check-btn">Check</button>
+  <div class="answer"></div>
+</div>
+
+<h2>Tiny exercise (5 min, runs on the dev PC)</h2>
+<p>Open a terminal in the project directory and run:</p>
+<pre><code>source .venv-m2/bin/activate
+python -c "
+from ultralytics import YOLO
+m = YOLO('models/best.pt')
+r = m('data/sample.jpg', verbose=False)[0]
+print('raw boxes shape :', r.boxes.data.shape)
+print('first 3 boxes   :', r.boxes.data[:3])
+print('classes seen    :', set(int(b[5]) for b in r.boxes.data))
+"
+"</code></pre>
+<p>Don't have a <code>data/sample.jpg</code>? Use any photo of colored blocks (or take one with your phone). If the image is not 640×640, Ultralytics will resize it for you — note the shape printed; that's the post-NMS count, not 25200.</p>
+<p>Report back: (1) how many boxes the script printed, (2) what the class IDs map to (<code>0 = blue_cube</code>, <code>1 = green_cube</code>, <code>2 = red_cube</code>), (3) any surprising column in the <code>r.boxes.data</code> tensor. We'll use your numbers in the next lesson.</p>
+
+<h2>Where to go deeper (primary source)</h2>
+<ul>
+  <li>Read the original YOLO paper, <em>just</em> the abstract and section 1 (Introduction): <a href="https://arxiv.org/abs/1506.02640">arXiv:1506.02640</a>. The rest is for later.</li>
+  <li>Skim the Ultralytics <a href="https://docs.ultralytics.com/yolov5/">YOLOv5 docs</a> — pay attention to the output tensor section, not the training section.</li>
+</ul>
+
+<h2>Ask follow-ups</h2>
+<p>After the exercise, tell me the output. If anything above was unclear — the tensor shape, the one-pass idea, why NMS is separate from the model, anything — say so. I'll rewrite the parts that didn't land. The teaching quality of the next lessons depends on what trips you up here.</p>
+
+<hr>
+<footer>
+  <p>Lesson 0001 · Workspace: <code>~/maher_ws/learn_cube_recognition/</code> · <a href="../MISSION.md">Mission</a></p>
+</footer>
+
+</main>
+<script src="../assets/quiz.js"></script>
+</body>
+</html>
