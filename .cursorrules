@@ -79,26 +79,18 @@ source install/setup.bash
 
 ## Current Status
 
-**Active milestone:** M1 — Environment ready
-**Active step:** 1 of 10 — verify camera (`ros2 topic hz /depth_cam/rgb/image_raw`)
-**Last completed step:** Model strategy set to pretrained-first (fine-tune fallback); docs aligned
-**Next step:** On Jetson — stop auto-start, start/verify vendor camera topic:
+**Active milestone:** M2 — Model weights ready (COMPLETE)
+**Active step:** M3 (ONNX export) — pending next card
+**Last completed step:** M2 fallback training produced `models/best.pt`; see LOGBOOK 2026-06-24 M2 training entry and `models/README.md` for the artifact, training command, per-class mAP, and known caveats. Class order: `blue_cube` (0), `green_cube` (1), `red_cube` (2).
+**Next step:** M3 ONNX export of `models/best.pt` on the dev PC:
 
 ```bash
-ssh ubuntu@192.168.2.138
-sudo systemctl stop start_app_node.service
-cd ~/jetson_ws && source install/setup.bash
-export need_compile=True
-export MACHINE_TYPE=JetRover_Mecanum
-export LIDAR_TYPE=LD19
-export HOST=/
-export MASTER=
-export DEPTH_CAMERA_TYPE=Dabai
-ros2 launch peripherals depth_camera.launch.py
-# in another sourced terminal:
-ros2 topic list
-ros2 topic hz /depth_cam/rgb/image_raw
-ros2 run rqt_image_view rqt_image_view
+source .venv-m2/bin/activate
+yolo export model=models/best.pt format=onnx imgsz=640
+# -> models/best.onnx
 ```
+
+M1 hardware verification (camera topic + ML/runtime versions on the Jetson) is
+already complete and recorded in the 2026-06-23 M1 LOGBOOK entry.
 
 > Update this section each time a milestone or step is completed.

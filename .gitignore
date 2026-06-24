@@ -13,10 +13,14 @@ COLCON_IGNORE
 # Model artifacts (large; obtain via Roboflow or train locally)
 models/*
 !models/.gitkeep
+!models/README.md
 
 # YOLOv5 / training outputs (local fine-tune on dev PC)
 runs/
 wandb/
+
+# Stray weights files that Ultralytics may download to CWD
+*.pt
 
 # Jupyter
 .ipynb_checkpoints/
@@ -29,6 +33,17 @@ evaluation/results/
 .env
 .venv/
 venv/
+
+# Local M2 training venv (torch / ultralytics / onnx). Optional local dev tool;
+# reproducible from the training command in models/README.md.
+.venv-m2/
+.yolo_config/
+
+# M2 normalized dataset (regenerable via scripts/normalize_dataset.py)
+data/roboflow_det/
+
+# M2 raw dataset (downloaded from Roboflow manually or via SDK; never commit images)
+data/roboflow/
 
 # OS / editor
 .DS_Store

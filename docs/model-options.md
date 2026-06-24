@@ -137,6 +137,23 @@ Primary recommendation for M2:
 2. If Roboflow exposes a raw downloadable weight file compatible with the current path (`.pt` that can be exported to ONNX and TensorRT), use that as the M2 artifact.
 3. If Roboflow only exposes hosted API / dataset export / Roboflow Inference cache, do not force it into `best.pt`. Instead, revise M2 to: download the YOLOv5-format dataset, fine-tune YOLOv5s locally for 20-30 epochs from COCO-pretrained weights, and save the resulting project-owned `models/best.pt`.
 
+### Fallback path: EXECUTED on 2026-06-24
+
+Maher confirmed that the Roboflow Universe pages expose only `Deploy Model`
+(no `Download Weights` / `weights.pt` / `best.pt` UI) and that the worker's
+environment has no `ROBOFLOW_API_KEY` or `ROBOFLOW_WORKSPACE`. The fallback
+path (item 3 above) was therefore selected and executed: the approved Roboflow
+YOLOv5-format dataset for `jakub-lof/red-green-blue-cube-detection/1` (CC BY 4.0,
+103 images) was used to fine-tune YOLOv5s from the COCO-pretrained
+`yolov5s.pt`, 30 epochs, 640×640, batch 16, on the dev PC RTX 4070 Ti, producing
+`models/best.pt` (18.5 MB, SHA-256
+`bba833c25bd6cb51683b3b84dfb1160ed74e1c918a2d629087133ae2a5120b04`,
+val mAP@0.5 = 0.954 at epoch 18, per-class mAP@0.5 = blue 0.982 / green 0.885 /
+red 0.995). The Roboflow export mixed object-detection labels with polygon
+segmentation labels, so a one-time polygon→bbox normalization step was added
+in `scripts/normalize_dataset.py` and documented in `models/README.md` and the
+2026-06-24 M2 LOGBOOK entry. **M2 verdict: COMPLETE. Next: M3 ONNX export.**
+
 Practical recommended default if Maher wants the lowest implementation risk:
 
 - Treat the original Jakub Slof Roboflow project as the dataset/license baseline because it is already cited in the project docs and matches the desired three classes.

@@ -63,6 +63,43 @@ Copy the template block for each new entry. Replace `YYYY-MM-DD` with the sessio
 
 <!-- New entries go below this line, newest at the top. -->
 
+## 2026-06-24 — M2 fallback training: produced models/best.pt
+
+- **Milestone:** M2 — Model weights ready (COMPLETE)
+- **Goal**
+  - Execute the approved M2 fallback: fine-tune YOLOv5s from the Roboflow YOLOv5-format dataset to create the project-owned `models/best.pt`.
+
+- **Work done**
+  - Installed a local M2 venv at the project root (`.venv-m2/`) with `torch 2.6.0+cu124`, `torchvision`, `ultralytics 8.4.75`, `onnx 1.22.0`, `numpy 2.4.4`, `Pillow`, `pyyaml`. The dev PC has an RTX 4070 Ti (12 GB, CUDA 12.4 driver 595.71.05) — no Jetson work; training belongs on the dev PC per `docs/technical-stack.md`.
+  - Discovered the Roboflow "YOLOv5 PyTorch" export for `jakub-lof/red-green-blue-cube-detection/1` (CC BY 4.0, 103 images, 90/9/4 split) is a **mixed-format export**: only 3 of 103 label files are 5-field YOLOv5 detection; the other 100 are 7-/9-/.../25-field YOLOv5 segmentation polygons. Wrote `scripts/normalize_dataset.py` to convert polygons to axis-aligned bounding boxes (`cx = (min+max)/2`, `w = max-min`, clipped to [0,1]) and to remap class names `['bluecube', 'green cube', 'red cube']` → `['blue_cube', 'green_cube', 'red_cube']` in a new `data.yaml`. Normalized dataset written to `data/roboflow_det/.../` (both source and normalized datasets are git-ignored; reproducibility lives in the script).
+  - Ran a 3-epoch smoke training to validate the pipeline end-to-end. Loss decreased and val mAP@0.5 jumped from 0.346 (epoch 1) to 0.543 (epoch 3); class names round-tripped exactly: `blue_cube` / `green_cube` / `red_cube`.
+  - Ran the production training: 30 epochs, 640×640, batch 16, AdamW (auto), cosine LR with `close_mosaic=10`, patience=20, AMP on, seed 42. **Wall time: ~31 s** on the 4070 Ti; final `best.pt` is 18.5 MB.
+  - Copied `runs/m2/m2_30ep/weights/best.pt` → `models/best.pt`. Verified: `ls -la` (18,517,947 bytes), `file` (zip archive / PyTorch ckpt), `sha256sum` (`bba833c25bd6cb51683b3b84dfb1160ed74e1c918a2d629087133ae2a5120b04`), `ultralytics.YOLO(...).task == 'detect'`, `model.names == {0: 'blue_cube', 1: 'green_cube', 2: 'red_cube'}`.
+  - One-image inference sanity check on a validation image with all 3 classes: 8 detections, confidences 0.32–0.96, all three class names present and correctly labeled.
+
+- **Results**
+  - **Best-epoch metrics** (epoch 18, picked by Ultralytics on `metrics/mAP50(B)`, validation 9 images / 21 instances):
+    - all:  P=0.823  R=0.959  mAP@0.5=**0.954**  mAP@0.5:0.95=0.763
+    - blue_cube:  P=0.875  R=0.877  mAP@0.5=0.982  mAP@0.5:0.95=0.703
+    - green_cube: P=0.640  R=1.000  mAP@0.5=0.885  mAP@0.5:0.95=0.762
+    - red_cube:   P=0.953  R=1.000  mAP@0.5=0.995  mAP@0.5:0.95=0.823
+  - Inference speed on the 4070 Ti (640×640): **1.5 ms/image** (preprocess 0.1 ms, NMS 0.4 ms).
+  - **M2 verdict: COMPLETE.** `models/best.pt` exists, loads with the project-canonical class order, runs a real forward pass, and is documented in `models/README.md`.
+
+- **Evidence**
+  - `models/best.pt` (18.5 MB, SHA-256 `bba833c25bd6cb51683b3b84dfb1160ed74e1c918a2d629087133ae2a5120b04`).
+  - `models/README.md` — artifact metadata, dataset source, normalization, training command, per-class mAP, load + one-image inference commands, known caveats.
+  - `scripts/normalize_dataset.py` — polygon→bbox + class-name remap, idempotent with `--force`.
+  - `data/roboflow_det/red-green-blue-cube-detection-1-yolov5pytorch/data.yaml` (rewritten with normalized class names).
+  - `runs/m2/m2_30ep/weights/{best,last}.pt` and `runs/m2/m2_30ep/results.csv` (git-ignored, full Ultralytics run output including PR curve, confusion matrix, sample predictions, `args.yaml`).
+  - `docs/milestones.md` M2 section checkboxes all flipped to `[x]`; `.cursorrules` Current Status updated to "M2 COMPLETE / next: M3 ONNX export".
+
+- **Blockers**
+  - None.
+
+- **Next**
+  - M3 (ONNX export) on the dev PC: `yolo export model=models/best.pt format=onnx imgsz=640` → `models/best.onnx`. This is a separate card; it does not start ROS inference or robot evaluation.
+
 ## 2026-06-24 — M2 Roboflow raw-weights access check
 
 - **Milestone:** M2 — Model weights ready
@@ -240,3 +277,31 @@ Copy the template block for each new entry. Replace `YYYY-MM-DD` with the sessio
 
 - **Next**
   - SSH to Jetson, stop `start_app_node.service`, verify `/depth_cam/rgb/image_raw` with `ros2 topic hz`.
+
+---
+
+## 2026-06-24 — Personal learning workspace moved into repo
+
+> *Scaffolding decision, not milestone work. Recorded for traceability of where the lessons live.*
+
+- **Milestone:** — (project scaffolding, not M1–M7)
+- **Goal**
+  - Decide where the personal CV/ML learning workspace should live, and move it accordingly.
+- **Work done**
+  - Scaffolded a personal learning workspace (`MISSION.md`, `RESOURCES.md`, shared stylesheet/quiz, lesson 0001 on "what a YOLOv5 model outputs") at `~/maher_ws/learn_cube_recognition/`.
+  - User decision: move the workspace **inside** the project repo at `docs/learn/`, **tracked** in git, because every lesson is anchored to a real file/line in this project and should travel with it.
+  - Relocated the directory from `~/maher_ws/learn_cube_recognition/` to `docs/learn/`. All internal links verified.
+  - Updated `docs/learn/MISSION.md` with a "Workspace scope" section reflecting the new location.
+  - Recorded the rationale in `docs/learn/learning-records/0002-workspace-relocated.md`.
+- **Results**
+  - Path going forward: `docs/learn/lessons/`, `docs/learn/assets/`, `docs/learn/learning-records/`.
+  - Lesson 0001 still resolves `../assets/lesson.css` and `../MISSION.md` from its new path.
+  - Dark/light theme toggle still works (shared CSS handles both).
+- **Evidence**
+  - `docs/learn/MISSION.md`
+  - `docs/learn/lessons/0001-what-yolo-outputs.html`
+  - `docs/learn/learning-records/0002-workspace-relocated.md`
+- **Blockers**
+  - None.
+- **Next**
+  - (Back to M3 work) Run `yolo export model=models/best.pt format=onnx imgsz=640` on the dev PC to produce `models/best.onnx`.

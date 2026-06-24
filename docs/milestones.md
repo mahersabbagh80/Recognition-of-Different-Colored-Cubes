@@ -15,7 +15,7 @@ TensorRT export on the Jetson is the highest schedule risk — prioritize steps 
 | # | Milestone | Done when |
 |---|-----------|-----------|
 | M1 | Environment ready | Camera topic verified live, ROS 2 package scaffolding exists |
-| M2 | Model weights ready | `models/best.pt` available locally; source/access decision documented in [`model-options.md`](model-options.md) |
+| M2 | Model weights ready | Verified local `models/best.pt` obtained or produced; source/access decision documented in [`model-options.md`](model-options.md) |
 | M3 | ONNX export | `best.pt` → `best.onnx` succeeds (fine-tune first only if needed) |
 | M4 | Model on Jetson | TensorRT engine running inference on saved images on Jetson |
 | M5 | ROS 2 node live | Node publishing to `/cube_detections`, `/cube_detections/vendor_objects`, and `/cube_detections/debug_image` with live vendor camera feed |
@@ -42,10 +42,19 @@ TensorRT export on the Jetson is the highest schedule risk — prioritize steps 
 
 ## M2 — Model Weights Ready
 
-- [ ] Resolve source path using [`model-options.md`](model-options.md): Roboflow raw weights if accessible, otherwise short YOLOv5s fine-tune from approved Roboflow dataset
-- [ ] Save the selected/created artifact to `models/best.pt` on dev machine or Jetson
+- [x] Raw Roboflow `.pt` / `best.pt` availability checked and not available for the current account/pages (only `Deploy Model` is exposed) — see [`model-options.md`](model-options.md) "Implementation access check" and [`LOGBOOK.md`](LOGBOOK.md) 2026-06-24 entry
+- [x] Fallback approved: train/fine-tune YOLOv5s from the approved Roboflow YOLOv5-format dataset to produce a project-owned `models/best.pt`
+- [x] Save the trained artifact to `models/best.pt` and verify it loads (file exists, non-empty, Ultralytics/PyTorch load check)
+- [x] Record source/training metadata and class mapping for `models/best.pt` (source dataset, license, training command, class names) in a small sidecar file or in [`LOGBOOK.md`](LOGBOOK.md)
 
-**Done when:** `best.pt` is available locally and its source/version/license are recorded.
+**Done when:** A verified local `models/best.pt` exists, can be loaded, and its source/training/class metadata are recorded.
+
+> **Details: see LOGBOOK.md 2026-06-24 M2 training entry.** The artifact is at
+> `models/best.pt` (18.5 MB, SHA-256 `bba833c25bd6cb51683b3b84dfb1160ed74e1c918a2d629087133ae2a5120b04`).
+> Source dataset, normalization, training command, per-class mAP, and known
+> caveats live in `models/README.md` (which also has the load + one-image
+> inference sanity-check commands). Class order is `blue_cube` (0),
+> `green_cube` (1), `red_cube` (2). **M2 verdict: COMPLETE.**
 
 **Custom robot-image trigger (defer until after M4):** Add robot camera images only if standalone inference fails accuracy checks.
 
