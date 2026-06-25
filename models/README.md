@@ -148,10 +148,12 @@ PY
    `runs/m2/m2_30ep/`; that path is reproducible from the command above but is
    not part of the repo. The smoke-training run (`runs/m2/smoke3/`) is also
    git-ignored.
-6. **Venv is local.** A small `.venv-m2/` virtualenv is created at the project
-   root with `torch`, `torchvision`, `ultralytics`, `onnx`, `numpy`, `pillow`,
-   `pyyaml`. It is **not** in `.gitignore` — add it if you don't want it
-   tracked, or `rm -rf .venv-m2` to free ~5 GB.
+6. **Venv is local and git-ignored.** A small `.venv-m2/` virtualenv is created
+   at the project root with `torch`, `torchvision`, `ultralytics`, `onnx`,
+   `numpy`, `pillow`, `pyyaml`. It is listed in `.gitignore`
+   (see `.venv-m2/` and `.yolo_config/` entries). `rm -rf .venv-m2` to free
+   ~5 GB; recreate with `python3 -m venv .venv-m2 && source .venv-m2/bin/activate
+   && pip install torch torchvision ultralytics onnx numpy pillow pyyaml`.
 
 ## Next milestones
 

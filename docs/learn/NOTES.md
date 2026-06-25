@@ -24,3 +24,7 @@
 - Concrete file/line references in the project.
 - "Why this, not that" framing is welcomed (project makes lots of explicit tradeoffs).
 - **Dark theme by default** for lesson reading. The shared stylesheet auto-applies `prefers-color-scheme: dark`; user can still toggle via the button in the top-right of each lesson. Print is always light. Don't author any new lessons that hard-code light-only colors — use CSS variables.
+
+## Tooling quirks (kanban dispatcher)
+
+If a kanban card shows repeated `crashed` runs with the error `worker exited cleanly (rc=0) without calling kanban_complete or kanban_block — protocol violation`, the work itself may have succeeded — the worker just didn't signal the kanban on exit. Inspect the actual work (file system, side artifacts, runs/ directory) before retrying. This happened nine times during M2 training (`t_f6d3380d` runs #21–#28) before the worker finally signaled correctly on run #29.
