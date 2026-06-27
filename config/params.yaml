@@ -1,10 +1,45 @@
 cube_detection_node:
   ros__parameters:
+    # ── Topics ──────────────────────────────────────────────────
     image_topic: /depth_cam/rgb/image_raw
+    depth_topic: /depth_cam/depth/image_raw
+    rgb_camera_info_topic: /depth_cam/rgb/camera_info
     detections_topic: /cube_detections
-    debug_image_topic: /cube_detections/debug_image
     vendor_objects_topic: /cube_detections/vendor_objects
+    debug_image_topic: /cube_detections/debug_image
+
+    # ── Publish toggles ─────────────────────────────────────────
     publish_vendor_objects: true
     publish_debug_image: true
-    confidence_threshold: 0.5
+
+    # ── Model + inference (M4c1 deployment target) ──────────────
+    # Empty model_path → node falls back to <pkg_share>/../../../models/best.engine
     model_path: ""
+    confidence_threshold: 0.50   # M4c1 conf=0.50 deployment target
+    iou_threshold: 0.45
+    imgsz: 640
+
+    # ── RGB + depth sync ────────────────────────────────────────
+    sync_slop_sec: 0.05          # 50 ms median target per docs/milestones.md M5
+    sync_queue_size: 10
+
+    # ── Geometry post-filter — v2-only M4c1 params ──────────────
+    filter_enabled: true
+    filter_n_min: 30
+    filter_max_depth_mm: 4000
+    filter_inset_px: 1
+    filter_annulus_outer_px: 15
+    filter_raised_mm: 30
+    filter_min_raised_frac: 0.20
+    filter_max_planar_top_stddev_mm: 30
+    filter_max_ratio: 1.2
+
+    # ── Camera intrinsics fallback (overridden by /depth_cam/rgb/camera_info)
+    fx: 360.3266
+    fy: 360.3266
+    cx: 321.0181
+    cy: 179.2141
+
+    # ── Diagnostics ─────────────────────────────────────────────
+    latency_log_every: 100       # log p50/p95 every N frames
+    fallback_model_path: ""      # optional alt engine path for dev PC

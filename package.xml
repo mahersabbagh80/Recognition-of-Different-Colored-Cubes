@@ -13,6 +13,13 @@
   <exec_depend>cv_bridge</exec_depend>
   <exec_depend>std_msgs</exec_depend>
   <exec_depend>interfaces</exec_depend>
+  <exec_depend>message_filters</exec_depend>
+  <exec_depend>numpy</exec_depend>
+  <exec_depend>PIL</exec_depend>
+  <exec_depend>torch</exec_depend>
+  <exec_depend>torchvision</exec_depend>
+  <!-- tensorrt + pycuda are Jetson-only and live outside the apt rosdep set;
+       they are installed on the JetRover image by HiWonder (see docs/technical-stack.md). -->
 
   <export>
     <build_type>ament_python</build_type>
