@@ -62,10 +62,19 @@ TensorRT export on the Jetson is the highest schedule risk — prioritize steps 
 
 ## M3 — ONNX Export
 
-- [ ] Export `best.pt` → `best.onnx` (local script on dev PC)
+- [x] Export `best.pt` → `best.onnx` (local script on dev PC)
 - [ ] **If M4 accuracy is poor:** fine-tune locally on dev PC (RTX 4070 Ti) — Roboflow dataset, 20–30 epochs, optional robot camera images — then re-export ONNX
 
 **Done when:** `best.onnx` export succeeds without errors.
+
+> **Details: see LOGBOOK.md entry for 2026-06-27 M3 export.** The artifact is at
+> `models/best.onnx` (35.0 MB, SHA-256
+> `326d5d62ebf7586f02a9fcacf36e1890f1db8b99953cfcef21dcee829637fa38`). Export
+> command, ONNX metadata (opset 13, static `1×3×640×640` input,
+> `1×7×8400` output), `onnx.checker.check_model` result, and ORT smoke
+> inference on a saved validation image live in `models/README.md` under
+> the M3 artifact section. **M3 verdict: COMPLETE on the dev PC.**
+> TensorRT FP16 engine build on the Jetson is still M4.
 
 ---
 

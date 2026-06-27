@@ -1,10 +1,17 @@
-# models/best.pt — M2 trained YOLOv5s weights
+# models/ — YOLOv5s weights for the cube-detection pipeline
 
-This directory holds the M2 model artifact. The single deliverable is `best.pt`
-(18.5 MB PyTorch YOLOv5s detection weights). It is git-ignored along with
-everything else under `models/` except this `README.md` and `.gitkeep`.
+This directory holds the trained detection artifacts. Both files are git-ignored
+along with everything else under `models/` except this `README.md` and `.gitkeep`.
 
-## Artifact
+| File | Milestone | Purpose |
+|---|---|---|
+| `best.pt` | M2 | 18.5 MB PyTorch YOLOv5s detection weights (Ultralytics 8.4.75 fused) |
+| `best.onnx` | M3 | 35.0 MB ONNX export (opset 13, static 1x3x640x640) for TensorRT/ORT |
+
+Source dataset, normalization, training command, per-class mAP, and known
+caveats are documented in the M2 section below.
+
+## M2 artifact: `best.pt`
 
 | Field | Value |
 |---|---|
@@ -103,6 +110,66 @@ Inference speed (validation, 640×640, single 4070 Ti): **1.5 ms/image**
 (preprocess 0.1 ms, NMS 0.4 ms). Final loss at the best epoch: `box=0.47,
 cls=0.67, dfl=0.89`. Full per-epoch metrics: `runs/m2/m2_30ep/results.csv`.
 
+## M3 artifact: `best.onnx`
+
+| Field | Value |
+|---|---|
+| File | `models/best.onnx` |
+| Size | 36,671,634 bytes (35.0 MB) |
+| SHA-256 | `326d5d62ebf7586f02a9fcacf36e1890f1db8b99953cfcef21dcee829637fa38` |
+| Created | 2026-06-27 |
+| Source | Ultralytics 8.4.75 `yolo export` of `models/best.pt` |
+| IR version | 7 |
+| ONNX opset | 13 (default for the export) |
+| Producer | pytorch 2.6.0 |
+| Inputs | `images`: float32 `[1, 3, 640, 640]` (static, NHWC -> NCHW applied at the loader) |
+| Outputs | `output0`: float32 `[1, 4 + nc, 8400]` = `[1, 7, 8400]` — rows 0..3 are xywh in the model's 640×640 input pixel grid; rows 4..6 are sigmoid-activated per-class scores |
+| Simplify | `simplify=False` (onnx-simplifier skipped — TensorRT handles its own graph optimizations) |
+| Dynamic shape | `dynamic=False` (static batch=1, h=640, w=640) |
+| Class names | `0: blue_cube`, `1: green_cube`, `2: red_cube` (preserved from `best.pt`) |
+| Checker | `onnx.checker.check_model` → OK |
+
+Exact export command (run from the project root with `.venv-m2` active):
+
+```bash
+yolo export model=models/best.pt format=onnx imgsz=640 opset=13 \
+    simplify=False dynamic=False
+```
+
+Why these settings (for the M4 TensorRT step):
+
+- **`format=onnx`**: required intermediate for TensorRT. ONNX Runtime is also a valid fallback runtime.
+- **`imgsz=640`**: matches the training resolution; the M4 tensorrt engine and ROS node will use the same letterboxed 640×640 input. Switching to a different size would change the model's anchor/stride math.
+- **`opset=13`**: Ultralytics default for YOLOv5 ONNX export; broadly compatible with TensorRT 8.x (the version on the Jetson per the M1 LOGBOOK entry).
+- **`simplify=False`**: the onnx-simplifier pass is unnecessary for TensorRT and can sometimes drop dynamic-shape info that TensorRT uses. Static shapes here mean simplification has no upside.
+- **`dynamic=False`**: static input shape (1×3×640×640) is what TensorRT expects for engine build; runtime feed from the ROS camera node always provides the same shape, so dynamic axes would just add overhead.
+
+ONNX validation (run once, idempotent):
+
+```bash
+.venv-m2/bin/python - <<'PY'
+import onnx
+m = onnx.load("models/best.onnx")
+onnx.checker.check_model(m)
+print("checker OK")
+print("ir_version:", m.ir_version)
+print("producer:", m.producer_name, m.producer_version)
+print("opset:", [(o.domain, o.version) for o in m.opset_import])
+PY
+```
+
+ORT smoke inference (verifies graph execution end-to-end on a saved validation
+image; it does not replace M4 accuracy work on the Jetson):
+
+```bash
+.venv-m2/bin/python scripts/m3_smoke_inference.py
+```
+
+The smoke script takes `--model`, `--image`, `--imgsz`, `--conf`, `--iou`, and
+`--topk`. It performs letterbox preprocessing, an ONNX Runtime forward pass on
+the CPU provider, per-class confidence filtering, torchvision NMS, and undoes
+the letterbox to map boxes back into the original image frame.
+
 ## Verification commands
 
 ```bash
@@ -110,11 +177,22 @@ cls=0.67, dfl=0.89`. Full per-epoch metrics: `runs/m2/m2_30ep/results.csv`.
 sha256sum models/best.pt
 # expect: bba833c25bd6cb51683b3b84dfb1160ed74e1c918a2d629087133ae2a5120b04
 
+sha256sum models/best.onnx
+# expect: 326d5d62ebf7586f02a9fcacf36e1890f1db8b99953cfcef21dcee829637fa38
+
 # Ultralytics load check (no inference)
 python -c "from ultralytics import YOLO; m = YOLO('models/best.pt'); \
 print(m.task, m.names)"
 
-# One-image inference sanity check
+# ONNX graph check
+.venv-m2/bin/python - <<'PY'
+import onnx
+m = onnx.load("models/best.onnx")
+onnx.checker.check_model(m)
+print("checker OK")
+PY
+
+# One-image inference sanity check (PyTorch)
 python - <<'PY'
 from ultralytics import YOLO
 m = YOLO("models/best.pt")
@@ -125,6 +203,9 @@ r = m.predict(
 )[0]
 print({m.names[int(b.cls)]: round(float(b.conf), 3) for b in r.boxes})
 PY
+
+# One-image ORT smoke inference (graph execution)
+.venv-m2/bin/python scripts/m3_smoke_inference.py
 ```
 
 ## Known caveats
@@ -150,15 +231,25 @@ PY
    git-ignored.
 6. **Venv is local and git-ignored.** A small `.venv-m2/` virtualenv is created
    at the project root with `torch`, `torchvision`, `ultralytics`, `onnx`,
-   `numpy`, `pillow`, `pyyaml`. It is listed in `.gitignore`
+   `onnxruntime` (added for the M3 smoke check), `numpy`, `pillow`, `pyyaml`.
+   It is listed in `.gitignore`
    (see `.venv-m2/` and `.yolo_config/` entries). `rm -rf .venv-m2` to free
    ~5 GB; recreate with `python3 -m venv .venv-m2 && source .venv-m2/bin/activate
-   && pip install torch torchvision ultralytics onnx numpy pillow pyyaml`.
+   && pip install torch torchvision ultralytics onnx onnxruntime numpy pillow pyyaml`.
+7. **M3 smoke check runs on CPU only.** `onnxruntime-gpu` is not installed in
+   `.venv-m2/`. The ORT smoke inference uses the `CPUExecutionProvider` on the
+   dev PC; this is intentional — the goal of M3 is to prove the exported graph
+   executes and produces sane detections on a saved validation image. The GPU
+   / TensorRT execution path belongs to M4 on the Jetson.
 
 ## Next milestones
 
-- **M3 (ONNX export):** `yolo export model=models/best.pt format=onnx imgsz=640`
-  → `models/best.onnx`.
+- **M3 (ONNX export):** COMPLETE — see the M3 artifact section above. Run
+  `yolo export model=models/best.pt format=onnx imgsz=640 opset=13
+  simplify=False dynamic=False` from the project root (with `.venv-m2` active)
+  to reproduce `models/best.onnx`. Validate with
+  `onnx.checker.check_model` and run `scripts/m3_smoke_inference.py` for an
+  ORT forward-pass sanity check on a saved validation image.
 - **M4 (TensorRT engine on Jetson):** convert `best.onnx` → `models/best.engine`
   with FP16 on the Orin Nano and run `scripts/test_inference.py` against
   `/depth_cam/rgb/image_raw` snapshots.

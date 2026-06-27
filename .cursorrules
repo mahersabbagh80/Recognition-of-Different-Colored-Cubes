@@ -79,18 +79,21 @@ source install/setup.bash
 
 ## Current Status
 
-**Active milestone:** M2 — Model weights ready (COMPLETE)
-**Active step:** M3 (ONNX export) — pending next card
-**Last completed step:** M2 fallback training produced `models/best.pt`; see LOGBOOK 2026-06-24 M2 training entry and `models/README.md` for the artifact, training command, per-class mAP, and known caveats. Class order: `blue_cube` (0), `green_cube` (1), `red_cube` (2).
-**Next step:** M3 ONNX export of `models/best.pt` on the dev PC:
+**Active milestone:** M3 — ONNX export (COMPLETE on dev PC)
+**Active step:** M4 (TensorRT engine on Jetson) — pending next card
+**Last completed step:** M3 ONNX export produced `models/best.onnx`; see LOGBOOK 2026-06-27 M3 entry and `models/README.md` for the artifact, export command, ONNX metadata, validation result, and ORT smoke-inference output. Class order: `blue_cube` (0), `green_cube` (1), `red_cube` (2).
+**Next step:** M4 TensorRT FP16 engine build on the Jetson (hardware-gated):
 
 ```bash
-source .venv-m2/bin/activate
-yolo export model=models/best.pt format=onnx imgsz=640
-# -> models/best.onnx
+# On the Jetson (after syncing the new models/best.onnx):
+trtexec --onnx=models/best.onnx --saveEngine=models/best.engine \
+    --fp16 --workspace=2048
+# -> models/best.engine, then run scripts/test_inference.py against
+# /depth_cam/rgb/image_raw snapshots.
 ```
 
-M1 hardware verification (camera topic + ML/runtime versions on the Jetson) is
-already complete and recorded in the 2026-06-23 M1 LOGBOOK entry.
+M2 fallback training produced `models/best.pt`; see LOGBOOK 2026-06-24 M2 training entry and `models/README.md` for the artifact, training command, per-class mAP, and known caveats.
+
+M1 hardware verification (camera topic + ML/runtime versions on the Jetson) is already complete and recorded in the 2026-06-23 M1 LOGBOOK entry.
 
 > Update this section each time a milestone or step is completed.

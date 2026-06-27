@@ -63,6 +63,95 @@ Copy the template block for each new entry. Replace `YYYY-MM-DD` with the sessio
 
 <!-- New entries go below this line, newest at the top. -->
 
+## 2026-06-27 — M3 ONNX export: produced models/best.onnx
+
+- **Milestone:** M3 — ONNX export (COMPLETE on dev PC; TensorRT engine build is M4)
+- **Goal**
+  - Export the M2-verified PyTorch weights `models/best.pt` to a static-shape ONNX
+    graph at `models/best.onnx`, validate it with `onnx.checker.check_model`,
+    and run a minimal ONNX Runtime smoke inference on a saved validation image
+    to prove the graph executes and produces sane detections.
+- **Work done**
+  - Verified the M2 artifact before re-export: `ls -la models/best.pt` reports
+    18,517,947 bytes; `sha256sum` matches the M2 handoff
+    (`bba833c25bd6cb51683b3b84dfb1160ed74e1c918a2d629087133ae2a5120b04`); the
+    `YOLO('models/best.pt')` load still reports `task == 'detect'` and the
+    canonical class names `{0: blue_cube, 1: green_cube, 2: red_cube}`.
+  - Installed `onnxruntime 1.27.0` (CPU providers only) into the existing
+    `.venv-m2/` virtualenv with `.venv-m2/bin/pip install onnxruntime`. No
+    system Python was modified. The dev PC currently has only the
+    `CPUExecutionProvider`; the `AzureExecutionProvider` is also visible but
+    is unused. GPU / TensorRT execution belongs to M4 on the Jetson.
+  - Ran the export from the project root with the venv active:
+
+    ```bash
+    yolo export model=models/best.pt format=onnx imgsz=640 \
+        opset=13 simplify=False dynamic=False
+    ```
+
+    Ultralytics 8.4.75 reported
+    `ONNX: export success ✅ 0.5s, saved as 'models/best.onnx' (35.0 MB)` and
+    `Export complete (0.8s)`. Input is static `(1, 3, 640, 640)` BCHW; output is
+    `(1, 7, 8400)` (5 box coords are dropped, no separate objectness channel —
+    the export already fuses the decode head, so columns 0..3 are xywh in 640×640
+    pixel space and columns 4..6 are sigmoid-activated class scores).
+  - Validated the graph with `onnx.checker.check_model` — OK. Reported
+    `ir_version: 7`, `producer: pytorch 2.6.0`, `opset_import: [('', 13)]`,
+    input `images: float32 [1, 3, 640, 640]`, output `output0: float32 [1, 7, 8400]`.
+    `file models/best.onnx` reports raw ONNX data (not a zip archive, unlike
+    the PyTorch checkpoint). Size on disk: **36,671,634 bytes (35.0 MB)**,
+    SHA-256 `326d5d62ebf7586f02a9fcacf36e1890f1db8b99953cfcef21dcee829637fa38`.
+  - Wrote `scripts/m3_smoke_inference.py` — a small ORT smoke check that
+    letterboxes a saved validation image, runs the ONNX forward pass on the CPU
+    provider, applies a per-class confidence filter, runs torchvision NMS per
+    class, and undoes the letterbox to report boxes in the original 640×640
+    image frame. **The script is not a substitute for M4 accuracy work** — it
+    only proves the exported graph executes end-to-end on real image pixels.
+- **Results**
+  - Export succeeded in 0.8 s. `best.onnx` passes `onnx.checker.check_model`.
+  - ORT smoke inference on
+    `data/roboflow_det/.../valid/images/Snimek-obrazovky-2023-08-16-213123_png.rf.270a8af923637b40e0f4da5bc6da7c2d.jpg`
+    returned **7 detections after NMS** with per-class confidences between
+    0.633 and 0.961, all labeled with one of `blue_cube` / `green_cube` /
+    `red_cube` and matching the `model.names` order from `best.pt`:
+
+    ```text
+      blue_cube  conf=0.659  xyxy=(397.5,422.6,461.7,602.4)
+     green_cube  conf=0.961  xyxy=( 96.2,371.2,185.1,625.9)
+     green_cube  conf=0.958  xyxy=(569.5,404.8,640.0,640.0)
+     green_cube  conf=0.726  xyxy=( 31.7,555.8, 94.4,640.0)
+       red_cube  conf=0.878  xyxy=(473.4,416.4,549.3,640.0)
+       red_cube  conf=0.696  xyxy=(269.0,388.7,337.0,640.0)
+       red_cube  conf=0.633  xyxy=(171.8,391.2,246.9,640.0)
+    ```
+  - **M3 verdict: COMPLETE on the dev PC.** The M4 card (TensorRT FP16 engine
+    build on the Jetson) is the next gate.
+- **Evidence**
+  - `models/best.onnx` — 35.0 MB, SHA-256
+    `326d5d62ebf7586f02a9fcacf36e1890f1db8b99953cfcef21dcee829637fa38`. Gitignored
+    along with everything else under `models/` per `.gitignore` (the export path
+    is reproducible from the command above).
+  - `scripts/m3_smoke_inference.py` — ORT + letterbox + NMS smoke check. Its
+    runtime output is captured in the Results block above.
+  - `models/README.md` — new "M3 artifact: `best.onnx`" section with size,
+    SHA-256, opset, IO shapes, exact export command, why each setting was
+    chosen, the `onnx.checker.check_model` snippet, and a usage example for
+    the smoke script. The "Verification commands" section also grew a
+    `sha256sum models/best.onnx` line and an ORT smoke command alongside the
+    existing `best.pt` checks. The "Next milestones" bullet for M3 was flipped
+    to "COMPLETE".
+  - `docs/milestones.md` — M3 checkboxes flipped to `[x]`, with a one-paragraph
+    pointer to the M3 artifact section and the LOGBOOK entry.
+- **Blockers**
+  - None for M3. `onnxruntime` was the only missing dep and was installed
+    locally inside `.venv-m2/`.
+- **Next**
+  - M4 (TensorRT FP16 engine on the Jetson): convert `models/best.onnx` →
+    `models/best.engine` with `trtexec` (bundled with the JetPack TensorRT
+    8.6.2 stack on the Orin Nano), then run `scripts/test_inference.py`
+    against `/depth_cam/rgb/image_raw` snapshots to confirm real-camera
+    accuracy. This is a separate hardware-gated card.
+
 ## 2026-06-24 — M2 fallback training: produced models/best.pt
 
 - **Milestone:** M2 — Model weights ready (COMPLETE)
