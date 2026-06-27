@@ -51,11 +51,32 @@ def _hms_ns(t) -> int:
     return int(t) // 1000  # rclpy time in ns
 
 
+def _detect_storage_id(bag_dir: Path) -> str:
+    """Sniff the bag's storage plugin from the bag's own metadata.yaml.
+
+    Falls back to sqlite3 (the M5 default on Jetson where the mcap plugin
+    is missing) when no mcap metadata is present.
+    """
+    metadata = bag_dir / "metadata.yaml"
+    if metadata.exists():
+        try:
+            for line in metadata.read_text().splitlines():
+                if line.strip().startswith("storage_identifier:"):
+                    return line.split(":", 1)[1].strip()
+        except Exception:
+            pass
+    # mcap bags always have a metadata.yaml; sqlite3 bags also have one,
+    # so the absence of metadata.yaml usually means we're pointing at a
+    # parent directory. Try to find the actual bag subdirectory.
+    return "sqlite3"
+
+
 def _open_bag(bag_dir: Path):
     if SequentialReader is None:
         raise SystemExit(f"rosbag2_py import failed: {_IMPORT_ERROR}\n"
                          "source /opt/ros/humble/setup.bash first.")
-    storage_options = StorageOptions(uri=str(bag_dir), storage_id="mcap")
+    storage_id = _detect_storage_id(bag_dir)
+    storage_options = StorageOptions(uri=str(bag_dir), storage_id=storage_id)
     converter_options = ConverterOptions(
         input_serialization_format="cdr",
         output_serialization_format="cdr",

@@ -63,6 +63,58 @@ Copy the template block for each new entry. Replace `YYYY-MM-DD` with the sessio
 
 <!-- New entries go below this line, newest at the top. -->
 
+## 2026-06-28 — M5 live retry: camera alive briefly, died again (card t_15db4d42, run 82)
+
+- **Context**: the previous implementer run was unblocked at ~03:24 HKT after
+  `start_app_node.service` was restarted (active since 03:33:26 HKT, 2 min
+  uptime when I SSH'd in). I resumed this card to capture the live bags.
+
+- **Work done**
+  - Confirmed `/depth_cam/rgb/image_raw` (14.1 Hz) and
+    `/depth_cam/depth/image_raw` (29.8 Hz) were publishing within ~5 min of
+    the bringup restart.
+  - Synced `scripts/m5_capture_bag.py` to the Jetson (was missing — only the
+    package had been rsynced previously).
+  - Patched `scripts/m5_analyze_bag.py` to sniff the bag storage plugin
+    from `metadata.yaml` instead of hardcoding `"mcap"` — the Jetson install
+    does not carry the `mcap` plugin and would have failed to open any
+    sqlite3 bag the script recorded.
+  - Launched `ros2 launch recognition_of_different_colored_cubes
+    detection.launch.py` on the Jetson (PID 40561). TensorRT engine
+    loaded, all 29 parameters declared, all 3 publishers registered
+    with the correct types (`vision_msgs/Detection2DArray`,
+    `interfaces/ObjectsInfo`, `sensor_msgs/Image`).
+
+- **What died again**
+  - After ~12 min of the bringup running, `topic info` on both `/depth_cam/*`
+    topics reported **Publisher count: 0**. `camera_container` PID was still
+    alive (25% CPU) but its components had unloaded. Same root cause as the
+    original blocker: Orbbec composable driver fails to recover without a
+    USB replug.
+  - `/cube_detections` publish rate remained 0 Hz throughout — the
+    `ApproximateTimeSynchronizer` callback never fired.
+
+- **What I did NOT do** (per .cursorrules)
+  - Did NOT `sudo systemctl restart start_app_node.service` — that's the
+    documented vendor-side recovery and requires explicit human approval.
+  - Did NOT launch `peripherals/depth_camera.launch.py` in a separate
+    process — that would create a second `camera_container` in
+    `/depth_cam/` namespace and conflict with the existing one.
+  - Did NOT modify any vendor source.
+  - Did NOT touch the model artifacts.
+  - Cleanly killed the M5 node process (PID 40561) before blocking.
+
+- **Evidence**
+  - `evaluation/m5_live/report.md` §8 — new section with the live hz
+    measurements and the dead-again timeline.
+  - No new bags captured — bag capture is downstream of the camera being
+    alive, which it was not for long enough to record a clean 30 s.
+
+- **Blocker**: unchanged. Vendor depth camera keeps stalling after
+  `start_app_node.service` restart; the documented recovery is USB replug
+  + `sudo systemctl restart start_app_node.service` (single command,
+  requires physical access).
+
 ## 2026-06-28 — M5 ROS 2 node shipped + Jetson smoke (card t_15db4d42)
 
 - **Milestone:** M5 — ROS 2 node live

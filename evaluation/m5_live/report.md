@@ -26,7 +26,7 @@ parameters.
 | Package builds clean on the Jetson | ✅ DONE | `colcon build` finished in 4.54s, exit 0 |
 | TensorRT FP16 engine loads on the Jetson | ✅ DONE | live log line: `TensorRT engine loaded: in=images (1, 3, 640, 640) out=output0 (1, 7, 8400)` |
 | All M4c1 v2-only params threaded through to runtime | ✅ DONE | log shows `{raised_mm: 30, min_raised_frac: 0.20, max_planar_top_stddev_mm: 30, max_ratio: 1.2, inset_px: 1, annulus_outer_px: 15}` |
-| Live RGB+depth sync + 30s cubes bag | ⏸ BLOCKED | vendor depth camera is not publishing (see §3) |
+| Live RGB+depth sync + 30s cubes bag | ⏸ BLOCKED | vendor depth camera stalled again (see §3) |
 | Live 30s empty bag (KEEP=0 at conf=0.50) | ⏸ BLOCKED | same |
 
 The full M5 acceptance bar (criteria 2–5 in the card body) requires Maher to
@@ -342,3 +342,71 @@ on the dev PC before pushing to the Jetson for live.
 
 The M5 code itself is ready; §3 is the only thing between this card and a clean
 completion.
+
+---
+
+## 8. Update 2026-06-28 03:43 HKT — vendor camera came alive briefly, died again
+
+After the previous implementer run was unblocked, `start_app_node.service` was
+restarted (Active: `since Sun 2026-06-28 03:33:26 HKT`, ~2 min uptime). I ran
+the live M5 node on the Jetson end-to-end:
+
+### 8.1 What worked live
+
+- `ros2 launch recognition_of_different_colored_cubes detection.launch.py`
+  booted cleanly on the Jetson (PID 40561).
+- TensorRT engine loaded: `in=images (1, 3, 640, 640) out=output0 (1, 7, 8400)`.
+- All 29 rclpy parameters declared + dumped at startup with M4c1 v2-only
+  defaults (`raised_mm=30`, `min_raised_frac=0.20`, `max_planar_top_stddev_mm=30`,
+  `max_ratio=1.2`, `inset_px=1`, `annulus_outer_px=15`).
+- `ros2 node info /cube_detection_node` showed **all 3 publishers registered**
+  correctly with the right types:
+  - `/cube_detections` → `vision_msgs/msg/Detection2DArray`
+  - `/cube_detections/vendor_objects` → `interfaces/msg/ObjectsInfo`
+    (the vendor `interfaces` package is overlaid via the systemd env, even
+    though `jetson_ws/install` doesn't carry it on its own)
+  - `/cube_detections/debug_image` → `sensor_msgs/msg/Image`
+
+### 8.2 What died again — same root cause
+
+Initial probe (within ~5 min of bringup restart):
+```
+/depth_cam/rgb/image_raw:  average rate: 14.102 Hz  (window: 15)
+/depth_cam/depth/image_raw: average rate: 29.750 Hz  (window: 93)
+```
+Both topics alive. RGB was at half rate (probably Orbbec auto-exposure settling).
+
+After ~12 min of the bringup running:
+```
+topic info /depth_cam/rgb/image_raw:
+  Publisher count: 0
+  Subscription count: 1   # only /cube_detection_node
+topic info /depth_cam/depth/image_raw:
+  Publisher count: 0
+```
+**Camera component died again**, same symptom as the original blocker (§3):
+`camera_container` PID 39185 still running but no longer registered as a ROS
+node, no components loaded.
+
+`/cube_detections` publish rate remained 0 Hz throughout — the
+`ApproximateTimeSynchronizer` callback never fired because no RGB/depth frames
+were reaching the subscribers.
+
+### 8.3 Recovery attempted without modifying vendor
+
+Per .cursorrules, I cannot `sudo systemctl restart start_app_node.service` —
+that's the documented vendor-side recovery. The alternative is to launch the
+vendor's existing `peripherals/depth_camera.launch.py` in a separate process,
+but that creates a second `camera_container` in `/depth_cam/` namespace
+which would conflict with the existing one. **Left for Maher to decide**.
+
+The M5 node process was cleanly killed after the test (PID 40561 killed,
+launch wrapper 40559 cleaned up).
+
+### 8.4 New M5 code change
+
+`scripts/m5_analyze_bag.py` — added `_detect_storage_id()` to sniff the bag's
+storage plugin from `metadata.yaml` instead of hardcoding `"mcap"`. The Jetson
+vendor install doesn't carry the `rosbag2_storage_mcap` plugin (sqlite3
+default), so the analyzer previously would have failed to open any bag
+recorded via `m5_capture_bag.py --format bag`.
