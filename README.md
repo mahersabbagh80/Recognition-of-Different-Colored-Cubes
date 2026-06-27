@@ -52,11 +52,14 @@ _TBD — add after project completion._
 
 ### Demo
 
-<!-- Optional TODO: add assets/results/detection_screenshot.png and uncomment the line below -->
+Annotated debug overlays from the 2026-06-28 live bags live at
+[`evaluation/m5_live/empty_2026-06-28/preview/debug_overlay.png`](evaluation/m5_live/empty_2026-06-28/preview/debug_overlay.png)
+(empty scene, HUD `keep=0` — no false positives on the bare JetRover floor)
+and [`evaluation/m5_live/cubes_2026-06-28/peek_debug_live.png`](evaluation/m5_live/cubes_2026-06-28/peek_debug_live.png)
+(three cubes visible in the RGB frame, HUD `keep=0` at conf=0.50 — see the
+model-accuracy caveat in [Results](#results) below).
 
-<!-- ![Live detection with bounding boxes](assets/results/detection_screenshot.png) -->
-
-_Screenshot or clip of live detections — add here after Milestone 5/6._
+_50-frame evaluation screenshots and clips will land here after Milestone 6._
 
 _Evaluation protocol and per-class breakdown: [`docs/evaluation.md`](docs/evaluation.md)_
 
@@ -77,20 +80,17 @@ Full dependencies and model artifacts → [`docs/technical-stack.md`](docs/techn
 
 ## Quick Start
 
-> **Note:** Inference is not live yet. Below: how to build the package today, and the intended workflow on the Jetson once the model and node are implemented.
+The detection node is live and validated on the Jetson (M5 ships — see [Results](#results) below for the 2026-06-28 live-bag numbers). The geometry filter is on by default; flip `filter_enabled` to `false` to bypass it for debugging.
 
 ### Build the package (dev machine — works now)
 
 ```zsh
 cd ~/maher_ws
-colcon build --packages-select recognition_of_different_colored_cubes
+colcon build --packages-select recognition_of_different_colored_cubes --symlink-install
 source install/setup.bash
-ros2 run recognition_of_different_colored_cubes cube_detection_node
 ```
 
-Expected: node logs a scaffold initialization message. Exits cleanly on Ctrl+C.
-
-### Run on the Jetson (after model + node are implemented)
+### Run on the Jetson (live)
 
 ```zsh
 ssh ubuntu@192.168.2.138   # DHCP — update if changed
@@ -127,29 +127,66 @@ View detections: `ros2 run rqt_image_view rqt_image_view` → topic `/cube_detec
 
 #### M5 runtime parameters (tunable at runtime)
 
-All of these are declared via `rclpy` and can be inspected or changed with `ros2 param get / cube_detection_node <name>` / `ros2 param set /cube_detection_node <name> <value>`. Defaults live in [`config/params.yaml`](config/params.yaml).
+All of these are declared via `rclpy` and can be inspected or changed at runtime:
+
+```zsh
+ros2 param get /cube_detection_node confidence_threshold
+ros2 param set /cube_detection_node confidence_threshold 0.25   # takes effect on the next frame
+ros2 param set /cube_detection_node filter_enabled false       # bypass geometry filter entirely
+```
+
+Defaults live in [`config/params.yaml`](config/params.yaml).
+
+**Topics**
 
 | Parameter | Default | Purpose |
 |---|---|---|
-| `image_topic` | `/depth_cam/rgb/image_raw` | Vendor RGB input |
-| `depth_topic` | `/depth_cam/depth/image_raw` | Vendor color-registered depth (uint16 mm) |
-| `rgb_camera_info_topic` | `/depth_cam/rgb/camera_info` | Source of `fx/fy/cx/cy` (overridden at startup) |
-| `detections_topic` | `/cube_detections` | `vision_msgs/Detection2DArray` |
-| `vendor_objects_topic` | `/cube_detections/vendor_objects` | `interfaces/ObjectsInfo` |
-| `debug_image_topic` | `/cube_detections/debug_image` | Annotated overlay |
-| `model_path` | `""` (auto → `<pkg>/models/best.engine`) | TensorRT FP16 engine |
-| `confidence_threshold` | `0.50` | M4c1 deployment target; below this is dropped before geometry |
-| `iou_threshold` | `0.45` | NMS IoU |
-| `imgsz` | `640` | Letterbox square |
-| `sync_slop_sec` | `0.05` | RGB+depth sync tolerance (50 ms median target) |
-| `filter_enabled` | `true` | Master switch for the M4c1 geometry filter |
-| `filter_raised_mm` | `30` | How many mm above the annulus floor counts as "raised" |
-| `filter_min_raised_frac` | `0.20` | Minimum fraction of raised in-box pixels |
-| `filter_max_ratio` | `1.2` | Max 3D extent long/short ratio |
-| `filter_max_planar_top_stddev_mm` | `30` | Max stddev of raised subset depth (flat top test) |
-| `filter_inset_px` | `1` | Pixels inset from the YOLO bbox before sampling |
-| `filter_annulus_outer_px` | `15` | Annulus outer extent (floor reference) |
-| `latency_log_every` | `100` | Frames between p50/p95 latency log lines |
+| `image_topic` | `/depth_cam/rgb/image_raw` | Vendor RGB input the node YOLO-infers on |
+| `depth_topic` | `/depth_cam/depth/image_raw` | Vendor color-registered depth (uint16 mm) the geometry filter samples |
+| `rgb_camera_info_topic` | `/depth_cam/rgb/camera_info` | Source of `fx/fy/cx/cy` (overridden at startup from the live message) |
+| `detections_topic` | `/cube_detections` | Published `vision_msgs/Detection2DArray` — kept detections only |
+| `vendor_objects_topic` | `/cube_detections/vendor_objects` | Published `interfaces/ObjectsInfo` — vendor-compatible output |
+| `debug_image_topic` | `/cube_detections/debug_image` | Published `sensor_msgs/Image` (bgr8) — annotated overlay for `rqt_image_view` |
+
+**Model + inference**
+
+| Parameter | Default | Purpose |
+|---|---|---|
+| `model_path` | `""` (auto → `<pkg>/models/best.engine`) | TensorRT FP16 engine. Empty means use the bundled engine from the package's `models/` directory. |
+| `confidence_threshold` | `0.50` | **M4c1 deployment target.** YOLO candidates below this are dropped before geometry is even applied. |
+| `iou_threshold` | `0.45` | NMS IoU threshold for duplicate suppression on the raw YOLO output. |
+| `imgsz` | `640` | Square letterbox size the engine expects. |
+
+**RGB + depth sync**
+
+| Parameter | Default | Purpose |
+|---|---|---|
+| `sync_slop_sec` | `0.05` | Maximum timestamp gap between an RGB and depth message for the `ApproximateTimeSynchronizer` to pair them (50 ms — the M5 median target). |
+| `sync_queue_size` | `10` | Pairwise queue depth for the synchronizer. |
+
+**Geometry post-filter (M4c1 v2-only)**
+
+The filter is a pure-numpy helper ([`recognition_of_different_colored_cubes/geometry_filter.py`](recognition_of_different_colored_cubes/geometry_filter.py)) that decides KEEP / REJECT per YOLO candidate using the synchronised depth image. It was validated against 622 input detections across 5 testable distractors + the empty scene with **0 kept** (M4c1 V2 PASS replicated live on the Jetson 2026-06-28, see [`evaluation/m4c_geometry_filter/report.md`](evaluation/m4c_geometry_filter/report.md)).
+
+| Parameter | Default | Plain-language meaning |
+|---|---|---|
+| `filter_enabled` | `true` | Master switch. Set to `false` to publish every YOLO candidate ≥ `confidence_threshold` with no geometry check. |
+| `filter_n_min` | `30` | Minimum number of valid depth pixels inside the YOLO bbox before the filter will even try to decide — below this, the detection is kept with a `low_depth_quality` reason rather than silently rejected. |
+| `filter_max_depth_mm` | `4000` | Anything farther than 4 m is treated as invalid depth (kinect noise / dropouts) and excluded from the stats. |
+| `filter_inset_px` | `1` | Number of pixels to shrink the YOLO bbox inward before sampling depth. Prevents the annulus from leaking in and the in-box stats from picking up edge pixels of the cube's slanted sides. |
+| `filter_annulus_outer_px` | `15` | Width (in pixels) of the rectangular ring around the YOLO bbox that the filter uses as the **floor reference** (median depth of this ring becomes "ground level" for the raised test). Wider → more robust against local floor texture, narrower → tighter floor. |
+| `filter_raised_mm` | `30` | "Raised" = an in-box pixel that is at least this many mm above the annulus-floor median. A cube on the floor has most of its top pixels raised; floor texture has none. |
+| `filter_min_raised_frac` | `0.20` | Minimum fraction of in-box depth pixels that must be raised for the detection to even be considered a 3D object. Below this, REJECT with reason `flat` (this is what catches blue cardboard, decals, wood-grain false positives). |
+| `filter_max_ratio` | `1.2` | Maximum allowed ratio of the longest to the shortest side of the raised subset's 3D bounding box. A cube gives ≈1.0; a tall bottle / bag gives >1.5. Above this, REJECT with reason `aspect`. |
+| `filter_max_planar_top_stddev_mm` | `30` | Maximum allowed standard deviation of the depth values inside the raised subset (the "top" of the object). A flat cube top has ~5 mm stddev; a ball or curved package has >>30 mm. Above this, REJECT with reason `no_planar_top`. |
+
+**Diagnostics**
+
+| Parameter | Default | Purpose |
+|---|---|---|
+| `latency_log_every` | `100` | Frames between p50/p95 latency log lines (total + yolo + filter). |
+| `publish_vendor_objects` | `true` | Toggle the vendor-compatible output. |
+| `publish_debug_image` | `true` | Toggle the annotated debug overlay. |
 
 Full reasoning behind every default and the V2/V3/V4 evidence gate → [`docs/milestones.md`](docs/milestones.md) M5 + [`evaluation/m4c_geometry_filter/report.md`](evaluation/m4c_geometry_filter/report.md).
 
@@ -169,7 +206,7 @@ Full ordered setup steps → [`docs/milestones.md`](docs/milestones.md)
 
 | Path | Purpose |
 |------|---------|
-| `recognition_of_different_colored_cubes/` | ROS 2 Python package — `cube_detection_node.py` |
+| `recognition_of_different_colored_cubes/` | ROS 2 Python package — `cube_detection_node.py` (live node) + `geometry_filter.py` (M4c1 KEEP/REJECT helper) |
 | `launch/` | `detection.launch.py` |
 | `config/` | Node parameters (`params.yaml`) |
 | `scripts/` | ONNX export, TensorRT conversion, standalone inference test |

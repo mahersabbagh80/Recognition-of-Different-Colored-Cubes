@@ -1,0 +1,535 @@
+{
+  "onnx": "models/best.onnx",
+  "rgb_dir": "evaluation/camera_samples/empty_depth_2026-06-27",
+  "glob": "*_rgb.jpg",
+  "conf_threshold": 0.5,
+  "iou_threshold": 0.45,
+  "num_frames": 30,
+  "yolo_latency_ms": {
+    "min": 31.822178018046543,
+    "median": 33.7714154884452,
+    "mean": 33.96836803197706,
+    "max": 36.329925002064556
+  },
+  "frames": [
+    {
+      "filename": "empty_0001_rgb.jpg",
+      "width": 640,
+      "height": 360,
+      "yolo_ms": 31.822178018046543,
+      "num_detections": 0,
+      "detections": []
+    },
+    {
+      "filename": "empty_0002_rgb.jpg",
+      "width": 640,
+      "height": 360,
+      "yolo_ms": 34.951641981024295,
+      "num_detections": 0,
+      "detections": []
+    },
+    {
+      "filename": "empty_0003_rgb.jpg",
+      "width": 640,
+      "height": 360,
+      "yolo_ms": 33.58413398382254,
+      "num_detections": 1,
+      "detections": [
+        {
+          "class": "blue_cube",
+          "confidence": 0.7781906723976135,
+          "bbox_xyxy": [
+            562.6145629882812,
+            91.22219848632812,
+            638.8993530273438,
+            154.73611450195312
+          ]
+        }
+      ]
+    },
+    {
+      "filename": "empty_0004_rgb.jpg",
+      "width": 640,
+      "height": 360,
+      "yolo_ms": 33.58969002147205,
+      "num_detections": 2,
+      "detections": [
+        {
+          "class": "blue_cube",
+          "confidence": 0.6246216297149658,
+          "bbox_xyxy": [
+            572.5548095703125,
+            93.61077880859375,
+            638.815185546875,
+            155.27874755859375
+          ]
+        },
+        {
+          "class": "blue_cube",
+          "confidence": 0.6530215740203857,
+          "bbox_xyxy": [
+            615.8428955078125,
+            91.0587158203125,
+            639.0,
+            196.19781494140625
+          ]
+        }
+      ]
+    },
+    {
+      "filename": "empty_0005_rgb.jpg",
+      "width": 640,
+      "height": 360,
+      "yolo_ms": 33.90128898900002,
+      "num_detections": 2,
+      "detections": [
+        {
+          "class": "blue_cube",
+          "confidence": 0.533167839050293,
+          "bbox_xyxy": [
+            569.67236328125,
+            48.899749755859375,
+            639.0,
+            154.71560668945312
+          ]
+        },
+        {
+          "class": "blue_cube",
+          "confidence": 0.6884044408798218,
+          "bbox_xyxy": [
+            617.437255859375,
+            38.303009033203125,
+            639.0,
+            212.37173461914062
+          ]
+        }
+      ]
+    },
+    {
+      "filename": "empty_0006_rgb.jpg",
+      "width": 640,
+      "height": 360,
+      "yolo_ms": 34.87337997648865,
+      "num_detections": 1,
+      "detections": [
+        {
+          "class": "blue_cube",
+          "confidence": 0.6795864701271057,
+          "bbox_xyxy": [
+            570.6026000976562,
+            92.37640380859375,
+            638.3358764648438,
+            154.81280517578125
+          ]
+        }
+      ]
+    },
+    {
+      "filename": "empty_0007_rgb.jpg",
+      "width": 640,
+      "height": 360,
+      "yolo_ms": 36.329925002064556,
+      "num_detections": 2,
+      "detections": [
+        {
+          "class": "blue_cube",
+          "confidence": 0.5335268378257751,
+          "bbox_xyxy": [
+            618.20703125,
+            14.90777587890625,
+            639.0,
+            201.20822143554688
+          ]
+        },
+        {
+          "class": "blue_cube",
+          "confidence": 0.6235265135765076,
+          "bbox_xyxy": [
+            565.5123291015625,
+            89.20713806152344,
+            638.6795654296875,
+            155.5506591796875
+          ]
+        }
+      ]
+    },
+    {
+      "filename": "empty_0008_rgb.jpg",
+      "width": 640,
+      "height": 360,
+      "yolo_ms": 34.03096098918468,
+      "num_detections": 0,
+      "detections": []
+    },
+    {
+      "filename": "empty_0009_rgb.jpg",
+      "width": 640,
+      "height": 360,
+      "yolo_ms": 34.76516401860863,
+      "num_detections": 0,
+      "detections": []
+    },
+    {
+      "filename": "empty_0010_rgb.jpg",
+      "width": 640,
+      "height": 360,
+      "yolo_ms": 34.48420998756774,
+      "num_detections": 2,
+      "detections": [
+        {
+          "class": "blue_cube",
+          "confidence": 0.8674372434616089,
+          "bbox_xyxy": [
+            560.4459838867188,
+            70.2979736328125,
+            639.0,
+            155.714111328125
+          ]
+        },
+        {
+          "class": "blue_cube",
+          "confidence": 0.5175325274467468,
+          "bbox_xyxy": [
+            614.6867065429688,
+            120.36090087890625,
+            639.0,
+            269.46063232421875
+          ]
+        }
+      ]
+    },
+    {
+      "filename": "empty_0011_rgb.jpg",
+      "width": 640,
+      "height": 360,
+      "yolo_ms": 34.984925005119294,
+      "num_detections": 1,
+      "detections": [
+        {
+          "class": "blue_cube",
+          "confidence": 0.8620572090148926,
+          "bbox_xyxy": [
+            609.6864013671875,
+            18.319244384765625,
+            639.0,
+            198.892578125
+          ]
+        }
+      ]
+    },
+    {
+      "filename": "empty_0012_rgb.jpg",
+      "width": 640,
+      "height": 360,
+      "yolo_ms": 34.01699400274083,
+      "num_detections": 1,
+      "detections": [
+        {
+          "class": "blue_cube",
+          "confidence": 0.5445271730422974,
+          "bbox_xyxy": [
+            539.8818969726562,
+            40.864593505859375,
+            639.0,
+            153.94049072265625
+          ]
+        }
+      ]
+    },
+    {
+      "filename": "empty_0013_rgb.jpg",
+      "width": 640,
+      "height": 360,
+      "yolo_ms": 34.44801497971639,
+      "num_detections": 1,
+      "detections": [
+        {
+          "class": "blue_cube",
+          "confidence": 0.6390467882156372,
+          "bbox_xyxy": [
+            572.0072021484375,
+            45.735626220703125,
+            639.0,
+            154.40274047851562
+          ]
+        }
+      ]
+    },
+    {
+      "filename": "empty_0014_rgb.jpg",
+      "width": 640,
+      "height": 360,
+      "yolo_ms": 33.92080499907024,
+      "num_detections": 1,
+      "detections": [
+        {
+          "class": "blue_cube",
+          "confidence": 0.609323263168335,
+          "bbox_xyxy": [
+            619.7427978515625,
+            15.1593017578125,
+            639.0,
+            200.7530517578125
+          ]
+        }
+      ]
+    },
+    {
+      "filename": "empty_0015_rgb.jpg",
+      "width": 640,
+      "height": 360,
+      "yolo_ms": 33.71023799991235,
+      "num_detections": 1,
+      "detections": [
+        {
+          "class": "blue_cube",
+          "confidence": 0.6667981147766113,
+          "bbox_xyxy": [
+            586.3031005859375,
+            17.4163818359375,
+            639.0,
+            197.81704711914062
+          ]
+        }
+      ]
+    },
+    {
+      "filename": "empty_0016_rgb.jpg",
+      "width": 640,
+      "height": 360,
+      "yolo_ms": 33.920557994861156,
+      "num_detections": 0,
+      "detections": []
+    },
+    {
+      "filename": "empty_0017_rgb.jpg",
+      "width": 640,
+      "height": 360,
+      "yolo_ms": 33.39620601036586,
+      "num_detections": 0,
+      "detections": []
+    },
+    {
+      "filename": "empty_0018_rgb.jpg",
+      "width": 640,
+      "height": 360,
+      "yolo_ms": 34.30346000823192,
+      "num_detections": 0,
+      "detections": []
+    },
+    {
+      "filename": "empty_0019_rgb.jpg",
+      "width": 640,
+      "height": 360,
+      "yolo_ms": 33.63983999588527,
+      "num_detections": 1,
+      "detections": [
+        {
+          "class": "blue_cube",
+          "confidence": 0.6370831727981567,
+          "bbox_xyxy": [
+            575.6197509765625,
+            94.18667602539062,
+            638.3507080078125,
+            155.96975708007812
+          ]
+        }
+      ]
+    },
+    {
+      "filename": "empty_0020_rgb.jpg",
+      "width": 640,
+      "height": 360,
+      "yolo_ms": 34.27102402201854,
+      "num_detections": 0,
+      "detections": []
+    },
+    {
+      "filename": "empty_0021_rgb.jpg",
+      "width": 640,
+      "height": 360,
+      "yolo_ms": 33.60800302471034,
+      "num_detections": 1,
+      "detections": [
+        {
+          "class": "blue_cube",
+          "confidence": 0.7309505343437195,
+          "bbox_xyxy": [
+            582.771484375,
+            29.79327392578125,
+            639.0,
+            157.515869140625
+          ]
+        }
+      ]
+    },
+    {
+      "filename": "empty_0022_rgb.jpg",
+      "width": 640,
+      "height": 360,
+      "yolo_ms": 33.68493798188865,
+      "num_detections": 2,
+      "detections": [
+        {
+          "class": "blue_cube",
+          "confidence": 0.6949884295463562,
+          "bbox_xyxy": [
+            575.9365234375,
+            93.07475280761719,
+            638.70751953125,
+            155.81597900390625
+          ]
+        },
+        {
+          "class": "blue_cube",
+          "confidence": 0.64637690782547,
+          "bbox_xyxy": [
+            618.0850219726562,
+            56.8726806640625,
+            639.0,
+            186.68792724609375
+          ]
+        }
+      ]
+    },
+    {
+      "filename": "empty_0023_rgb.jpg",
+      "width": 640,
+      "height": 360,
+      "yolo_ms": 33.355090010445565,
+      "num_detections": 0,
+      "detections": []
+    },
+    {
+      "filename": "empty_0024_rgb.jpg",
+      "width": 640,
+      "height": 360,
+      "yolo_ms": 33.683512971038,
+      "num_detections": 2,
+      "detections": [
+        {
+          "class": "blue_cube",
+          "confidence": 0.5996211171150208,
+          "bbox_xyxy": [
+            613.5157470703125,
+            34.90216064453125,
+            639.0,
+            195.90777587890625
+          ]
+        },
+        {
+          "class": "blue_cube",
+          "confidence": 0.8010420799255371,
+          "bbox_xyxy": [
+            537.522216796875,
+            90.53692626953125,
+            639.0,
+            155.56298828125
+          ]
+        }
+      ]
+    },
+    {
+      "filename": "empty_0025_rgb.jpg",
+      "width": 640,
+      "height": 360,
+      "yolo_ms": 33.57864799909294,
+      "num_detections": 0,
+      "detections": []
+    },
+    {
+      "filename": "empty_0026_rgb.jpg",
+      "width": 640,
+      "height": 360,
+      "yolo_ms": 33.63367400015704,
+      "num_detections": 1,
+      "detections": [
+        {
+          "class": "blue_cube",
+          "confidence": 0.8424123525619507,
+          "bbox_xyxy": [
+            616.1414794921875,
+            13.4918212890625,
+            639.0,
+            203.05157470703125
+          ]
+        }
+      ]
+    },
+    {
+      "filename": "empty_0027_rgb.jpg",
+      "width": 640,
+      "height": 360,
+      "yolo_ms": 33.614529005717486,
+      "num_detections": 1,
+      "detections": [
+        {
+          "class": "blue_cube",
+          "confidence": 0.5382446050643921,
+          "bbox_xyxy": [
+            614.2974853515625,
+            122.869384765625,
+            639.0,
+            267.02978515625
+          ]
+        }
+      ]
+    },
+    {
+      "filename": "empty_0028_rgb.jpg",
+      "width": 640,
+      "height": 360,
+      "yolo_ms": 33.50587000022642,
+      "num_detections": 1,
+      "detections": [
+        {
+          "class": "blue_cube",
+          "confidence": 0.6688024997711182,
+          "bbox_xyxy": [
+            614.44482421875,
+            124.9273681640625,
+            639.0,
+            194.6746826171875
+          ]
+        }
+      ]
+    },
+    {
+      "filename": "empty_0029_rgb.jpg",
+      "width": 640,
+      "height": 360,
+      "yolo_ms": 33.6095450038556,
+      "num_detections": 2,
+      "detections": [
+        {
+          "class": "blue_cube",
+          "confidence": 0.5217617154121399,
+          "bbox_xyxy": [
+            569.606201171875,
+            94.46958923339844,
+            638.179931640625,
+            154.376708984375
+          ]
+        },
+        {
+          "class": "blue_cube",
+          "confidence": 0.5220561027526855,
+          "bbox_xyxy": [
+            615.6305541992188,
+            114.45150756835938,
+            639.0,
+            190.68136596679688
+          ]
+        }
+      ]
+    },
+    {
+      "filename": "empty_0030_rgb.jpg",
+      "width": 640,
+      "height": 360,
+      "yolo_ms": 33.83259297697805,
+      "num_detections": 0,
+      "detections": []
+    }
+  ]
+}

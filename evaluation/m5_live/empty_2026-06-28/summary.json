@@ -1,0 +1,20 @@
+{
+  "label": "empty",
+  "bag_dir": "evaluation/m5_live/empty_2026-06-28",
+  "duration_sec": 27.811428645,
+  "topics_seen": [
+    "/cube_detections",
+    "/cube_detections/debug_image",
+    "/cube_detections/vendor_objects",
+    "/depth_cam/depth/image_raw",
+    "/depth_cam/rgb/image_raw"
+  ],
+  "detections_topic": "/cube_detections",
+  "num_detection_messages": 439,
+  "num_arrays_with_keeps": 0,
+  "total_kept": 0,
+  "per_class_kept": {},
+  "publish_rate_hz": 15.784877706342655,
+  "rgb_frames_seen": 669,
+  "rgb_mean_hz": 25.078061142101472
+}

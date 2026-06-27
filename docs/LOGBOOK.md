@@ -63,11 +63,244 @@ Copy the template block for each new entry. Replace `YYYY-MM-DD` with the sessio
 
 <!-- New entries go below this line, newest at the top. -->
 
+## 2026-06-28 — M5 ship + live evidence (cards t_15db4d42 / t_bb889759 / t_219505c6 / t_48167e72 / t_f7c27278)
+
+- **Milestone:** M5 — ROS 2 node live
+- **Goal**
+  - Ship the M5 ROS 2 node with the M4c1 geometry post-filter + conf=0.50
+    baked into the runtime, capture two live 30 s bags (empty + cubes) on
+    the Jetson, and reflect the resulting numbers across README,
+    `.cursorrules`, `docs/milestones.md`, and `evaluation/m5_live/report.md`.
+
+- **M5 acceptance verdict (per `evaluation/m5_live/report.md`)**
+  - §4.2 empty-scene KEEP=0 at conf ≥ 0.50 — **PASS** (M5b KEEP=0/439)
+  - §4.1 cubes-in-frame KEEP ≥ 3 across 3 classes — **FAIL** (M5c 0/414)
+  - §4.1 publish rate ≥ 25 Hz — **FAIL** (15.5–15.8 Hz, TensorRT FP16 + sync ceiling)
+  - §4.1 latency p95 ≤ 50 ms — **FAIL** (~61 ms total per-frame, yolo floor is 26.6 ms)
+  - README launch instructions + parameter table match the live node — **PASS**
+  - **Overall: PARTIAL** (implementation complete; acceptance gate pending §11.7 decision)
+
+- **Why geometry filter + conf=0.50, not retraining (the chosen M5 mitigation)**
+  - M4c1 evidence gate (5 testable raised-3D colored distractors + empty
+    scene, synchronised RGB+depth, 622 input detections) showed the
+    v2-only geometry filter
+    (`raised_mm=30, min_raised_frac=0.20, max_planar_top_stddev_mm=30,
+    max_ratio=1.2, inset_px=1, annulus_outer_px=15`) suppresses 100 % of
+    named M4b flat-color distractors and the empty scene
+    ([`evaluation/m4c_geometry_filter/report.md`](../evaluation/m4c_geometry_filter/report.md)).
+  - That closed the V2 false-positive problem without a hard-negative
+    fine-tune. The fine-tune card (`t_13b658c2`, closed 2026-06-27 as
+    no-longer-needed) would have produced a model that fires less often
+    on the very floor/wall patterns the geometry filter is now rejecting
+    cleanly — redundant work, higher latency, worse portability.
+  - Geometry filter is the **necessary** part of the M5 pre-ship gate;
+    fine-tune is the **conditional** part if M5c leaves residual FPs on a
+    tight real-cube bbox or on V3 distractors Maher hasn't physically
+    arranged yet.
+
+- **What shipped (M5 implementation)**
+  - `recognition_of_different_colored_cubes/cube_detection_node.py` (641
+    lines) — TensorRT FP16 + M4c1 geometry filter + RGB+depth sync via
+    `message_filters.ApproximateTimeSynchronizer`. Single binding
+    allocation, shared `cuda.Stream`, `execute_async_v2` +
+    `stream.synchronize` (the pattern proven in `scripts/test_inference.py`).
+  - `recognition_of_different_colored_cubes/geometry_filter.py` — clean
+    copy of the M4c1 `compute_geometry` + `decide` as a proper package
+    module (replaces the sys.path hack from the first commit; landed in
+    commit `cf1cf7e` after a `ModuleNotFoundError` on Jetson colcon install).
+  - 29 rclpy-declared parameters covering topics, model, conf/iou/imgsz,
+    sync slop, all 8 filter params, fx/fy/cx/cy, publish toggles, and
+    `latency_log_every`. Camera intrinsics overridden at startup from
+    `/depth_cam/rgb/camera_info`.
+  - `config/params.yaml` — M4c1 defaults: `confidence_threshold: 0.50`,
+    `raised_mm: 30`, `min_raised_frac: 0.20`, `max_planar_top_stddev_mm:
+    30`, `max_ratio: 1.2`, `inset_px: 1`, `annulus_outer_px: 15`.
+  - `package.xml` — added `message_filters`, `numpy`, `PIL`, `torch`,
+    `torchvision` exec_depends. TensorRT + pycuda are Jetson-only and
+    intentionally NOT in the apt rosdep set (commented).
+  - Three new scripts under `scripts/m5_*.py`: `m5_capture_bag.py` (Jetson
+    `ros2 bag record` wrapper, default format=sqlite3 because the mcap
+    plugin is not installed), `m5_analyze_bag.py` (per-class kept +
+    publish rate + RGB Hz), `m5_offline_replay.py` (parity check before
+    live test), `m5_parse_latency.py` (p50/p95 from node stdout).
+
+- **Live evidence (Jetson, TensorRT FP16, conf=0.50, filter on)**
+  - **M5b — empty-scene bag (2026-06-28 04:04 HKT)**
+    `evaluation/m5_live/empty_2026-06-28/m5_bag_empty_2026-06-28_040333_0.db3`
+    (1.13 GB, sqlite3, SHA-256
+    `b0ceee5e5cd790b1835b9e48bd1f24c12490d771bf95c00c66c7a3b6718ea05f`,
+    27.81 s duration).
+    - KEEP = **0 / 439** at conf ≥ 0.50 (M4c1 V4 PASS replicated live)
+    - Per-class kept: `{}`
+    - Publish rate 15.78 Hz; upstream RGB Hz 25.08
+    - total ms p50=60.15, p95=61.0; yolo ms p50=26.6, p95=26.6;
+      filter ms p50=1.53, max=1.63
+    - Rejects over 1000 sync'd frames: flat=991, aspect=1
+  - **M5c — cubes-in-frame bag (2026-06-28 04:37 HKT)**
+    `evaluation/m5_live/cubes_2026-06-28/m5_bag_cubes_2026-06-28_043618_0.db3`
+    (1.18 GB, sqlite3, SHA-256
+    `d8e10908103aee9df17e119d30443e78d3ffc90e58a4096ca407ad307ebe26d8`,
+    26.67 s duration).
+    - KEEP = **0 / 414** at conf ≥ 0.50 — model-accuracy blocker
+    - Per-class kept: `{}`
+    - Publish rate 15.52 Hz; upstream RGB Hz 25.07
+    - total ms p50=60.4, p95=61.1; yolo ms p50=26.6, p95=26.7;
+      filter ms p50=2.57, max=3.06
+    - Rejects over ~18.9 k sync'd frames: flat=41700, aspect=34,
+      no_planar_top=0, low_raised_frac=0, high_planar_std=0
+    - Visual confirmation: `evaluation/m5_live/cubes_2026-06-28/peek_rgb_live.png`
+      shows three cubes (blue / green / red, left to right); debug overlay
+      `peek_debug_live.png` shows HUD `keep=0` because every YOLO candidate
+      landed on floor texture and got rejected as `flat`.
+
+- **Why KEEP=0/414 on real cubes (analysis, see report §11.7)**
+  - The geometry filter is doing its job — every reject is `flat`, meaning
+    the bbox depth ≈ annulus-floor depth (cubes on the floor should
+    produce a raised bbox, but the YOLO bbox is missing the cube).
+  - The latency log shows ~2.3 YOLO fires per frame, **all on floor texture**
+    (wood grain, gray cloth pile in the corner). YOLO at conf=0.50 does
+    not fire on the actual cubes in this configuration.
+  - This is a **model-accuracy issue**, not a code/bringup issue. The
+    Roboflow `best.engine` does not generalize from the close-up top-down
+    training images to the JetRover-room downward-camera placement.
+
+- **§11.7 decision path (pending Maher)**
+  1. **Diagnostic**: recapture the cubes bag at conf=0.25. If the model
+     fires on real cubes at the lower threshold, the only fix is to lower
+     the production conf threshold (mirrors M4c1 V1 cubes capture where
+     geometry filter kept 22/29 blue cubes at conf=0.25).
+  2. **If conf=0.25 also shows 0 KEEPs**: the model genuinely does not fire
+     on real cubes. Re-open the fine-tune card (`t_13b658c2`, previously
+     closed 2026-06-27 as no-longer-needed) with a fresh scope: produce a
+     `best.engine` that detects real JetRover-room cubes at conf ≥ 0.50.
+  3. Publish-rate ceiling (15.5–15.8 Hz) is a **separate** concern:
+     TensorRT FP16 + sync overhead, not fixable by re-tuning the geometry
+     filter. Options documented in `evaluation/m5_live/report.md` §10:
+     accept as-is, re-export FP32, or skip frames in the callback.
+
+- **What did NOT change (per .cursorrules)**
+  - `models/best.engine` SHA-256 unchanged:
+    `c64d3e5e277ea42f3f19f0ba733d6ef25f0403ba2496f8191288d3d6829ec3d1`
+    (matches M4a, M5b, M5c — no retraining)
+  - `models/best.pt` SHA-256 unchanged:
+    `bba833c25bd6cb51683b3b84dfb1160ed74e1c918a2d629087133ae2a5120b04`
+    (18.5 MB, mtime 2026-06-24 04:12, M2)
+  - `models/best.onnx` SHA-256 unchanged:
+    `326d5d62ebf7586f02a9fcacf36e1890f1db8b99953cfcef21dcee829637fa38`
+    (35.0 MB, mtime 2026-06-27 14:08, M3)
+  - No vendor or `start_app_node.service` edits
+  - No edits to `recognition_of_different_colored_cubes/cube_detection_node.py`
+    or `geometry_filter.py` since the M5 ship commit `cf1cf7e`
+
+- **Code changes (M5 docs chain across 5 cards)**
+  - **t_15db4d42 (M5 ship + Jetson smoke, run 82)** — `cube_detection_node.py`
+    rewrite, embed `geometry_filter.py`, `config/params.yaml`, `package.xml`,
+    three new `m5_*.py` scripts, README launch instructions. Two commits:
+    `f571ea1` (initial) + `cf1cf7e` (geometry_filter embed + camera_info k fix).
+  - **t_48167e72 (M5b empty bag)** — `scripts/m5_capture_bag.py` default
+    format=sqlite3 + `/depth_cam/depth/image_raw` added; new
+    `scripts/m5_parse_latency.py`; `.gitignore` tightened for M5
+    evaluation; dev-PC apt install `ros-humble-vision-msgs`.
+  - **t_f7c27278 (M5c cubes bag)** — no code changes; analysis only
+    (analyzer output + latency JSON + report §11 added).
+  - **t_219505c6 (M5 docs pass on report + cursorrules + milestones)** —
+    `evaluation/m5_live/report.md` §3 + §4 rewritten (acceptance-bar
+    results, bag-by-bag breakdown, capture recipe); TL;DR + §6 + §7
+    cross-references updated.
+  - **t_bb889759 (M5 integration docs pass)** — README parameter table
+    split into 5 sub-tables with plain-language geometry-filter
+    descriptions; runtime override examples; publish toggles; stale
+    "inference not live" banner removed; Demo section points at the
+    tracked M5 overlays; `--symlink-install` added to the dev-machine
+    build line. `.cursorrules` Current Status updated to reflect
+    implementation complete + acceptance gate PARTIAL.
+
+- **Pointer to per-card intermediate entries**
+  The auto-decomposer chain produced one entry per card during the
+  2026-06-28 M5 cluster. The unique per-card content (specific process
+  PIDs, run order, exact command transcripts) is preserved below as
+  short pointer entries — read this canonical M5 entry first, then dip
+  into the per-card pointer for whatever detail is missing.
+
+## 2026-06-28 — M5 docs pass: README split-tables + cursorrules status (card t_bb889759)
+
+Pointer to the canonical 2026-06-28 M5 ship entry above. This card's
+unique work: README parameter table split into 5 sub-tables with
+plain-language descriptions for all six geometry-filter parameters
+(`filter_raised_mm`, `filter_min_raised_frac`,
+`filter_max_planar_top_stddev_mm`, `filter_max_ratio`, `filter_inset_px`,
+`filter_annulus_outer_px`) plus the master switch `filter_enabled` and
+the depth-quality guard `filter_n_min`; runtime override examples
+(`ros2 param get` / `ros2 param set`); publish toggles
+(`publish_vendor_objects`, `publish_debug_image`) added; stale
+"inference not live" banner removed; `--symlink-install` added to the
+dev-machine build line. No code edits. See canonical entry for the
+measured numbers.
+
+## 2026-06-28 — M5 docs pass: report §3+§4 + cursorrules + milestones (card t_219505c6)
+
+Pointer to the canonical 2026-06-28 M5 ship entry above. This card's
+unique work: `evaluation/m5_live/report.md` §3 + §4 rewritten (the old
+sections described the pre-capture bringup blocker; the new sections
+carry the measured acceptance-bar results table, the two-bag
+breakdown, the bag SHA-256 sources-of-truth table, the unchanged-model
+SHAs table, and the re-runnable capture recipe); TL;DR + §6 + §7
+cross-references updated; `docs/milestones.md` M5 left as PARTIAL with
+the §11.7 reference (intentionally NOT flipped to COMPLETE); README
+launch instructions + parameter table verified line-for-line against
+`launch/detection.launch.py` and `config/params.yaml`. See canonical
+entry for the M5b/M5c measured numbers and the model-accuracy
+analysis.
+
+## 2026-06-28 — M5c: live cubes-in-frame bag captured + analyzed (card t_f7c27278)
+
+Pointer to the canonical 2026-06-28 M5 ship entry above. This card's
+unique work: pre-flight probe confirmed both `/depth_cam/*` topics
+publish (camera_container PID 42788 stable, start_app_node.service
+active); visual cube confirmation via `m5_peek_rgb.py` saved to
+`evaluation/m5_live/cubes_2026-06-28/peek_rgb_live.png` (three cubes
+visible blue / green / red, left to right); launched M5 node on Jetson
+via `/tmp/m5_node_launcher.sh` wrapper (the vendor `/opt/ros/humble/
+setup.bash` line 11 `. /home/ubuntu/setup.sh` fails under zsh, so the
+wrapper sources both overlays explicitly); captured 30 s bag via
+`m5_capture_bag.py`, pulled 1.18 GB to dev PC via scp, SHA-256 verified
+on both sides (`d8e10908…`); analyzer output to `summary.json`,
+latency JSON via `m5_parse_latency.py`. Bag duration 26.67 s, 414
+detection messages, KEEP=0/414 at conf=0.50. Deliverables under
+`evaluation/m5_live/cubes_2026-06-28/` (bag + metadata.yaml/json +
+node.log + summary/latency/sha256 + 3 preview PNGs). See canonical
+entry for the per-class breakdown, the model-accuracy analysis, and
+the §11.7 decision path.
+
+## 2026-06-28 — M5b: live empty-scene bag captured + analyzed (card t_48167e72)
+
+Pointer to the canonical 2026-06-28 M5 ship entry above. This card's
+unique work: picked up the stalled-camera state from `t_15db4d42` run
+82; SSH probe via `jetrover` alias confirmed both `/depth_cam/*`
+topics had Publisher count: 1 from `/depth_cam/depth_cam`;
+start_app_node.service active, PID 42788; JetRover floor was empty
+(no cubes placed); synced `m5_capture_bag.py`, `m5_analyze_bag.py`,
+`m5_offline_replay.py` to the Jetson; patched `m5_capture_bag.py` to
+default `--format bag` (sqlite3 — mcap plugin not installed) and
+include `/depth_cam/depth/image_raw` in default topic list; launched
+M5 node on Jetson (PID 45044); recorded 30 s bag (5 topics); pulled
+1.13 GB to dev PC; ran `m5_analyze_bag.py` and `m5_parse_latency.py`;
+installed `ros-humble-vision-msgs` on dev PC (analyzer needs
+`vision_msgs.msg.Detection2DArray`); bag duration 27.81 s, 439
+detection messages, KEEP=0/439 at conf=0.50 (M4c1 V4 PASS replicated
+live). Cubes-in-frame bag deferred to M5c. Publish-rate caveat
+15.78 Hz below §4.1 ≥25 Hz target (TensorRT FP16 inference + sync
+overhead). See canonical entry for the model-accuracy blocker analysis
+that emerged from M5c.
+
 ## 2026-06-28 — M5 live retry: camera alive briefly, died again (card t_15db4d42, run 82)
 
 - **Context**: the previous implementer run was unblocked at ~03:24 HKT after
   `start_app_node.service` was restarted (active since 03:33:26 HKT, 2 min
   uptime when I SSH'd in). I resumed this card to capture the live bags.
+  This entry covers **only** the brief-camera-alive phase; the
+  full M5 ship story lives in the canonical 2026-06-28 M5 entry above
+  (cards t_15db4d42 / t_bb889759 / t_219505c6 / t_48167e72 / t_f7c27278).
 
 - **Work done**
   - Confirmed `/depth_cam/rgb/image_raw` (14.1 Hz) and
@@ -116,118 +349,42 @@ Copy the template block for each new entry. Replace `YYYY-MM-DD` with the sessio
   requires physical access).
 
 ## 2026-06-28 — M5 ROS 2 node shipped + Jetson smoke (card t_15db4d42)
+## 2026-06-28 — M5 ROS 2 node shipped + Jetson smoke (card t_15db4d42)
 
-- **Milestone:** M5 — ROS 2 node live
-- **Goal**
-  - Integrate the M4c1 geometry post-filter + conf=0.50 into the live
-    `cube_detection_node`, replacing the M3/M4a placeholder. Wire TensorRT
-    FP16 inference + geometry filter + RGB+depth sync. Make every
-    threshold a runtime-tunable rclpy parameter.
+Pointer to the canonical 2026-06-28 M5 ship entry above (the "What
+shipped (M5 implementation)" subsection has the full breakdown). This
+card's unique work: the original `cube_detection_node.py` rewrite (641
+lines, M3/M4a placeholder → TensorRT FP16 + M4c1 filter + RGB+depth
+sync via `ApproximateTimeSynchronizer`); `geometry_filter.py` embed as
+a proper package module (replaces the first-commit sys.path hack after
+a `ModuleNotFoundError` on the Jetson colcon install); 29 rclpy
+parameters declared; `config/params.yaml` rewritten with M4c1 defaults
+(`confidence_threshold: 0.50`, `raised_mm: 30`, `min_raised_frac:
+0.20`, `max_planar_top_stddev_mm: 30`, `max_ratio: 1.2`, `inset_px: 1`,
+`annulus_outer_px: 15`); `package.xml` adds `message_filters`, `numpy`,
+`PIL`, `torch`, `torchvision` exec_depends (TensorRT + pycuda
+Jetson-only, commented); three new `scripts/m5_*.py` for capture /
+analyze / replay.
 
-- **Work done**
-  - **Code**: rewrote
-    `recognition_of_different_colored_cubes/cube_detection_node.py`
-    (641 lines) to subscribe to `/depth_cam/rgb/image_raw` +
-    `/depth_cam/depth/image_raw` via
-    `message_filters.ApproximateTimeSynchronizer`, run TensorRT FP16
-    inference on each RGB frame using the proven inline pattern from
-    `scripts/test_inference.py` (single binding allocation, shared
-    CUDA stream, `execute_async_v2` + `stream.synchronize`), then apply
-    the M4c1 geometry post-filter at conf ≥ 0.50 on every YOLO
-    candidate. Publishes KEEP detections on the existing
-    `/cube_detections` (vision_msgs/Detection2DArray),
-    `/cube_detections/vendor_objects` (interfaces/ObjectsInfo), and
-    `/cube_detections/debug_image` (annotated bgr8). Per-frame total
-    + yolo + filter latency logged every N frames (default N=100) as
-    p50/p95.
-  - **Embedded geometry filter as a proper package module**:
-    `recognition_of_different_colored_cubes/geometry_filter.py` is a
-    clean copy of `compute_geometry` + `decide` from
-    `scripts/m4c_geometry_filter.py` — single source of truth for the
-    behavior, the new path is what the ROS node ships (the sys.path
-    hack in the first commit was replaced after the first Jetson launch
-    surfaced a `ModuleNotFoundError` because the colcon install layout
-    doesn't keep `scripts/` next to the python module).
-  - **29 rclpy-declared parameters**: topics, model path, conf/iou/imgsz,
-    sync slop, all 8 filter params, fx/fy/cx/cy, publish toggles,
-    latency_log_every. Camera intrinsics are overridden at startup from
-    `/depth_cam/rgb/camera_info` (with a list-coercion fix for the
-    numpy-array truthiness bug surfaced on the first Jetson launch —
-    fixed in commit `cf1cf7e`).
-  - **Config**: `config/params.yaml` rewritten with M4c1 defaults:
-    `confidence_threshold: 0.50`, `raised_mm: 30`, `min_raised_frac:
-    0.20`, `max_planar_top_stddev_mm: 30`, `max_ratio: 1.2`,
-    `inset_px: 1`, `annulus_outer_px: 15`.
-  - **package.xml**: added `message_filters`, `numpy`, `PIL`, `torch`,
-    `torchvision` exec_depends. TensorRT + pycuda are Jetson-only and
-    intentionally NOT in the apt rosdep set (commented).
-  - **README.md**: documented the M5 launch sequence (vendor bringup +
-    `ros2 launch recognition_of_different_colored_cubes
-    detection.launch.py`), the parameter table, and the runtime
-    `ros2 param set` workflow.
-  - **New scripts**:
-    - `scripts/m5_capture_bag.py` — Jetson-side `ros2 bag record`
-      wrapper for 30s captures.
-    - `scripts/m5_analyze_bag.py` — dev-PC bag analyzer (per-class
-      kept, publish rate, RGB hz).
-    - `scripts/m5_offline_replay.py` — end-to-end pipeline replay on
-      saved sync RGB+depth for parity validation before live test.
+**Results (Jetson smoke):** `colcon build --packages-select
+recognition_of_different_colored_cubes --symlink-install` finished in
+4.54 s, exit 0. `ros2 run ... cube_detection_node` loaded the
+TensorRT engine, declared all 29 parameters, subscribed correctly,
+spun cleanly until SIGTERM. Engine SHA-256
+`c64d3e5e277ea42f3f19f0ba733d6ef25f0403ba2496f8191288d3d6829ec3d1`
+(matches M4a, unchanged across all later captures). Camera intrinsics
+overridden at startup from `/depth_cam/rgb/camera_info` (with a
+list-coercion fix for the numpy-array truthiness bug surfaced on the
+first Jetson launch — fixed in commit `cf1cf7e`).
 
-- **Results (Jetson)**
-  - `colcon build --packages-select recognition_of_different_colored_cubes
-    --symlink-install` → finished in 4.54 s, exit 0.
-  - `ros2 run recognition_of_different_colored_cubes
-    cube_detection_node` → loads TensorRT engine, prints all 29
-    parameters, subscribes correctly, spins cleanly until SIGTERM.
-  - TensorRT engine path resolved to
-    `/home/ubuntu/jetson_ws/src/Recognition-of-Different-Colored-Cubes/models/best.engine`
-    with SHA-256 `c64d3e5e277ea42f3f19f0ba733d6ef25f0403ba2496f8191288d3d6829ec3d1`
-    (matches M4a, unchanged). Engine binding `images` (1, 3, 640, 640)
-    float32, output `output0` (1, 7, 8400) float32.
+**Results (dev PC):** py_compile clean on all 4 new/modified python
+files. AST parse + parameter declaration audit confirmed all 29
+required parameters are declared and match `config/params.yaml`
+exactly. `from recognition_of_different_colored_cubes.geometry_filter
+import compute_geometry, decide` resolves through the package layout.
 
-- **Results (dev PC)**
-  - py_compile clean on all 4 new/modified python files.
-  - AST parse + parameter declaration audit confirmed all 29 required
-    parameters are declared and match `config/params.yaml` exactly.
-  - `m4c_geometry_filter` import path resolves through the package
-    layout (`from recognition_of_different_colored_cubes.geometry_filter
-    import compute_geometry, decide`).
-
-- **Evidence**
-  - `evaluation/m5_live/report.md` (15.8 KB) — full M5 evidence
-    summary: what changed, Jetson-side smoke transcript, blocker
-    description, exact launch + bag commands for Maher.
-  - Commits `f571ea1` (initial M5 node) + `cf1cf7e` (geometry_filter
-    embed + camera_info k fix).
-  - Two scripts under `scripts/m5_*.py` ready to run as soon as the
-    vendor depth camera is publishing.
-
-- **Blockers**
-  - **Vendor depth camera publish graph is stale**: when this card
-    started, `start_app_node.service` was `active (running) since Sat
-    2026-06-27 21:11:25 HKT` (6 hours uptime) but `/depth_cam/rgb/image_raw`
-    and `/depth_cam/depth/image_raw` both had **0 publishers** — the
-    `camera_container` process (PID 10109) is up but its components
-    are not loaded. This is a vendor bringup state issue, not an M5
-    code issue: `cube_detection_node` correctly subscribes, the
-    `ApproximateTimeSynchronizer` correctly stays silent when no
-    sync'd pairs arrive, and `/cube_detections` is silent because
-    there are no frames to detect on. Per `.cursorrules` "Hardware-only
-    verification is the user's job", I do NOT modify
-    `start_app_node.service` or vendor launch files unilaterally — see
-    `evaluation/m5_live/report.md` §3.1 for the minimal-touch recovery
-    (`sudo systemctl restart start_app_node.service`) and §4 for the
-    exact 30s bag commands that go once the camera is back online.
-
-- **Next**
-  - Maher: restore vendor depth-camera publishing per §3.1 (one
-    `systemctl restart`).
-  - Then: run §4.1 (cubes bag) + §4.2 (empty bag) to produce M5
-    evidence under `evaluation/m5_live/`.
-  - Then: run the §5 offline replay harness on the dev PC for
-    parity-with-M4c1 verification.
-  - Then: update LOGBOOK with live latency + KEEP counts and flip M5
-    to COMPLETE in `docs/milestones.md`.
+**Commits:** `f571ea1` (initial M5 node) + `cf1cf7e` (geometry_filter
+embed + camera_info k fix).
 
 ## 2026-06-27 — Docs pass: §9 V3-V4 follow-up results in M4c1 report (card t_17b5296c)
 

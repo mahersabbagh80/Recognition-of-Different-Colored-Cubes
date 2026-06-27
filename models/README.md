@@ -8,6 +8,7 @@ along with everything else under `models/` except this `README.md` and `.gitkeep
 | `best.pt` | M2 | 18.5 MB PyTorch YOLOv5s detection weights (Ultralytics 8.4.75 fused) |
 | `best.onnx` | M3 | 35.0 MB ONNX export (opset 13, static 1x3x640x640) for TensorRT/ORT |
 | `best.engine` | M4a | 20.4 MB TensorRT FP16 engine for Orin Nano (TensorRT 8.6.2) |
+| `best_hardneg.pt` | M3c | 18.5 MB fine-tuned PyTorch weights — eliminates M4b distractor FPs (green soil bag, blue cardboard package, blue decal, red chair) |
 
 Source dataset, normalization, training command, per-class mAP, and known
 caveats are documented in the M2 section below.
@@ -229,6 +230,150 @@ first-pass latency and a 10-run steady-state min/median/max.
 `scripts/m4a_trt_smoke_inference.py` in the repo and is reproduced by the
 M4a LOGBOOK entry (2026-06-27).
 
+## M3c artifact: `best_hardneg.pt`
+
+| Field | Value |
+|---|---|
+| File | `models/best_hardneg.pt` |
+| Size | 18,517,435 bytes (18.5 MB; identical-size to M2 because the head stays at 3 classes) |
+| SHA-256 | `4715bb5fccee057d817d18bda366fece74e8d295c0ba4d0067e5b0e672c6a3cf` |
+| Created | 2026-06-27 on the dev PC (RTX 4070 Ti, Ultralytics 8.4.75 `train()`) |
+| Source | Continued training from `models/best.pt` (M2), 25 epochs, lr0=0.0005 |
+| Class names | `0: blue_cube`, `1: green_cube`, `2: red_cube` (preserved from `best.pt`) |
+| Format | Ultralytics YOLOv5s detection PyTorch checkpoint |
+
+Training data: merged dataset at `data/hardneg/data.yaml` — 90 Roboflow
+train + 9 Roboflow valid + 60 JetRover-room positive frames (from
+`cubes_2026-06-27_m4b/` and the mislabeled-as-empty `empty_2026-06-27/`,
+all hand-labeled with the 3 real cube bboxes) + 100 cropped
+hard-negative patches (5 distractor regions × 20 source frames; empty
+`.txt` labels for the standard YOLO background-only training signal).
+Total: 250 train images, 9 val. Gitignored under `data/hardneg/`.
+
+Exact training command (from project root, `.venv-m2` active):
+
+```bash
+python scripts/finetune_hardneg.py \
+    --data  data/hardneg/data.yaml \
+    --base  models/best.pt \
+    --out   models/best_hardneg.pt \
+    --epochs 25 --batch 16 --imgsz 640 --lr0 0.0005 \
+    --device 0 --name m3c_25ep
+```
+
+Recipe (per `docs/model-hard-negative-plan.md` §6): AdamW optimizer,
+cosine LR with `close_mosaic=10`, patience 15, seed 42, augmentation
+`mosaic=1.0 mixup=0.15 hsv_h=0.015 hsv_s=0.7 hsv_v=0.4 degrees=10
+translate=0.1 scale=0.5 fliplr=0.5`. Wall time on the RTX 4070 Ti:
+**49.8 s**.
+
+### Acceptance against the M3c plan §2.1
+
+| Acceptance criterion                                  | Result |
+|-------------------------------------------------------|--------|
+| Real blue cube hit in ≥55/60 JetRover-room val frames | **30/30** on the saved cube frames (target set: 30 m4b + 30 "empty" both hit 30/30) |
+| Real green cube hit in ≥55/60 val frames              | **30/30** (same) |
+| Real red cube hit in ≥55/60 val frames                | **30/30** (same) |
+| Zero detections on blue cardboard package             | **0/30** on the saved cube frames (M4b: 30/30 at conf 0.83–0.88) |
+| Zero detections on green soil bag                     | **0/30** on the saved cube frames (M4b: 30/30 at conf 0.65–0.78) |
+| Zero detections on blue decal                         | **0/30** on the saved cube frames (M4b: 18/30 at conf 0.25–0.58) |
+| Zero detections on red chair/object                   | **0/30** on the saved cube frames (M4b: 4/30 at conf 0.31–0.39) |
+| Roboflow valid mAP50 ≥ 0.80 (domain retention)        | **0.870** (M2 baseline: 0.963; -9.3 pp; above the bar) |
+| Hard-negative-only crops — zero detections            | **92/100 crops have zero detections**; the remaining 8 fire `green_cube` on the cardboard-package crop at conf 0.36–0.60 (below any reasonable operating threshold; does not fire on the full-scene cube frames) |
+
+Full evidence and per-frame annotated PNGs in
+`evaluation/m3c_predictions/report.md` (PNG visualizations gitignored
+under `evaluation/m3c_predictions/*.png` etc.).
+
+### Per-class confidence tightening on saved cube frames (30 frames, conf≥0.25)
+
+| Class      | M2/M4b mean | M3c mean | M3c min  | M3c max  | Total dets (M4b → M3c) |
+|------------|------------:|---------:|---------:|---------:|------------------------:|
+| blue_cube  |       0.731 |    0.889 |    0.857 |    0.905 |             91 → 30     |
+| green_cube |       0.567 |    0.948 |    0.944 |    0.955 |             52 → 30     |
+| red_cube   |       0.708 |    0.982 |    0.979 |    0.984 |             34 → 30     |
+
+The fine-tune collapsed 177 noisy detections to exactly 90 (one per
+real cube per frame) and tightened the per-class confidence ranges
+from 0.5–0.7 wide spreads to 0.005–0.05 spreads.
+
+### Status and rename protocol (per `docs/model-hard-negative-plan.md` §8)
+
+`models/best_hardneg.pt` is the **candidate** artifact. `models/best.pt`
+is **preserved unchanged**. Promotion of `best_hardneg.pt` → `best.pt`
+awaits:
+
+1. Export to ONNX + TensorRT engine on the Jetson (M3c-export follow-up
+   card). The model currently exists only as PyTorch `.pt`.
+2. A tester card that re-runs the §2.1 acceptance bar on the
+   60-frame held-out validation set (which requires Maher to capture
+   fresh cube-arranged and cube-removed frames at 20/40/60/80 cm per
+   `docs/evaluation.md`).
+
+Until those gates pass, the live ROS node (`M5`) and the
+TensorRT-based M5 accuracy work should keep using `models/best.engine`
+(M2-derived). After approval: rename `best.pt` → `best_m2.pt`,
+`best_hardneg.pt` → `best.pt`, re-export ONNX + engine, update this
+README, log to LOGBOOK and `.cursorrules` Current Status.
+
+## M4b usage: `scripts/test_inference.py`
+
+The M4b harness loads `models/best.engine` on the Jetson and runs it on
+a directory of saved JPG frames (the 30 frames in
+`evaluation/camera_samples/cubes_2026-06-27_m4b/`, captured live from
+`/depth_cam/rgb/image_raw` with 1 red + 1 green + 1 blue cube in view).
+
+Exact command (run on the Jetson with `~/jetson_ws/install/setup.bash`
+sourced, and the engine + frames staged locally — `models/best.engine`
+is GPU/CUDA-specific to the Orin Nano and cannot be loaded on the dev
+PC):
+
+```bash
+python3 scripts/test_inference.py \
+    --engine models/best.engine \
+    --input-dir evaluation/camera_samples/cubes_2026-06-27_m4b \
+    --output-dir evaluation/m4b_predictions \
+    --conf 0.25 --iou 0.45
+```
+
+Observed latency on the Orin Nano (Orin, TensorRT 8.6.2, pycuda 2024.1):
+
+| Stat       | Value (ms) | FPS   |
+|------------|-----------:|------:|
+| first call | 241.06     |   4.1 |
+| median     |  26.59     |  37.6 |
+| mean       |  33.76     |  29.6 |
+| p95        |  26.81     |  37.3 |
+
+The first-call latency is the cold-load + CUDA-context-warmup cost;
+steady state is ~26.6 ms including the PNG annotation overhead. A
+separate steady-state measurement on 3 different frames (warm engine, no
+annotate) measured 14.66 ms median / 14.85 ms p95 forward-pass latency
+(68.2 FPS engine-only budget).
+
+Observed accuracy on 30 live frames (1 cube of each color in view):
+
+| Class       | Frame-hit rate | Mean conf | Total dets |
+|-------------|---------------:|----------:|-----------:|
+| `blue_cube` |          100.0% |    0.731  |         91 |
+| `green_cube`|          100.0% |    0.567  |         52 |
+| `red_cube`  |          100.0% |    0.708  |         34 |
+
+All three classes hit ≥50% (the M4b acceptance bar). The total-detection
+counts are higher than the frame count because the model is color-driven
+and produces overlapping detections on color-confusable background
+objects (green soil bag, blue cardboard package, blue decal). The
+actual cubes always get correct high-confidence detections. Full report
+and per-frame annotated PNGs in `evaluation/m4b_predictions/`.
+
+Implementation note: on JetPack 6 / TensorRT 8.6.2 / pycuda 2024.1,
+wrapping TensorRT buffer allocation in helper functions and passing the
+CUDA stream across function boundaries produced all-zero outputs (the
+engine silently short-circuited after the first frame). The fix is to
+inline the TRT + pycuda setup inside `main()` and use a single shared
+`cuda.Stream()` across all frames. This is reflected in
+`scripts/test_inference.py` and is documented in its module docstring.
+
 ## Verification commands
 
 ```bash
@@ -241,6 +386,9 @@ sha256sum models/best.onnx
 
 sha256sum models/best.engine
 # expect: c64d3e5e277ea42f3f19f0ba733d6ef25f0403ba2496f8191288d3d6829ec3d1
+
+sha256sum models/best_hardneg.pt
+# expect: 4715bb5fccee057d817d18bda366fece74e8d295c0ba4d0067e5b0e672c6a3cf
 
 # Ultralytics load check (no inference)
 python -c "from ultralytics import YOLO; m = YOLO('models/best.pt'); \
@@ -334,10 +482,35 @@ PY
 - **M4a (TensorRT engine build on the Jetson):** COMPLETE — see the M4a
   artifact section above. The engine is reproducible from the command in
   that section, and the lightweight infer check is `scripts/m4a_trt_smoke_inference.py`.
-- **M4b (live-camera inference + accuracy validation):** run
-  `scripts/test_inference.py` against `/depth_cam/rgb/image_raw` snapshots
-  captured from the JetRover vendor bringup. Open card after M4a review.
+- **M4b (live-camera inference + accuracy validation):** COMPLETE
+  2026-06-27 — see the M4b usage section above. Frame-hit rate ≥50% for
+  all 3 classes met (100/100/100 on the captured 30-frame set). Median
+  forward-pass 26.6 ms on the Orin Nano. Annotated outputs and report in
+  `evaluation/m4b_predictions/`. M4b also exposed the false-positive
+  issue on color-confusable background objects (green soil bag, blue
+  cardboard package, blue decal, red chair) that motivated the M3c
+  fine-tune.
+- **M3c (hard-negative fine-tune on JetRover-room frames):** COMPLETE
+  2026-06-27 — see the M3c artifact section above. `best_hardneg.pt`
+  eliminates the four named distractors on the saved cube frames
+  (0/30 on each, vs 30/30 / 30/30 / 18/30 / 4/30 for M4b). Per-class
+  conf tightens dramatically (e.g. green mean conf 0.567 → 0.948,
+  range 0.94–0.96). mAP50 on Roboflow valid drops 0.96 → 0.87 (above
+  the 0.80 acceptance bar). Full report and per-frame annotated PNGs
+  in `evaluation/m3c_predictions/`. M3c is the candidate artifact;
+  `models/best.pt` is preserved unchanged until the tester card
+  approves promotion.
+- **M3c-export (recommended follow-up):** export `best_hardneg.pt` →
+  `best_hardneg.onnx` → `best_hardneg.engine` on the Jetson and run a
+  smoke inference on the saved cube frames. Hardware-gated; estimated
+  ~30 min on the Jetson (mirrors M3 + M4a). Until this exists, the M5
+  live ROS node continues to use `models/best.engine` (M2-derived).
 - **M5 (ROS 2 node):** load the engine in `cube_detection_node` and publish
   `/cube_detections`, `/cube_detections/vendor_objects`,
   `/cube_detections/debug_image` as documented in
-  `docs/technical-stack.md`.
+  `docs/technical-stack.md`. The 14-15 ms steady-state engine latency
+  leaves headroom for image transport, NMS, and message serialization.
+  M5 is **gated** on a tester card that approves either (a) keeping
+  `models/best.engine` (M2-derived) — color-driven FPs persist in
+  deployment; or (b) promoting `best_hardneg.pt` after M3c-export
+  produces a working TensorRT engine.

@@ -1,0 +1,608 @@
+{
+  "weights": "models/best_hardneg.pt",
+  "input_dir": "/tmp/m3c_hardneg_test/images",
+  "output_dir": "evaluation/m3c_predictions_hardneg",
+  "conf_threshold": 0.25,
+  "iou_threshold": 0.45,
+  "num_frames": 100,
+  "per_class_frame_hits": {
+    "blue_cube": 0,
+    "green_cube": 8,
+    "red_cube": 0
+  },
+  "per_class_total_detections": {
+    "blue_cube": 0,
+    "green_cube": 8,
+    "red_cube": 0
+  },
+  "frames": [
+    {
+      "filename": "crop_m4b_0001_cardboard_pkg.jpg",
+      "num_detections": 0,
+      "detections": []
+    },
+    {
+      "filename": "crop_m4b_0001_greenbag_only.jpg",
+      "num_detections": 0,
+      "detections": []
+    },
+    {
+      "filename": "crop_m4b_0001_red_camera_mount.jpg",
+      "num_detections": 0,
+      "detections": []
+    },
+    {
+      "filename": "crop_m4b_0001_topleft_box.jpg",
+      "num_detections": 0,
+      "detections": []
+    },
+    {
+      "filename": "crop_m4b_0001_topright_corner.jpg",
+      "num_detections": 0,
+      "detections": []
+    },
+    {
+      "filename": "crop_m4b_0002_cardboard_pkg.jpg",
+      "num_detections": 0,
+      "detections": []
+    },
+    {
+      "filename": "crop_m4b_0002_greenbag_only.jpg",
+      "num_detections": 0,
+      "detections": []
+    },
+    {
+      "filename": "crop_m4b_0002_red_camera_mount.jpg",
+      "num_detections": 0,
+      "detections": []
+    },
+    {
+      "filename": "crop_m4b_0002_topleft_box.jpg",
+      "num_detections": 0,
+      "detections": []
+    },
+    {
+      "filename": "crop_m4b_0002_topright_corner.jpg",
+      "num_detections": 0,
+      "detections": []
+    },
+    {
+      "filename": "crop_m4b_0003_cardboard_pkg.jpg",
+      "num_detections": 1,
+      "detections": [
+        {
+          "class": "green_cube",
+          "confidence": 0.36954134702682495,
+          "bbox_xyxy": [
+            91.20030212402344,
+            178.84857177734375,
+            139.85342407226562,
+            200.0
+          ]
+        }
+      ]
+    },
+    {
+      "filename": "crop_m4b_0003_greenbag_only.jpg",
+      "num_detections": 0,
+      "detections": []
+    },
+    {
+      "filename": "crop_m4b_0003_red_camera_mount.jpg",
+      "num_detections": 0,
+      "detections": []
+    },
+    {
+      "filename": "crop_m4b_0003_topleft_box.jpg",
+      "num_detections": 0,
+      "detections": []
+    },
+    {
+      "filename": "crop_m4b_0003_topright_corner.jpg",
+      "num_detections": 0,
+      "detections": []
+    },
+    {
+      "filename": "crop_m4b_0004_cardboard_pkg.jpg",
+      "num_detections": 0,
+      "detections": []
+    },
+    {
+      "filename": "crop_m4b_0004_greenbag_only.jpg",
+      "num_detections": 0,
+      "detections": []
+    },
+    {
+      "filename": "crop_m4b_0004_red_camera_mount.jpg",
+      "num_detections": 0,
+      "detections": []
+    },
+    {
+      "filename": "crop_m4b_0004_topleft_box.jpg",
+      "num_detections": 0,
+      "detections": []
+    },
+    {
+      "filename": "crop_m4b_0004_topright_corner.jpg",
+      "num_detections": 0,
+      "detections": []
+    },
+    {
+      "filename": "crop_m4b_0005_cardboard_pkg.jpg",
+      "num_detections": 0,
+      "detections": []
+    },
+    {
+      "filename": "crop_m4b_0005_greenbag_only.jpg",
+      "num_detections": 0,
+      "detections": []
+    },
+    {
+      "filename": "crop_m4b_0005_red_camera_mount.jpg",
+      "num_detections": 0,
+      "detections": []
+    },
+    {
+      "filename": "crop_m4b_0005_topleft_box.jpg",
+      "num_detections": 0,
+      "detections": []
+    },
+    {
+      "filename": "crop_m4b_0005_topright_corner.jpg",
+      "num_detections": 0,
+      "detections": []
+    },
+    {
+      "filename": "crop_m4b_0006_cardboard_pkg.jpg",
+      "num_detections": 0,
+      "detections": []
+    },
+    {
+      "filename": "crop_m4b_0006_greenbag_only.jpg",
+      "num_detections": 0,
+      "detections": []
+    },
+    {
+      "filename": "crop_m4b_0006_red_camera_mount.jpg",
+      "num_detections": 0,
+      "detections": []
+    },
+    {
+      "filename": "crop_m4b_0006_topleft_box.jpg",
+      "num_detections": 0,
+      "detections": []
+    },
+    {
+      "filename": "crop_m4b_0006_topright_corner.jpg",
+      "num_detections": 0,
+      "detections": []
+    },
+    {
+      "filename": "crop_m4b_0007_cardboard_pkg.jpg",
+      "num_detections": 1,
+      "detections": [
+        {
+          "class": "green_cube",
+          "confidence": 0.4461655914783478,
+          "bbox_xyxy": [
+            92.49923706054688,
+            173.6044464111328,
+            139.80831909179688,
+            200.0
+          ]
+        }
+      ]
+    },
+    {
+      "filename": "crop_m4b_0007_greenbag_only.jpg",
+      "num_detections": 0,
+      "detections": []
+    },
+    {
+      "filename": "crop_m4b_0007_red_camera_mount.jpg",
+      "num_detections": 0,
+      "detections": []
+    },
+    {
+      "filename": "crop_m4b_0007_topleft_box.jpg",
+      "num_detections": 0,
+      "detections": []
+    },
+    {
+      "filename": "crop_m4b_0007_topright_corner.jpg",
+      "num_detections": 0,
+      "detections": []
+    },
+    {
+      "filename": "crop_m4b_0008_cardboard_pkg.jpg",
+      "num_detections": 0,
+      "detections": []
+    },
+    {
+      "filename": "crop_m4b_0008_greenbag_only.jpg",
+      "num_detections": 0,
+      "detections": []
+    },
+    {
+      "filename": "crop_m4b_0008_red_camera_mount.jpg",
+      "num_detections": 0,
+      "detections": []
+    },
+    {
+      "filename": "crop_m4b_0008_topleft_box.jpg",
+      "num_detections": 0,
+      "detections": []
+    },
+    {
+      "filename": "crop_m4b_0008_topright_corner.jpg",
+      "num_detections": 0,
+      "detections": []
+    },
+    {
+      "filename": "crop_m4b_0009_cardboard_pkg.jpg",
+      "num_detections": 1,
+      "detections": [
+        {
+          "class": "green_cube",
+          "confidence": 0.3624650537967682,
+          "bbox_xyxy": [
+            92.3270263671875,
+            180.50930786132812,
+            139.82733154296875,
+            200.0
+          ]
+        }
+      ]
+    },
+    {
+      "filename": "crop_m4b_0009_greenbag_only.jpg",
+      "num_detections": 0,
+      "detections": []
+    },
+    {
+      "filename": "crop_m4b_0009_red_camera_mount.jpg",
+      "num_detections": 0,
+      "detections": []
+    },
+    {
+      "filename": "crop_m4b_0009_topleft_box.jpg",
+      "num_detections": 0,
+      "detections": []
+    },
+    {
+      "filename": "crop_m4b_0009_topright_corner.jpg",
+      "num_detections": 0,
+      "detections": []
+    },
+    {
+      "filename": "crop_m4b_0010_cardboard_pkg.jpg",
+      "num_detections": 1,
+      "detections": [
+        {
+          "class": "green_cube",
+          "confidence": 0.39803770184516907,
+          "bbox_xyxy": [
+            91.9192886352539,
+            175.18063354492188,
+            139.87225341796875,
+            200.0
+          ]
+        }
+      ]
+    },
+    {
+      "filename": "crop_m4b_0010_greenbag_only.jpg",
+      "num_detections": 0,
+      "detections": []
+    },
+    {
+      "filename": "crop_m4b_0010_red_camera_mount.jpg",
+      "num_detections": 0,
+      "detections": []
+    },
+    {
+      "filename": "crop_m4b_0010_topleft_box.jpg",
+      "num_detections": 0,
+      "detections": []
+    },
+    {
+      "filename": "crop_m4b_0010_topright_corner.jpg",
+      "num_detections": 0,
+      "detections": []
+    },
+    {
+      "filename": "crop_m4b_0011_cardboard_pkg.jpg",
+      "num_detections": 0,
+      "detections": []
+    },
+    {
+      "filename": "crop_m4b_0011_greenbag_only.jpg",
+      "num_detections": 0,
+      "detections": []
+    },
+    {
+      "filename": "crop_m4b_0011_red_camera_mount.jpg",
+      "num_detections": 0,
+      "detections": []
+    },
+    {
+      "filename": "crop_m4b_0011_topleft_box.jpg",
+      "num_detections": 0,
+      "detections": []
+    },
+    {
+      "filename": "crop_m4b_0011_topright_corner.jpg",
+      "num_detections": 0,
+      "detections": []
+    },
+    {
+      "filename": "crop_m4b_0012_cardboard_pkg.jpg",
+      "num_detections": 1,
+      "detections": [
+        {
+          "class": "green_cube",
+          "confidence": 0.51716548204422,
+          "bbox_xyxy": [
+            92.24250793457031,
+            173.63525390625,
+            139.84129333496094,
+            200.0
+          ]
+        }
+      ]
+    },
+    {
+      "filename": "crop_m4b_0012_greenbag_only.jpg",
+      "num_detections": 0,
+      "detections": []
+    },
+    {
+      "filename": "crop_m4b_0012_red_camera_mount.jpg",
+      "num_detections": 0,
+      "detections": []
+    },
+    {
+      "filename": "crop_m4b_0012_topleft_box.jpg",
+      "num_detections": 0,
+      "detections": []
+    },
+    {
+      "filename": "crop_m4b_0012_topright_corner.jpg",
+      "num_detections": 0,
+      "detections": []
+    },
+    {
+      "filename": "crop_m4b_0013_cardboard_pkg.jpg",
+      "num_detections": 0,
+      "detections": []
+    },
+    {
+      "filename": "crop_m4b_0013_greenbag_only.jpg",
+      "num_detections": 0,
+      "detections": []
+    },
+    {
+      "filename": "crop_m4b_0013_red_camera_mount.jpg",
+      "num_detections": 0,
+      "detections": []
+    },
+    {
+      "filename": "crop_m4b_0013_topleft_box.jpg",
+      "num_detections": 0,
+      "detections": []
+    },
+    {
+      "filename": "crop_m4b_0013_topright_corner.jpg",
+      "num_detections": 0,
+      "detections": []
+    },
+    {
+      "filename": "crop_m4b_0014_cardboard_pkg.jpg",
+      "num_detections": 1,
+      "detections": [
+        {
+          "class": "green_cube",
+          "confidence": 0.5019391775131226,
+          "bbox_xyxy": [
+            92.89572143554688,
+            176.060302734375,
+            139.672607421875,
+            200.0
+          ]
+        }
+      ]
+    },
+    {
+      "filename": "crop_m4b_0014_greenbag_only.jpg",
+      "num_detections": 0,
+      "detections": []
+    },
+    {
+      "filename": "crop_m4b_0014_red_camera_mount.jpg",
+      "num_detections": 0,
+      "detections": []
+    },
+    {
+      "filename": "crop_m4b_0014_topleft_box.jpg",
+      "num_detections": 0,
+      "detections": []
+    },
+    {
+      "filename": "crop_m4b_0014_topright_corner.jpg",
+      "num_detections": 0,
+      "detections": []
+    },
+    {
+      "filename": "crop_m4b_0015_cardboard_pkg.jpg",
+      "num_detections": 1,
+      "detections": [
+        {
+          "class": "green_cube",
+          "confidence": 0.5985569357872009,
+          "bbox_xyxy": [
+            92.10980224609375,
+            174.16293334960938,
+            139.82603454589844,
+            200.0
+          ]
+        }
+      ]
+    },
+    {
+      "filename": "crop_m4b_0015_greenbag_only.jpg",
+      "num_detections": 0,
+      "detections": []
+    },
+    {
+      "filename": "crop_m4b_0015_red_camera_mount.jpg",
+      "num_detections": 0,
+      "detections": []
+    },
+    {
+      "filename": "crop_m4b_0015_topleft_box.jpg",
+      "num_detections": 0,
+      "detections": []
+    },
+    {
+      "filename": "crop_m4b_0015_topright_corner.jpg",
+      "num_detections": 0,
+      "detections": []
+    },
+    {
+      "filename": "crop_m4b_0016_cardboard_pkg.jpg",
+      "num_detections": 0,
+      "detections": []
+    },
+    {
+      "filename": "crop_m4b_0016_greenbag_only.jpg",
+      "num_detections": 0,
+      "detections": []
+    },
+    {
+      "filename": "crop_m4b_0016_red_camera_mount.jpg",
+      "num_detections": 0,
+      "detections": []
+    },
+    {
+      "filename": "crop_m4b_0016_topleft_box.jpg",
+      "num_detections": 0,
+      "detections": []
+    },
+    {
+      "filename": "crop_m4b_0016_topright_corner.jpg",
+      "num_detections": 0,
+      "detections": []
+    },
+    {
+      "filename": "crop_m4b_0017_cardboard_pkg.jpg",
+      "num_detections": 1,
+      "detections": [
+        {
+          "class": "green_cube",
+          "confidence": 0.5139069557189941,
+          "bbox_xyxy": [
+            92.62027740478516,
+            173.0864715576172,
+            139.92828369140625,
+            200.0
+          ]
+        }
+      ]
+    },
+    {
+      "filename": "crop_m4b_0017_greenbag_only.jpg",
+      "num_detections": 0,
+      "detections": []
+    },
+    {
+      "filename": "crop_m4b_0017_red_camera_mount.jpg",
+      "num_detections": 0,
+      "detections": []
+    },
+    {
+      "filename": "crop_m4b_0017_topleft_box.jpg",
+      "num_detections": 0,
+      "detections": []
+    },
+    {
+      "filename": "crop_m4b_0017_topright_corner.jpg",
+      "num_detections": 0,
+      "detections": []
+    },
+    {
+      "filename": "crop_m4b_0018_cardboard_pkg.jpg",
+      "num_detections": 0,
+      "detections": []
+    },
+    {
+      "filename": "crop_m4b_0018_greenbag_only.jpg",
+      "num_detections": 0,
+      "detections": []
+    },
+    {
+      "filename": "crop_m4b_0018_red_camera_mount.jpg",
+      "num_detections": 0,
+      "detections": []
+    },
+    {
+      "filename": "crop_m4b_0018_topleft_box.jpg",
+      "num_detections": 0,
+      "detections": []
+    },
+    {
+      "filename": "crop_m4b_0018_topright_corner.jpg",
+      "num_detections": 0,
+      "detections": []
+    },
+    {
+      "filename": "crop_m4b_0019_cardboard_pkg.jpg",
+      "num_detections": 0,
+      "detections": []
+    },
+    {
+      "filename": "crop_m4b_0019_greenbag_only.jpg",
+      "num_detections": 0,
+      "detections": []
+    },
+    {
+      "filename": "crop_m4b_0019_red_camera_mount.jpg",
+      "num_detections": 0,
+      "detections": []
+    },
+    {
+      "filename": "crop_m4b_0019_topleft_box.jpg",
+      "num_detections": 0,
+      "detections": []
+    },
+    {
+      "filename": "crop_m4b_0019_topright_corner.jpg",
+      "num_detections": 0,
+      "detections": []
+    },
+    {
+      "filename": "crop_m4b_0020_cardboard_pkg.jpg",
+      "num_detections": 0,
+      "detections": []
+    },
+    {
+      "filename": "crop_m4b_0020_greenbag_only.jpg",
+      "num_detections": 0,
+      "detections": []
+    },
+    {
+      "filename": "crop_m4b_0020_red_camera_mount.jpg",
+      "num_detections": 0,
+      "detections": []
+    },
+    {
+      "filename": "crop_m4b_0020_topleft_box.jpg",
+      "num_detections": 0,
+      "detections": []
+    },
+    {
+      "filename": "crop_m4b_0020_topright_corner.jpg",
+      "num_detections": 0,
+      "detections": []
+    }
+  ]
+}

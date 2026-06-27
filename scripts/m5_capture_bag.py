@@ -52,11 +52,15 @@ def main() -> int:
         "/cube_detections/vendor_objects",
         "/cube_detections/debug_image",
         "/depth_cam/rgb/image_raw",
+        "/depth_cam/depth/image_raw",
     ])
-    p.add_argument("--format", choices=["mcap", "bag"], default="mcap")
+    p.add_argument("--format", choices=["mcap", "bag"], default="bag")
     args = p.parse_args()
 
-    args.out_dir.mkdir(parents=True, exist_ok=True)
+    # ros2 bag record refuses to write into an existing dir; let it create it.
+    if args.out_dir.exists():
+        import shutil
+        shutil.rmtree(args.out_dir)
 
     cmd = [
         "ros2", "bag", "record",

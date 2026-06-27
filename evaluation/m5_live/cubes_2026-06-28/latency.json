@@ -1,0 +1,372 @@
+{
+  "log_path": "evaluation/m5_live/cubes_2026-06-28/node.log",
+  "num_summary_lines": 19,
+  "total_publishes_observed": 18936,
+  "total_sync_observed": 18937,
+  "totals": {
+    "p50_total_ms": 60.4,
+    "p95_total_ms": 61.1,
+    "max_total_ms": 61.1
+  },
+  "yolo": {
+    "p50_yolo_ms": 26.6,
+    "p95_yolo_ms": 26.7,
+    "max_yolo_ms": 26.7
+  },
+  "filter": {
+    "p50_filter_ms_per_frame": 2.57,
+    "max_filter_ms_per_frame": 3.06
+  },
+  "rejects_total": {
+    "flat": 41700,
+    "aspect": 34,
+    "no_planar_top": 0,
+    "low_raised_frac": 0,
+    "high_planar_std": 0,
+    "other": 0
+  },
+  "samples": [
+    {
+      "n": 100,
+      "total_ms_median": 60.5,
+      "total_ms_p95": 70.1,
+      "yolo_ms_median": 26.6,
+      "yolo_ms_p95": 26.9,
+      "filter_ms_median": 2.85,
+      "sync": 100,
+      "publishes": 100,
+      "rejects": {
+        "flat": 225,
+        "aspect": 1,
+        "no_planar_top": 0,
+        "low_raised_frac": 0,
+        "high_planar_std": 0,
+        "other": 0
+      }
+    },
+    {
+      "n": 100,
+      "total_ms_median": 60.4,
+      "total_ms_p95": 62.9,
+      "yolo_ms_median": 26.6,
+      "yolo_ms_p95": 26.8,
+      "filter_ms_median": 2.78,
+      "sync": 200,
+      "publishes": 200,
+      "rejects": {
+        "flat": 458,
+        "aspect": 1,
+        "no_planar_top": 0,
+        "low_raised_frac": 0,
+        "high_planar_std": 0,
+        "other": 0
+      }
+    },
+    {
+      "n": 100,
+      "total_ms_median": 60.5,
+      "total_ms_p95": 62.9,
+      "yolo_ms_median": 26.6,
+      "yolo_ms_p95": 26.8,
+      "filter_ms_median": 2.81,
+      "sync": 300,
+      "publishes": 300,
+      "rejects": {
+        "flat": 685,
+        "aspect": 1,
+        "no_planar_top": 0,
+        "low_raised_frac": 0,
+        "high_planar_std": 0,
+        "other": 0
+      }
+    },
+    {
+      "n": 100,
+      "total_ms_median": 60.4,
+      "total_ms_p95": 63.0,
+      "yolo_ms_median": 26.6,
+      "yolo_ms_p95": 26.8,
+      "filter_ms_median": 2.59,
+      "sync": 400,
+      "publishes": 400,
+      "rejects": {
+        "flat": 903,
+        "aspect": 1,
+        "no_planar_top": 0,
+        "low_raised_frac": 0,
+        "high_planar_std": 0,
+        "other": 0
+      }
+    },
+    {
+      "n": 100,
+      "total_ms_median": 60.1,
+      "total_ms_p95": 62.4,
+      "yolo_ms_median": 26.6,
+      "yolo_ms_p95": 26.7,
+      "filter_ms_median": 2.5,
+      "sync": 500,
+      "publishes": 500,
+      "rejects": {
+        "flat": 1113,
+        "aspect": 1,
+        "no_planar_top": 0,
+        "low_raised_frac": 0,
+        "high_planar_std": 0,
+        "other": 0
+      }
+    },
+    {
+      "n": 100,
+      "total_ms_median": 60.1,
+      "total_ms_p95": 61.8,
+      "yolo_ms_median": 26.6,
+      "yolo_ms_p95": 26.8,
+      "filter_ms_median": 2.48,
+      "sync": 600,
+      "publishes": 600,
+      "rejects": {
+        "flat": 1333,
+        "aspect": 1,
+        "no_planar_top": 0,
+        "low_raised_frac": 0,
+        "high_planar_std": 0,
+        "other": 0
+      }
+    },
+    {
+      "n": 100,
+      "total_ms_median": 60.3,
+      "total_ms_p95": 64.0,
+      "yolo_ms_median": 26.6,
+      "yolo_ms_p95": 26.8,
+      "filter_ms_median": 2.47,
+      "sync": 700,
+      "publishes": 700,
+      "rejects": {
+        "flat": 1551,
+        "aspect": 1,
+        "no_planar_top": 0,
+        "low_raised_frac": 0,
+        "high_planar_std": 0,
+        "other": 0
+      }
+    },
+    {
+      "n": 100,
+      "total_ms_median": 60.2,
+      "total_ms_p95": 62.4,
+      "yolo_ms_median": 26.6,
+      "yolo_ms_p95": 26.9,
+      "filter_ms_median": 2.49,
+      "sync": 800,
+      "publishes": 800,
+      "rejects": {
+        "flat": 1770,
+        "aspect": 1,
+        "no_planar_top": 0,
+        "low_raised_frac": 0,
+        "high_planar_std": 0,
+        "other": 0
+      }
+    },
+    {
+      "n": 100,
+      "total_ms_median": 59.9,
+      "total_ms_p95": 61.9,
+      "yolo_ms_median": 26.6,
+      "yolo_ms_p95": 26.8,
+      "filter_ms_median": 2.42,
+      "sync": 900,
+      "publishes": 900,
+      "rejects": {
+        "flat": 1979,
+        "aspect": 1,
+        "no_planar_top": 0,
+        "low_raised_frac": 0,
+        "high_planar_std": 0,
+        "other": 0
+      }
+    },
+    {
+      "n": 100,
+      "total_ms_median": 60.3,
+      "total_ms_p95": 63.4,
+      "yolo_ms_median": 26.6,
+      "yolo_ms_p95": 26.8,
+      "filter_ms_median": 2.54,
+      "sync": 1000,
+      "publishes": 1000,
+      "rejects": {
+        "flat": 2191,
+        "aspect": 1,
+        "no_planar_top": 0,
+        "low_raised_frac": 0,
+        "high_planar_std": 0,
+        "other": 0
+      }
+    },
+    {
+      "n": 100,
+      "total_ms_median": 60.4,
+      "total_ms_p95": 63.6,
+      "yolo_ms_median": 26.6,
+      "yolo_ms_p95": 26.8,
+      "filter_ms_median": 2.6,
+      "sync": 1100,
+      "publishes": 1100,
+      "rejects": {
+        "flat": 2417,
+        "aspect": 1,
+        "no_planar_top": 0,
+        "low_raised_frac": 0,
+        "high_planar_std": 0,
+        "other": 0
+      }
+    },
+    {
+      "n": 100,
+      "total_ms_median": 60.0,
+      "total_ms_p95": 62.6,
+      "yolo_ms_median": 26.6,
+      "yolo_ms_p95": 26.8,
+      "filter_ms_median": 2.49,
+      "sync": 1200,
+      "publishes": 1200,
+      "rejects": {
+        "flat": 2635,
+        "aspect": 1,
+        "no_planar_top": 0,
+        "low_raised_frac": 0,
+        "high_planar_std": 0,
+        "other": 0
+      }
+    },
+    {
+      "n": 100,
+      "total_ms_median": 60.8,
+      "total_ms_p95": 66.7,
+      "yolo_ms_median": 26.7,
+      "yolo_ms_p95": 27.1,
+      "filter_ms_median": 2.54,
+      "sync": 1300,
+      "publishes": 1300,
+      "rejects": {
+        "flat": 2857,
+        "aspect": 1,
+        "no_planar_top": 0,
+        "low_raised_frac": 0,
+        "high_planar_std": 0,
+        "other": 0
+      }
+    },
+    {
+      "n": 100,
+      "total_ms_median": 61.1,
+      "total_ms_p95": 65.3,
+      "yolo_ms_median": 26.6,
+      "yolo_ms_p95": 26.7,
+      "filter_ms_median": 2.57,
+      "sync": 1400,
+      "publishes": 1400,
+      "rejects": {
+        "flat": 3064,
+        "aspect": 2,
+        "no_planar_top": 0,
+        "low_raised_frac": 0,
+        "high_planar_std": 0,
+        "other": 0
+      }
+    },
+    {
+      "n": 100,
+      "total_ms_median": 61.1,
+      "total_ms_p95": 65.0,
+      "yolo_ms_median": 26.6,
+      "yolo_ms_p95": 26.9,
+      "filter_ms_median": 2.47,
+      "sync": 1500,
+      "publishes": 1500,
+      "rejects": {
+        "flat": 3278,
+        "aspect": 3,
+        "no_planar_top": 0,
+        "low_raised_frac": 0,
+        "high_planar_std": 0,
+        "other": 0
+      }
+    },
+    {
+      "n": 100,
+      "total_ms_median": 61.0,
+      "total_ms_p95": 66.1,
+      "yolo_ms_median": 26.6,
+      "yolo_ms_p95": 26.9,
+      "filter_ms_median": 2.63,
+      "sync": 1600,
+      "publishes": 1600,
+      "rejects": {
+        "flat": 3494,
+        "aspect": 4,
+        "no_planar_top": 0,
+        "low_raised_frac": 0,
+        "high_planar_std": 0,
+        "other": 0
+      }
+    },
+    {
+      "n": 100,
+      "total_ms_median": 60.9,
+      "total_ms_p95": 64.2,
+      "yolo_ms_median": 26.6,
+      "yolo_ms_p95": 26.8,
+      "filter_ms_median": 3.06,
+      "sync": 1700,
+      "publishes": 1700,
+      "rejects": {
+        "flat": 3725,
+        "aspect": 4,
+        "no_planar_top": 0,
+        "low_raised_frac": 0,
+        "high_planar_std": 0,
+        "other": 0
+      }
+    },
+    {
+      "n": 100,
+      "total_ms_median": 59.9,
+      "total_ms_p95": 62.4,
+      "yolo_ms_median": 26.6,
+      "yolo_ms_p95": 26.8,
+      "filter_ms_median": 2.95,
+      "sync": 1800,
+      "publishes": 1800,
+      "rejects": {
+        "flat": 3967,
+        "aspect": 4,
+        "no_planar_top": 0,
+        "low_raised_frac": 0,
+        "high_planar_std": 0,
+        "other": 0
+      }
+    },
+    {
+      "n": 36,
+      "total_ms_median": 60.6,
+      "total_ms_p95": 63.2,
+      "yolo_ms_median": 26.6,
+      "yolo_ms_p95": 26.8,
+      "filter_ms_median": 2.88,
+      "sync": 1837,
+      "publishes": 1836,
+      "rejects": {
+        "flat": 4055,
+        "aspect": 4,
+        "no_planar_top": 0,
+        "low_raised_frac": 0,
+        "high_planar_std": 0,
+        "other": 0
+      }
+    }
+  ]
+}

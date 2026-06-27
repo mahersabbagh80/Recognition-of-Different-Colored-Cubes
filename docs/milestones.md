@@ -81,9 +81,10 @@ TensorRT export on the Jetson is the highest schedule risk — prioritize steps 
 ## M4 — Model on Jetson
 
 - [x] Convert ONNX to TensorRT FP16 engine on Jetson
-- [ ] Run `scripts/test_inference.py` on saved images from the robot camera
-- [ ] Confirm detections with bounding boxes and correct class labels
-- [ ] If accuracy below target → return to M3 fine-tune path, then repeat M4
+- [x] Run `scripts/test_inference.py` on saved images from the robot camera
+- [x] Confirm detections with bounding boxes and correct class labels (30/30 frame-hit rate for all 3 classes; mean conf 0.57–0.73)
+- [x] Per-class accuracy and Jetson latency recorded (median 26.6 ms/frame including annotation; 14.66 ms steady-state engine-only; 68 FPS engine budget)
+- [ ] If accuracy below target → return to M3 fine-tune path, then repeat M4 (model is color-driven; FPs on green soil bag, blue package, blue decal; **recommended follow-up**: raise conf threshold to 0.50 or fine-tune on JetRover-room images — see `evaluation/m4b_predictions/report.md` §6)
 
 **Done when:** Standalone inference detects cubes in robot camera images at acceptable accuracy.
 
@@ -99,18 +100,97 @@ TensorRT export on the Jetson is the highest schedule risk — prioritize steps 
 > (trtexec random-input benchmark: 70.47 qps, GPU compute mean 14.12 ms).
 > See `docs/LOGBOOK.md` 2026-06-27 M4a entry for the full transcript and
 > `models/README.md` for the artifact table.
+>
+> **M4b (live-camera validation) — COMPLETE 2026-06-27.** 30 saved frames
+> from `/depth_cam/rgb/image_raw` (1 red + 1 green + 1 blue cube in FOV)
+> inferred with `models/best.engine` on the Orin Nano. Frame-hit rate
+> 30/30 / 30/30 / 30/30 for blue / green / red. Mean confidences
+> 0.731 / 0.567 / 0.708. Median forward-pass latency 26.59 ms (with
+> annotation), 14.66 ms pure-engine steady state. Dev-PC ORT sanity
+> check on `models/best.onnx` returns matching outputs (31.58 ms median,
+> CPU provider). Model over-detects on color-confusable background
+> (green soil bag, blue cardboard package, blue decal); cubes themselves
+> always detected with high confidence. **M4 verdict: COMPLETE for the
+> M4b acceptance bar (≥50% per class); FP cleanup recommended before M5
+> ships.** Full report at `evaluation/m4b_predictions/report.md`. See
+> `docs/LOGBOOK.md` 2026-06-27 M4b entry for the full transcript.
+>
+> **M4c (depth/geometry post-filter spike) — VALIDATED 2026-06-27 on
+> card `t_4fcd206e`.** Subsystem: `scripts/m4c_geometry_filter.py`
+> (numpy-only, median 0.21 ms / box, 0.64 ms p95 — well under the 5 ms
+> median target). Validated against a synchronised RGB+depth capture
+> (30 pairs, `evaluation/camera_samples/cubes_depth_2026-06-27/`,
+> gitignored, SHA-256 verified): the filter **correctly rejects all
+> four named M4b flat-color distractors** (blue cardboard tissue,
+> blue cardboard package, blue decal, green Uber Eats Subbag) on
+> 30/30 frames and the **green bag as a raised 3D colored non-cube
+> distractor** on 64/64 detections across 30 frames. The real blue
+> cube is preserved on 22/29 frames (76%, below 90% target) where
+> YOLO gives a full bbox; the real red cube is rejected 30/30 because
+> YOLO's bbox is too tight (covers only the top face). Per-class
+> conclusion: **V2 solved completely, V3 solved on the green bag
+> positive control, V1 partially solved.** Phase 1 is **necessary but
+> not sufficient** for M5: V3 (bottle / ball / cup / carton / cube-
+> shaped non-rgb toy) needs a Maher physical session to validate,
+> and V1 red-cube bbox tightness needs the M3c fine-tune
+> (`t_13b658c2`) as the conditional fallback. The M3c3 addendum's
+> topic name `/depth_cam/depth_registered/points` was wrong on the
+> live install — the actual color-registered depth image is
+> `/depth_cam/depth/image_raw` (640×360, 16UC1 mm, frame_id =
+> `depth_cam_color_optical_frame`, ~30.5 Hz). Full report at
+> `evaluation/m4c_geometry_filter/report.md`.
+
+> **M4c1 follow-up (V3+V4) — ORCHESTRATION PRE-STAGED 2026-06-27 on card
+> `t_980263f0`, awaiting Maher physical session.** Pipeline is wired up
+> end-to-end: `scripts/m4c_v3v4_run.sh <distractor|empty|all> [date]`
+> runs the capture via SSH, pulls, SHA-256 verifies, YOLO infers,
+> filter runs (with the M4c1 v2-only params passed explicitly:
+> `--inset-px 1 --annulus-outer-px 15`), and writes per-distractor
+> outputs. `scripts/m4c_v3v4_summary.py --write-md` produces the unified
+> table. `scripts/check_empty_scene.py` (uploaded to
+> `/tmp/check_empty_scene.py` on the Jetson) lets Maher verify the
+> floor is clear before the V4 capture. Report stub at
+> `evaluation/m4c_geometry_filter/v3_v4_followup_2026-06-27.md`. **No
+> new filter evidence until Maher does the physical setup** — the
+> JetRover floor is currently still populated with the V1 cubes from
+> the M4b/M4c1 session. Phase 1 disposition unchanged from M4c1.
 
 ---
 
 ## M5 — ROS 2 Node Live
 
-- [ ] Subscribe to vendor camera topic `/depth_cam/rgb/image_raw`
-- [ ] Run TensorRT inference per frame
-- [ ] Publish `/cube_detections`, `/cube_detections/vendor_objects`, and `/cube_detections/debug_image`
-- [ ] Add `interfaces` to `package.xml` when vendor-compatible output is implemented
-- [ ] Visualize in RViz2 or `rqt_image_view`
+- [x] Subscribe to vendor camera topic `/depth_cam/rgb/image_raw` — DONE 2026-06-27 (M1 verification, confirmed live 2026-06-28)
+- [x] Run TensorRT inference per frame — DONE 2026-06-28 (M5 card run 82 + M5b empty-scene replay, 26.6 ms/yolo steady state)
+- [x] Publish `/cube_detections`, `/cube_detections/vendor_objects`, and `/cube_detections/debug_image` — DONE 2026-06-28 (all 3 publishers registered; live verified on bag)
+- [x] Add `interfaces` to `package.xml` when vendor-compatible output is implemented — DONE (vendor_objects topic publishing `interfaces/msg/ObjectsInfo`)
+- [x] Visualize in RViz2 or `rqt_image_view` — PARTIAL: live `debug_image` topic publishes annotated frames (M5b empty-scene preview saved + M5c cubes-in-frame debug overlay with `keep=0`); RViz2/rqt visual not run this round
+- [x] Capture empty-scene bag (KEEP=0 at conf≥0.50, M4c1 V4 PASS) — DONE 2026-06-28 (M5b, 30s sqlite3, 0/439)
+- [x] Capture cubes-in-frame bag — DONE 2026-06-28 (M5c, 30s sqlite3, 0/414 at conf≥0.50 — see §11.3 for the model-accuracy analysis)
 
 **Done when:** Live detections visible with bounding boxes overlaid on camera feed.
+
+**Status (2026-06-28 04:37 HKT):** PARTIAL — both bags captured + analyzed.
+Empty-scene: KEEP=0/439 at conf≥0.50 (M4c1 V4 PASS replicated live).
+Cubes-in-frame: KEEP=0/414 at conf≥0.50 — **the Roboflow `best.engine` does
+not fire on the actual cubes at the JetRover-room distance and camera
+angle** (the geometry filter is doing its job, but a model that doesn't
+fire on the target class cannot be salvaged by post-filtering). All 41700
+geometry-filter rejects are `flat` (YOLO bbox depth ≈ floor depth,
+indicating the bboxes are landing on floor texture, not on the cubes).
+
+Next-step diagnostic: recapture cubes bag at conf=0.25 (mirrors the M4c1
+V1 cubes capture where geometry filter kept 22/29 blue cubes). If that
+shows ≥3 KEEPs, the model is fine and the only fix is to lower the
+production conf threshold. If conf=0.25 still shows 0 KEEPs, the model
+genuinely does not fire on real cubes and the fine-tune card
+(`t_13b658c2`, previously closed as no-longer-needed) should be
+re-opened with a fresh scope: produce a `best.engine` that detects
+real JetRover-room cubes at conf≥0.50.
+
+Publish-rate ceiling 15.52 Hz remains a separate concern — TensorRT FP16
++ sync overhead, below the original ≥25 Hz target. Options documented
+in `evaluation/m5_live/report.md` §10: accept as-is, re-export FP32, or
+skip frames.
 
 ---
 
