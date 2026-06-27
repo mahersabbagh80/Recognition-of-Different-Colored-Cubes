@@ -28,6 +28,31 @@ wandb/
 # Captured test images and eval outputs (optional local data)
 evaluation/captures/
 evaluation/results/
+evaluation/m2-visualizations/
+# M4/M6 JetRover camera samples and ROS bags (gitignored; reproducible from scripts/capture_frames.py)
+evaluation/camera_samples/
+evaluation/bags/
+# M5 evaluation data — bag captures are gitignored; the report is tracked.
+evaluation/m5_live/bag_*/
+evaluation/m5_live/*.json
+!evaluation/m5_live/report.md
+!evaluation/m5_live/.gitkeep
+# M4 inference outputs (annotated PNGs + detections.json)
+evaluation/m4b_predictions/
+evaluation/m4b_predictions_v1_subprocess/
+# M4c geometry-filter outputs — JSON + report tracked, annotated PNGs and depth sanity PNGs ignored
+evaluation/m4c_geometry_filter/annotated_cubes/
+evaluation/m4c_geometry_filter/_depth_sanity_*.png
+# M3c hard-negative fine-tune outputs (annotated PNGs + detections.json)
+# Report.md is intentionally NOT excluded — it is the evidence document.
+evaluation/m3c_predictions/*.png
+evaluation/m3c_predictions_empty/*.png
+evaluation/m3c_predictions_hardneg/*.png
+evaluation/m3c_roboflow_valid/*.png
+
+# Local tester harness (verification scripts and their results, e.g. _m2m3_verify.*)
+evaluation/_*.py
+evaluation/_*.json
 
 # Environment and secrets
 .env
@@ -44,6 +69,8 @@ data/roboflow_det/
 
 # M2 raw dataset (downloaded from Roboflow manually or via SDK; never commit images)
 data/roboflow/
+# M3c hard-negative fine-tune dataset (regenerable via scripts/build_hardneg_dataset.py)
+data/hardneg/
 
 # OS / editor
 .DS_Store
