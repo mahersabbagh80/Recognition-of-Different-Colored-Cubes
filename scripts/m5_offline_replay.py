@@ -34,10 +34,10 @@ from pathlib import Path
 import cv2
 import numpy as np
 
-# Make project-local imports work
-ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT / "scripts"))
-sys.path.insert(0, str(ROOT / "recognition_of_different_colored_cubes"))
+# Add project scripts/ to sys.path so we can import the canonical m4c filter.
+sys.path.insert(
+    0, str(Path(__file__).resolve().parents[1] / "scripts")
+)
 
 from m4c_geometry_filter import compute_geometry, decide  # noqa: E402
 

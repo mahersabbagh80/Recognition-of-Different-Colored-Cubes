@@ -33,7 +33,6 @@ node-construction scope.
 from __future__ import annotations
 
 import os
-import sys
 import time
 from dataclasses import dataclass
 from typing import Iterable, List, Optional, Sequence
@@ -48,15 +47,9 @@ from rclpy.qos import qos_profile_sensor_data
 from sensor_msgs.msg import CameraInfo, Image
 from vision_msgs.msg import Detection2D, Detection2DArray, ObjectHypothesisWithPose
 
-# Make the project-local scripts/ available so we can reuse the same
-# geometry-filter function the M4c1 evidence gate used.
-_SCRIPTS_DIR = os.path.join(
-    os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
-    "scripts",
+from recognition_of_different_colored_cubes.geometry_filter import (  # noqa: E402
+    compute_geometry, decide,
 )
-if _SCRIPTS_DIR not in sys.path:
-    sys.path.insert(0, _SCRIPTS_DIR)
-from m4c_geometry_filter import compute_geometry, decide  # noqa: E402
 
 CLASS_NAMES = ["blue_cube", "green_cube", "red_cube"]
 CLASS_COLORS = {
@@ -243,11 +236,31 @@ class CubeDetectionNode(Node):
             "cy": float(self.get_parameter("cy").value),
         }
 
-        self.model_path = self.get_parameter("model_path").value or os.path.join(
-            os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
-            "models",
-            "best.engine",
-        )
+        self.model_path = self.get_parameter("model_path").value
+        if not self.model_path:
+            # Default resolution: prefer the workspace install dir (where the
+            # colcon-built artifacts usually live), then the source dir, then
+            # the user's home on Jetson / dev PC.
+            _candidates = [
+                os.path.join(
+                    os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))),
+                    "models",
+                    "best.engine",
+                ),
+                os.path.join(
+                    os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
+                    "..", "..", "models", "best.engine",
+                ),
+                "/home/ubuntu/jetson_ws/src/Recognition-of-Different-Colored-Cubes/models/best.engine",
+                "/home/maher/maher_ws/src/Recognition-of-Different-Colored-Cubes/models/best.engine",
+            ]
+            for cand in _candidates:
+                cand_abs = os.path.abspath(cand)
+                if os.path.exists(cand_abs):
+                    self.model_path = cand_abs
+                    break
+            else:
+                self.model_path = os.path.abspath(_candidates[0])  # best guess; will warn at load
 
         self.bridge = CvBridge()
         self._warned_bridge_error = False
@@ -399,10 +412,15 @@ class CubeDetectionNode(Node):
         if self._got_camera_info:
             return
         # Update intrinsics from the live camera_info. ROS CameraInfo's K is
-        # row-major [fx, 0, cx, 0, fy, cy, 0, 0, 1].
-        if msg.k and len(msg.k) >= 9:
-            fx = float(msg.k[0]); fy = float(msg.k[4])
-            cx = float(msg.k[2]); cy = float(msg.k[5])
+        # row-major [fx, 0, cx, 0, fy, cy, 0, 0, 1]. The field may be a
+        # numpy array or a plain list — coerce to list first.
+        try:
+            k_list = list(msg.k)
+        except TypeError:
+            k_list = []
+        if len(k_list) >= 9:
+            fx = float(k_list[0]); fy = float(k_list[4])
+            cx = float(k_list[2]); cy = float(k_list[5])
             if fx > 1.0 and fy > 1.0:
                 self.filter_params["fx"] = fx
                 self.filter_params["fy"] = fy
