@@ -80,12 +80,25 @@ TensorRT export on the Jetson is the highest schedule risk — prioritize steps 
 
 ## M4 — Model on Jetson
 
-- [ ] Convert ONNX to TensorRT FP16 engine on Jetson
+- [x] Convert ONNX to TensorRT FP16 engine on Jetson
 - [ ] Run `scripts/test_inference.py` on saved images from the robot camera
 - [ ] Confirm detections with bounding boxes and correct class labels
 - [ ] If accuracy below target → return to M3 fine-tune path, then repeat M4
 
 **Done when:** Standalone inference detects cubes in robot camera images at acceptable accuracy.
+
+> **M4a (engine build) — COMPLETE 2026-06-27 on the Jetson.** Artifact:
+> `models/best.engine` (20.4 MB, SHA-256
+> `c64d3e5e277ea42f3f19f0ba733d6ef25f0403ba2496f8191288d3d6829ec3d1`,
+> FP32+FP16 plan on Orin Nano, TensorRT 8.6.2). Built with
+> `/usr/src/tensorrt/bin/trtexec --onnx=best.onnx --saveEngine=best.engine
+> --fp16 --workspace=2048` (859.7 s wall time). Lightweight engine-load
+> + infer check on a saved validation image returns the same 7 detections
+> as the M3 ORT smoke check, with classes and confidences matching the
+> best.pt class order; steady-state latency on the Orin is ~14.6 ms/frame
+> (trtexec random-input benchmark: 70.47 qps, GPU compute mean 14.12 ms).
+> See `docs/LOGBOOK.md` 2026-06-27 M4a entry for the full transcript and
+> `models/README.md` for the artifact table.
 
 ---
 

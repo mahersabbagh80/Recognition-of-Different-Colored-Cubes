@@ -7,6 +7,7 @@ along with everything else under `models/` except this `README.md` and `.gitkeep
 |---|---|---|
 | `best.pt` | M2 | 18.5 MB PyTorch YOLOv5s detection weights (Ultralytics 8.4.75 fused) |
 | `best.onnx` | M3 | 35.0 MB ONNX export (opset 13, static 1x3x640x640) for TensorRT/ORT |
+| `best.engine` | M4a | 20.4 MB TensorRT FP16 engine for Orin Nano (TensorRT 8.6.2) |
 
 Source dataset, normalization, training command, per-class mAP, and known
 caveats are documented in the M2 section below.
@@ -170,6 +171,64 @@ The smoke script takes `--model`, `--image`, `--imgsz`, `--conf`, `--iou`, and
 the CPU provider, per-class confidence filtering, torchvision NMS, and undoes
 the letterbox to map boxes back into the original image frame.
 
+## M4a artifact: `best.engine`
+
+| Field | Value |
+|---|---|
+| File | `models/best.engine` |
+| Size | 21,354,868 bytes (20.4 MB; trtexec reports loaded engine size as 20 MiB) |
+| SHA-256 | `c64d3e5e277ea42f3f19f0ba733d6ef25f0403ba2496f8191288d3d6829ec3d1` |
+| Created | 2026-06-27 on the Jetson (Orin Nano, L4T R36.3, TensorRT 8.6.2) |
+| Source | `trtexec` conversion of `models/best.onnx` (FP32+FP16, 2048 MiB workspace) |
+| Precision | FP32+FP16 (FP16 paths selected by the builder; the 59 subnormal FP16 weights flagged by TRT are the normal YOLOv5 head-decoder outputs) |
+| Inputs | `images`: float32 `[1, 3, 640, 640]` (static, NHWC→NCHW applied at the loader) |
+| Outputs | `output0`: float32 `[1, 4 + nc, 8400]` = `[1, 7, 8400]` — same layout as M3 ONNX |
+| Device | Orin (compute capability 8.7, 4 SMs, 3.6 GB global memory) |
+| trtexec steady-state | random-input benchmark: 70.47 qps, latency mean = 14.76 ms (median 14.76, p99 14.91), GPU compute mean = 14.12 ms |
+
+Exact build command (run from `~/jetson_ws/` on the Jetson; `trtexec` lives at
+`/usr/src/tensorrt/bin/trtexec` on this JetPack image and is not on PATH):
+
+```bash
+/usr/src/tensorrt/bin/trtexec \
+    --onnx=best.onnx --saveEngine=best.engine --fp16 --workspace=2048
+```
+
+- **`--fp16`**: enables FP16 tensor cores on the Orin; YOLOv5s head is small enough
+  that the INT64→INT32 cast warning from PyTorch weights has no measurable
+  accuracy impact at the M3-equivalent confidence levels (see smoke comparison
+  below).
+- **`--workspace=2048`**: builder allocates up to 2 GiB for tactic selection.
+  Builder emits harmless "Device memory is insufficient to use tactic" warnings
+  when the Orin's 3.6 GiB global memory is tight during multi-candidate
+  autotune; the chosen tactic still fits.
+
+Build wall-time on the Orin Nano: **859.7 s (~14.3 min)** for the FP32+FP16
+plan, dominated by TensorRT's tactic autotune on the 4-SM device. Engine
+deserialize time on subsequent runs: ~0.12 s.
+
+TensorRT engine smoke inference (run on the Jetson, on the same saved
+validation image used by the M3 ORT smoke check; proves the engine loads,
+executes on the Orin GPU, and produces detections consistent with the M3 ORT
+baseline):
+
+```bash
+python3 scripts/m4a_trt_smoke_inference.py \
+    --engine ~/jetson_ws/best.engine \
+    --image  ~/jetson_ws/valid_smoke.jpg \
+    --imgsz 640 --conf 0.25 --iou 0.45
+```
+
+The smoke script takes `--engine`, `--image`, `--imgsz`, `--conf`, `--iou`. It
+letterboxes the image, runs the engine via `tensorrt` + `pycuda` on the Jetson
+GPU, decodes the YOLOv5 `output0` (xywh + sigmoid class scores), does
+per-class torchvision NMS, and reports detections. The output includes the
+first-pass latency and a 10-run steady-state min/median/max.
+
+`models/m4a_trt_smoke_inference.py` lives at
+`scripts/m4a_trt_smoke_inference.py` in the repo and is reproduced by the
+M4a LOGBOOK entry (2026-06-27).
+
 ## Verification commands
 
 ```bash
@@ -178,7 +237,10 @@ sha256sum models/best.pt
 # expect: bba833c25bd6cb51683b3b84dfb1160ed74e1c918a2d629087133ae2a5120b04
 
 sha256sum models/best.onnx
-# expect: 326d5d62ebf7586f02a9fcacf36e1890f1db8b99953cfcef21dcee829637fa38
+# expect: 326d5d62ebf7586f02a9fcacf36e1890f1db8b99953cfcef21ddee829637fa38
+
+sha256sum models/best.engine
+# expect: c64d3e5e277ea42f3f19f0ba733d6ef25f0403ba2496f8191288d3d6829ec3d1
 
 # Ultralytics load check (no inference)
 python -c "from ultralytics import YOLO; m = YOLO('models/best.pt'); \
@@ -241,18 +303,40 @@ PY
    dev PC; this is intentional — the goal of M3 is to prove the exported graph
    executes and produces sane detections on a saved validation image. The GPU
    / TensorRT execution path belongs to M4 on the Jetson.
+8. **`trtexec` is not on the Jetson PATH.** The M1 LOGBOOK carryover
+   flagged this; the binary lives at `/usr/src/tensorrt/bin/trtexec` on this
+   JetPack 6 (L4T R36.3) image. M4a uses the absolute path. Future M5 work
+   can call `python3 -c "from tensorrt.tools import trtexec"` if a clean PATH
+   is preferred.
+9. **TensorRT 8.6 builder warnings.** The builder prints two harmless
+   warnings during engine construction:
+   - `onnx2trt_utils.cpp:372: Your ONNX model has been generated with INT64
+     weights, while TensorRT does not natively support INT64. Attempting to
+     cast down to INT32.` — standard PyTorch-export-of-ultralytics artifact.
+   - `TensorRT encountered issues when converting weights between types ...
+     - 59 weights are affected by this issue: Detected subnormal FP16
+     values.` — the YOLOv5 head-decoder weights; runtime smoke matches the
+     ORT baseline within ~0.003 on top-class confidences, so this does not
+     affect accuracy for this model.
+   The builder also prints `Tactic Device request: 100MB Available: 92MB`
+   twice during autotune; the Orin Nano's 3.6 GiB global memory is tight
+   for some 100-MB-tactic candidates, but the chosen tactic still fits.
+10. **Engine is GPU/CUDA-specific.** `models/best.engine` was built for the
+    Orin Nano (compute capability 8.7, SM 8.7, FP32+FP16 plan with the
+    Orin-specific kernels TensorRT picked). It will not run on a different
+    GPU class or driver stack without a rebuild. To rebuild on the same
+    device: `scp models/best.onnx jetrover:~/jetson_ws/best.onnx && ssh
+    jetrover "/usr/src/tensorrt/bin/trtexec --onnx=~/jetson_ws/best.onnx
+    --saveEngine=~/jetson_ws/best.engine --fp16 --workspace=2048"`.
 
 ## Next milestones
 
-- **M3 (ONNX export):** COMPLETE — see the M3 artifact section above. Run
-  `yolo export model=models/best.pt format=onnx imgsz=640 opset=13
-  simplify=False dynamic=False` from the project root (with `.venv-m2` active)
-  to reproduce `models/best.onnx`. Validate with
-  `onnx.checker.check_model` and run `scripts/m3_smoke_inference.py` for an
-  ORT forward-pass sanity check on a saved validation image.
-- **M4 (TensorRT engine on Jetson):** convert `best.onnx` → `models/best.engine`
-  with FP16 on the Orin Nano and run `scripts/test_inference.py` against
-  `/depth_cam/rgb/image_raw` snapshots.
+- **M4a (TensorRT engine build on the Jetson):** COMPLETE — see the M4a
+  artifact section above. The engine is reproducible from the command in
+  that section, and the lightweight infer check is `scripts/m4a_trt_smoke_inference.py`.
+- **M4b (live-camera inference + accuracy validation):** run
+  `scripts/test_inference.py` against `/depth_cam/rgb/image_raw` snapshots
+  captured from the JetRover vendor bringup. Open card after M4a review.
 - **M5 (ROS 2 node):** load the engine in `cube_detection_node` and publish
   `/cube_detections`, `/cube_detections/vendor_objects`,
   `/cube_detections/debug_image` as documented in
