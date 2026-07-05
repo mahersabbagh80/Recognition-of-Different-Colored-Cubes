@@ -63,6 +63,61 @@ Copy the template block for each new entry. Replace `YYYY-MM-DD` with the sessio
 
 <!-- New entries go below this line, newest at the top. -->
 
+## 2026-07-05 — M7a: repo hygiene indexes + conservative cleanup (card t_8c12d527)
+
+- **Milestone:** M7 — repo hygiene before M3d-revived fine-tuning
+- **Goal**
+  - Make the repo easier to navigate without interfering with the
+    M3d-revived implementer card (`t_1124e5e0`, still blocked) or
+    Maher's data collection.
+
+- **Work done**
+  - New `docs/README.md`: start-here / current / research-history /
+    evaluation grouping, current-status block (M5 PARTIAL, M3d-revived
+    next), recommended later-cleanup notes.
+  - New `scripts/README.md`: 28 tracked scripts indexed by category
+    (M0 export, M3 smoke, M4c filter, M5 live eval, capture, training,
+    dev/debug).
+  - Softened README over-strong wording: replaced the TODO/TBD Results
+    block with an explicit "Current status — M5 PARTIAL" subsection
+    that mirrors the 2026-06-28 live-bag numbers from
+    `evaluation/m5_live/report.md`; added a heads-up under
+    Quick Start and wired the two new indexes into the Documentation
+    table.
+  - Added conservative `.gitignore` entries: `.local-bin/` and
+    `evaluation/m5_live/**/*.before-rerun` (verified with
+    `git check-ignore`).
+  - Sacred models, vendor files, tracked evaluation evidence all
+    untouched. No scripts or docs moved into new folders.
+
+- **Results**
+  - 19/19 ad-hoc verification checks pass (verifier script written
+    under `/tmp/hermes-verify-m7a-gitignore.sh`, later moved out of
+    `/tmp`; covers the new `.gitignore` rules, regression on tracked
+    files, and link-existence checks for the new indexes).
+  - Caught two off-by-one claims (I had said "27 tracked scripts" in
+    both new indexes; the actual count is 28) — fixed and amended
+    into the same commit.
+
+- **Evidence**
+  - Commit `6f950bf M7: add repo hygiene indexes and ignore local noise`
+    (main..origin/main ahead 12, no push).
+  - `git status --short --branch`: 12 untracked files left (all M5c2
+    reviewer re-runs / conf025 evidence / one dev helper — explicitly
+    out of scope per the card body).
+
+- **Blockers**
+  - None.
+
+- **Next**
+  - Implementer / fine-tune: M3d-revived card (`t_1124e5e0`) — when it
+    lands, re-review `.gitignore` for new conf025-style artifacts and
+    decide whether to track `evaluation/m5_live/cubes_sticker_off_2026-06-28/summary.json`
+    (currently untracked but a parallel canonical artifact).
+  - Follow-up cleanup card: move the 6 underscore-prefixed dev helpers
+    under `scripts/dev_helpers/`. Recorded in `docs/README.md` §
+    "Recommended later cleanup".
+
 ## 2026-06-28 — M5c2: sticker-removed cubes-in-frame re-test (card t_737dbf1a)
 
 - **Milestone:** M5 PARTIAL — disambiguation re-test

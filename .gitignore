@@ -83,3 +83,11 @@ data/hardneg/
 # OS / editor
 .DS_Store
 *~
+
+# Local-only noise (per M7a, 2026-07-05). Kept conservative:
+# - .local-bin/ holds scratch scripts / one-off binaries.
+# - evaluation/m5_live/**/*.before-rerun holds pre-replay snapshots
+#   written alongside the canonical JSONs; they are useful for diffing
+#   but are not part of the tracked evidence.
+.local-bin/
+evaluation/m5_live/**/*.before-rerun

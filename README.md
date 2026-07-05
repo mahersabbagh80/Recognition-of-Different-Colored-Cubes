@@ -19,8 +19,8 @@ Built on a HiWonder JetRover with NVIDIA Jetson Orin Nano.
 - Real-time object detection on edge hardware (Jetson Orin Nano)
 - ML deployment pipeline: PyTorch weights → ONNX → TensorRT FP16
 - ROS 2 perception node (`cube_detection_node`) subscribing to the vendor RGB + depth streams, publishing standard `vision_msgs/Detection2DArray` and vendor `interfaces/ObjectsInfo` plus an annotated debug image
-- M4c1 geometry post-filter (raised-fraction + aspect + planar-top stddev) layered on top of the YOLO output at `confidence_threshold = 0.50` — the M5 pre-ship gate for flat-color and tall-non-cube distractors in the JetRover room (5/5 testable distractors + empty scene → 622 input detections / 0 kept)
-- Documented optional fine-tune path if the pretrained model underperforms on the robot camera
+- M4c1 geometry post-filter (raised-fraction + aspect + planar-top stddev) layered on top of the YOLO output at `confidence_threshold = 0.50` — gates flat-color and tall-non-cube distractors in the JetRover room (5/5 testable distractors + empty scene → 622 input detections / 0 kept, replicated live 2026-06-28)
+- Documented fine-tune path: the active next step is M3d-revived (positive fine-tune on real JetRover-room cubes) — see [`docs/m3d-revived-plan.md`](docs/m3d-revived-plan.md) and "Current status" under [Results](#results) below
 
 ---
 
@@ -34,21 +34,36 @@ Full pipeline details, ROS 2 topics, and training/export path → [`docs/archite
 
 ## Results
 
-> **TODO:** Fill this section after running the pipeline on hardware and completing the 50-frame evaluation.
+### Current status — M5 PARTIAL
 
-### Summary
+The M5 ROS 2 node and the M4c1 geometry filter are **implemented and live on
+the Jetson**: 29 runtime parameters, TensorRT FP16 engine loads, sync
+p50 within `sync_slop_sec = 0.05`. The geometry filter cleanly
+suppresses flat-color and tall-non-cube distractors in the JetRover room
+(empty scene: KEEP=0/439 at conf=0.50, no false positives).
 
-<!-- One short paragraph: did it work, what accuracy/fps achieved, any fine-tuning needed -->
+The blocker is **model accuracy on real JetRover-room cubes** — at conf=0.50
+the model fires only on floor texture, not on the actual cubes (M5c:
+KEEP=0/414 with sticker on; M5c2: KEEP=0/460 with sticker removed). At
+conf=0.25 the model partially responds (green_cube only, 2/439). The
+geometry filter cannot fix this — it is a model-accuracy issue, not a
+filter issue.
 
-_TBD — add after project completion._
+**M5 acceptance is PARTIAL. Next step:** fine-tune `models/best.pt` on
+real JetRover-room positives per [`docs/m3d-revived-plan.md`](docs/m3d-revived-plan.md),
+then re-run the M5c2 bag and re-check the M5 acceptance bar. Full
+evidence: [`evaluation/m5_live/report.md`](evaluation/m5_live/report.md).
 
-### Metrics
+### Live numbers (M5, 2026-06-28)
 
-| Metric | Target | Result |
-|--------|--------|--------|
-| Classification accuracy | ≥ 80% (50-frame test) | TBD |
-| Inference rate | ≥ 5 fps on Jetson | TBD |
-| Operating distance | 20–80 cm | TBD |
+| Bag | KEEP at conf=0.50 | YOLO p50 | Filter p50 | Publish rate |
+|---|---|---|---|---|
+| Empty scene | 0/439 ✅ PASS | 26.6 ms | 1.53 ms | 15.78 Hz |
+| Cubes in frame (sticker on) | 0/414 ❌ FAIL | 26.6 ms | 2.57 ms | 15.52 Hz |
+| Cubes in frame (sticker off) | 0/460 ❌ FAIL | 26.6 ms | 1.27 ms | 15.86 Hz |
+| Cubes (sticker off, conf=0.25) | 2/439 (green only) ❌ FAIL | 26.6 ms | 4.83 ms | 15.21 Hz |
+
+50-frame per-class evaluation is pending the M3d-revived fine-tune.
 
 ### Demo
 
@@ -56,10 +71,8 @@ Annotated debug overlays from the 2026-06-28 live bags live at
 [`evaluation/m5_live/empty_2026-06-28/preview/debug_overlay.png`](evaluation/m5_live/empty_2026-06-28/preview/debug_overlay.png)
 (empty scene, HUD `keep=0` — no false positives on the bare JetRover floor)
 and [`evaluation/m5_live/cubes_2026-06-28/peek_debug_live.png`](evaluation/m5_live/cubes_2026-06-28/peek_debug_live.png)
-(three cubes visible in the RGB frame, HUD `keep=0` at conf=0.50 — see the
-model-accuracy caveat in [Results](#results) below).
-
-_50-frame evaluation screenshots and clips will land here after Milestone 6._
+(three cubes visible in the RGB frame, HUD `keep=0` at conf=0.50 — the
+filter is correctly rejecting; the model is the bottleneck, see above).
 
 _Evaluation protocol and per-class breakdown: [`docs/evaluation.md`](docs/evaluation.md)_
 
@@ -80,7 +93,12 @@ Full dependencies and model artifacts → [`docs/technical-stack.md`](docs/techn
 
 ## Quick Start
 
-The detection node is live and validated on the Jetson (M5 ships — see [Results](#results) below for the 2026-06-28 live-bag numbers). The geometry filter is on by default; flip `filter_enabled` to `false` to bypass it for debugging.
+The detection node runs live on the Jetson. The M4c1 geometry filter is
+on by default; flip `filter_enabled` to `false` to bypass it for
+debugging. **Heads-up: M5 acceptance is PARTIAL — the model does not
+yet fire on real cubes in the JetRover room at conf≥0.50.** See the
+"Current status" subsection under [Results](#results) below for the
+2026-06-28 live-bag numbers and the next step (M3d-revived fine-tune).
 
 ### Build the package (dev machine — works now)
 
@@ -227,6 +245,7 @@ Browse the full tree on GitHub — this table only highlights non-obvious layout
 
 | Document | Description |
 |----------|-------------|
+| [`docs/README.md`](docs/README.md) | **Start here** — documentation index (start-here / current / research / evaluation, plus current status and recommended later cleanup). |
 | [`docs/architecture.md`](docs/architecture.md) | How the pipeline works — topics, node, diagrams |
 | [`docs/Concept-and-Approach.md`](docs/Concept-and-Approach.md) | Why YOLOv5 + TensorRT; model strategy |
 | [`docs/evaluation.md`](docs/evaluation.md) | How results are measured |
@@ -238,7 +257,14 @@ Browse the full tree on GitHub — this table only highlights non-obvious layout
 | [`docs/project-definition.md`](docs/project-definition.md) | Problem definition, classes, constraints |
 | [`docs/technical-stack.md`](docs/technical-stack.md) | Runtime stack, dependencies, model artifacts |
 | [`docs/milestones.md`](docs/milestones.md) | Implementation milestones and ordered steps |
+| [`docs/m3d-revived-plan.md`](docs/m3d-revived-plan.md) | Active fine-tune plan (M3d-revived, positive-detection scope) |
 | [`docs/LOGBOOK.md`](docs/LOGBOOK.md) | Session-by-session development log |
+
+### Script index
+
+| Index | What it covers |
+|-------|----------------|
+| [`scripts/README.md`](scripts/README.md) | Table of every tracked script with category + one-line role. |
 
 ---
 
