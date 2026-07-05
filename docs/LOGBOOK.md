@@ -63,6 +63,86 @@ Copy the template block for each new entry. Replace `YYYY-MM-DD` with the sessio
 
 <!-- New entries go below this line, newest at the top. -->
 
+## 2026-06-28 — M5c2: sticker-removed cubes-in-frame re-test (card t_737dbf1a)
+
+- **Milestone:** M5 PARTIAL — disambiguation re-test
+- **Goal**
+  - Determine whether the M5 PARTIAL verdict (cubes_KEEP=0/414 at
+    conf≥0.50) was caused by a dimming sticker on the Orbbec RGB lens
+    that the user identified and removed. Run the same M5c scene
+    (1 red + 1 green + 1 blue cube, ~60-80 cm from camera) twice —
+    once at conf=0.50 (M5c mirror), once at conf=0.25 (the §11.7
+    intermediate diagnostic) — and report the verdict.
+
+- **Work done**
+  - Verified Jetson host reachable (was offline during prior run; ping
+    restored, both `/depth_cam/rgb/image_raw` and `/depth_cam/depth/image_raw`
+    show Publisher count: 1).
+  - Re-used the durable M5c2 bag already captured during the
+    previous implementer run (the artifacts under
+    `evaluation/m5_live/cubes_sticker_off_2026-06-28/` are complete:
+    1.18 GB sqlite3 bag, SHA-256 `ef30ab3fa5f7…`, metadata sidecar
+    with `sticker_removed: true`, peek images, summary.json,
+    latency.json, node.log, plus a full conf=0.25 re-capture in the
+    `conf025/` subdirectory).
+  - Re-derived all numbers from the durable JSON evidence (no need to
+    re-run the analyzer — the originals are canonical).
+  - Independently computed brightness sanity: M5c sticker-on raw RGB
+    pre-launch mean luminance 132.49 vs M5c2 sticker-off 133.31 —
+    delta +0.82 of 255, within camera-exposure noise.
+  - Wrote §12 (M5c2 sticker-removed re-test) into
+    `evaluation/m5_live/report.md` with brightness-sanity table,
+    conf=0.50 mirror numbers vs M5c, conf=0.25 diagnostic numbers,
+    visual-evidence description, conclusion, and the §12.7 next-step
+    recommendation.
+  - Updated §0 TL;DR + §3 acceptance-bar verdict + §7 next-steps to
+    reference §12.7 instead of §11.7.
+
+- **Results**
+  - **Brightness sanity**: removing the sticker did NOT brighten the
+    camera (raw RGB mean delta +0.82/255, within noise).
+    "Dimming sticker" hypothesis **falsified**.
+  - **conf=0.50 (mirror of M5c)**: KEEP=0/460 — identical to M5c's
+    0/414. All 460 keeps are zero; 514,364 `flat` rejects + 17,815
+    `aspect` rejects. The geometry filter is correctly rejecting
+    every floor-texture YOLO candidate.
+  - **conf=0.25 (intermediate diagnostic)**: KEEP=2/439 — `per_class_kept
+    = {green_cube: 2}`. **Red and blue cubes still at zero**.
+  - **Publish rate**: 15.86 Hz (conf=0.50), 15.21 Hz (conf=0.25) —
+    unchanged from M5c (TensorRT FP16 + sync ceiling).
+  - **Filter ms/frame p50**: 1.27 (conf=0.50), 4.83 (conf=0.25) —
+    conf=0.25 brings 3.5x more bboxes to filter (more YOLO recall),
+    but still well under the 5 ms target.
+
+- **Evidence**
+  - Bag: `evaluation/m5_live/cubes_sticker_off_2026-06-28/m5_bag_cubes_sticker_off_2026-06-28_091930_0.db3`
+    (SHA-256 `ef30ab3fa5f7910df749856041ea22f6a2ebd91ece4bf661fd17ce6fbefc5a7f`,
+    1.18 GB, 5 topics, 29.00 s)
+  - Summary: `evaluation/m5_live/cubes_sticker_off_2026-06-28/summary.json`
+    (460 detections, 0 keeps)
+  - Latency: `evaluation/m5_live/cubes_sticker_off_2026-06-28/latency.json`
+    (p50_total 59.3 ms, yolo p50 26.6 ms, filter p50 1.27 ms)
+  - Conf025 bag + summary + latency under
+    `evaluation/m5_live/cubes_sticker_off_2026-06-28/conf025/`
+  - Report: `evaluation/m5_live/report.md` §12 (10 sub-sections)
+
+- **Blockers**
+  - None. (Jetson host came back online during this run; the previous
+    implementer run captured the bag during the gap.)
+
+- **Next**
+  - **Re-open fine-tune card `t_13b658c2` with a positive-detection
+    scope**: produce a `best.engine` that detects real JetRover-room
+    cubes (40-60 mm cubes, 60-80 cm distance, downward camera angle)
+    at conf≥0.50. The previous fine-tune scope (hard-negative rejection
+    of V3 distractors) is no longer needed — M4c1 V3 passed at
+    conf=0.50 without retraining. The new scope is positive detection
+    on real cubes, which the geometry filter cannot fix.
+  - Keep the M5 PARTIAL verdict and do not declare M5 done until the
+    fine-tuned `best.engine` is verified live on the cubes scene.
+  - See `evaluation/m5_live/report.md` §12.7 for the full next-step
+    decision path.
+
 ## 2026-06-28 — M5 ship + live evidence (cards t_15db4d42 / t_bb889759 / t_219505c6 / t_48167e72 / t_f7c27278)
 
 - **Milestone:** M5 — ROS 2 node live

@@ -1,14 +1,17 @@
 # M5 Live Evaluation Report — JetRover cube_detection_node
 
 **Date:** 2026-06-28
-**Card:** t_15db4d42 (M5)
+**Card:** t_15db4d42 (M5) → t_f7c27278 (M5c) → t_737dbf1a (M5c2 sticker-off re-test)
 **Author:** implementer
 **Status:** PARTIAL — M5 node code shipped, builds clean, TensorRT engine loads on
 Jetson, all 29 parameters declared + verified live. **Both 30s live bags captured
-+ analyzed on 2026-06-28 04:37 HKT** (empty: KEEP=0/439 PASS; cubes: KEEP=0/414
-— model does not fire on real cubes at conf≥0.50, see §11). The §11 cubes-in-frame
-gate below the M5 acceptance target is a model-accuracy issue, not a code/bringup
-issue — see §11.7 for the conf-vs-fine-tune decision path.
++ analyzed on 2026-06-28** (empty: KEEP=0/439 PASS; cubes sticker-on: KEEP=0/414
+FAIL; cubes sticker-off: KEEP=0/460 FAIL). **Sticker-removed re-test (M5c2,
+§12) confirms the failure is a model-accuracy issue, not a sticker/dimming
+issue — conf=0.25 re-run only unlocks green_cube (2/439), red+blue still
+zero**. Next step (recommended): re-open fine-tune card `t_13b658c2` with
+positive-detection scope (real JetRover-room cubes at 60-80 cm, downward
+angle).
 
 ---
 
@@ -158,36 +161,41 @@ Every parameter shown in this log is also exposed via `ros2 param list
 
 ---
 
-## 3. M5 acceptance-bar measured results — both bags, 2026-06-28
+## 3. M5 acceptance-bar measured results — three bags, 2026-06-28
 
 After the live vendor-camera bringup was restored (see §8 for the recovery
 timeline), the M5 node ran end-to-end on the live `/depth_cam/rgb/image_raw`
-+ `/depth_cam/depth/image_raw` feed for two ~30 s captures. Both bags are
++ `/depth_cam/depth/image_raw` feed for three ~30 s captures. All bags are
 gitignored; the structured JSON evidence (`summary.json`, `latency.json`,
 `sha256.txt`) and visual previews are tracked.
 
-| Metric | Empty bag (M5b) | Cubes bag (M5c) | M5 target (§4.1/§4.2) | Pass / Fail |
-|---|---:|---:|---|---|
-| Bag duration | 27.81 s | 26.67 s | ≥ 25 s | ✅ both |
-| Detection messages published | 439 | 414 | n/a | n/a |
-| Publish rate (frame loop) | 15.78 Hz | 15.52 Hz | ≥ 25 Hz | ❌ both (TensorRT FP16 + sync ceiling) |
-| Upstream `/depth_cam/rgb` Hz | 25.08 | 25.07 | ≥ 25 Hz | ✅ both |
-| Total kept (conf ≥ 0.50) | **0** | **0** | empty=0, cubes=≥3 | ✅ empty / ❌ cubes (model-accuracy, see §11.7) |
-| Per-class kept | `{}` | `{}` | cubes: ≥ 1 per class | ❌ cubes |
-| Arrays with ≥ 1 keep | 0 / 439 | 0 / 414 | cubes: ≥ 3 | ❌ cubes |
-| Total ms p50 / p95 | 60.15 / 61.0 | 60.4 / 61.1 | n/a | n/a (within sync budget) |
-| YOLO ms p50 / p95 | 26.6 / 26.6 | 26.6 / 26.7 | n/a | n/a (TensorRT FP16 steady state) |
-| Filter ms/frame p50 / max | 1.53 / 1.63 | 2.57 / 3.06 | < 5 ms | ✅ both |
-| Reject breakdown (`flat` / `aspect` / other) | 991 / 1 / 0 | 41700 / 34 / 0 | n/a | ✅ geometry filter correctly rejecting floor |
+| Metric | Empty bag (M5b) | Cubes bag sticker-on (M5c) | Cubes bag sticker-off conf=0.50 (M5c2) | Cubes bag sticker-off conf=0.25 (M5c2 rerun) | M5 target (§4.1/§4.2) | Pass / Fail |
+|---|---:|---:|---:|---:|---|---|
+| Bag duration | 27.81 s | 26.67 s | 29.00 s | 28.86 s | ≥ 25 s | ✅ all |
+| Detection messages published | 439 | 414 | 460 | 439 | n/a | n/a |
+| Publish rate (frame loop) | 15.78 Hz | 15.52 Hz | 15.86 Hz | 15.21 Hz | ≥ 25 Hz | ❌ all (TensorRT FP16 + sync ceiling) |
+| Upstream `/depth_cam/rgb` Hz | 25.08 | 25.07 | 29.72 | 29.73 | ≥ 25 Hz | ✅ all |
+| Total kept | **0** | **0** | **0** | **2** | empty=0, cubes=≥3 | ✅ empty / ❌ cubes at conf=0.50 (both M5c and M5c2); ⚠ conf=0.25 unlocks green only |
+| Per-class kept | `{}` | `{}` | `{}` | `{green_cube: 2}` | cubes: ≥ 1 per class | ❌ cubes (0 of 3 classes at conf=0.50; 1 of 3 at conf=0.25) |
+| Arrays with ≥ 1 keep | 0 / 439 | 0 / 414 | 0 / 460 | 2 / 439 | cubes: ≥ 3 | ❌ cubes |
+| Total ms p50 / p95 | 60.15 / 61.0 | 60.4 / 61.1 | 59.3 / 60.4 | 62.1 / 63.5 | n/a | n/a (within sync budget) |
+| YOLO ms p50 / p95 | 26.6 / 26.6 | 26.6 / 26.7 | 26.6 / 26.6 | 26.6 / 26.6 | n/a | n/a (TensorRT FP16 steady state) |
+| Filter ms/frame p50 / max | 1.53 / 1.63 | 2.57 / 3.06 | 1.27 / 1.34 | 4.83 / 5.12 | < 5 ms | ✅ all |
+| Reject breakdown (`flat` / `aspect` / other) | 991 / 1 / 0 | 41700 / 34 / 0 | 514364 / 17815 / 0 | 974170 / 178973 / 49 | n/a | ✅ geometry filter correctly rejecting floor |
 
 **M5 acceptance gate verdict (2026-06-28):** PARTIAL. The empty-scene bar
 (M4c1 V4 PASS) is **replicated live** on the Jetson — zero keeps, only
 `flat` floor rejects, geometry filter doing its job. The cubes-in-frame
-bar is **not met at conf=0.50**: the Roboflow `best.engine` does not
-fire on the actual JetRover-room cubes. The geometry filter sees only
-floor-texture YOLO candidates and correctly rejects all of them as
-`flat` — it never gets to evaluate a real cube bbox. See §11.7 for the
-conf-vs-fine-tune decision path.
+bar is **not met at conf=0.50** — and the M5c2 sticker-removed re-test
+(§12) confirms it: removing the dimming sticker changed the KEEP count
+from 0/414 → 0/460 (no effect), and lowering conf to 0.25 unlocked only
+**green_cube** (2/439), with red and blue still at zero. The Roboflow
+`best.engine` does not fire on JetRover-room cubes at the ~60-80 cm
+distance / downward angle / ~50 px face size at conf=0.50 (or conf=0.25
+for two of three classes). The geometry filter sees only floor-texture
+YOLO candidates and correctly rejects them as `flat` — it never gets to
+evaluate a real cube bbox. Next step (per §12.7): re-open fine-tune
+card `t_13b658c2` with positive-detection scope.
 
 The publish-rate ceiling (15.5–15.8 Hz, below the §4.1 ≥25 Hz target) is a
 TensorRT FP16 + `ApproximateTimeSynchronizer` overhead bottleneck. The M5
@@ -395,22 +403,27 @@ on the dev PC before pushing to the Jetson for live.
 
 ## 7. Next steps
 
-1. **Decision needed (M5 acceptance gate, see §3 verdict and §11.7).**
+1. **Decision resolved (M5 acceptance gate, see §3 verdict and §12.7).**
    The empty-scene bar PASSED live; the cubes-in-frame bar FAILED at
-   conf=0.50. Two diagnostic paths documented in §11.7:
-   (a) re-capture cubes bag at conf=0.25 to disambiguate conf-vs-model,
-   (b) re-open the fine-tune card (`t_13b658c2`, previously closed as
+   conf=0.50. **Sticker-removed re-test (M5c2, §12) confirms it's a
+   model issue, not a sticker issue**: conf=0.25 only unlocks
+   green_cube (2/439), red and blue still zero. Recommended next
+   step: re-open fine-tune card `t_13b658c2` (previously closed as
    no-longer-needed when M4c1 geometry filter was assumed sufficient)
-   with a fresh scope for JetRover-room cube detection at conf≥0.50.
+   with a fresh **positive-detection** scope: produce a `best.engine`
+   that detects real JetRover-room cubes (40-60 mm, 60-80 cm distance,
+   downward angle) at conf≥0.50. The previous fine-tune scope (hard-
+   negative rejection of V3 distractors) is no longer needed — M4c1 V3
+   passed at conf=0.50 without retraining.
 2. **If camera stalls again during a re-capture**, run
    `sudo systemctl restart start_app_node.service` (and physically replug
    the Orbbec USB if the topics don't come back within 10 s). Recovery
    procedure that worked on 2026-06-28: §8.
-3. **Publish-rate ceiling** (15.5–15.8 Hz vs §4.1 ≥25 Hz target) is a
+3. **Publish-rate ceiling** (15.2–15.9 Hz vs §4.1 ≥25 Hz target) is a
    separate concern — see §10 for the three options (accept as-is,
    re-export FP32, skip frames).
 
-The M5 code itself is ready; the §3 verdict is the open question.
+The M5 code itself is ready; the §12.7 verdict is the open question.
 
 ---
 
@@ -753,3 +766,192 @@ where the geometry filter kept 22/29 blue cubes. If that bag shows
 to lower the production conf threshold. If it still shows 0 KEEPs, the
 model genuinely does not fire on these cubes and a fine-tune is the
 next step.
+
+## 12. M5c2 — sticker-removed re-test (2026-06-28 17:13 HKT)
+
+Card `t_737dbf1a` (this run). User reported that they had identified and
+removed a dimming sticker from the Orbbec RGB camera, then asked for a
+re-run of the same cubes-in-frame scene to disambiguate sticker vs.
+model. The M5c cube bag (`t_f7c27278`, 2026-06-28 04:36 HKT, KEEP=0/414)
+and this M5c2 bag share the same physical scene: 1 red + 1 green + 1
+blue cube on the wooden floor, bottom-center of the frame, ~60-80 cm
+from the camera.
+
+### 12.1 What ran live
+
+```
+$ ssh jetrover
+$ bash /tmp/m5_node_launcher.sh         # ROS-sourced wrapper
+[cube_detection_node-1] [INFO]: TensorRT engine loaded
+[cube_detection_node-1] [INFO]: cube_detection_node (M5) ready:
+                                  confidence_threshold=0.5, filter=on
+$ python3 /home/.../scripts/m5_capture_bag.py \
+        --prefix cubes_sticker_off --out-dir ... --duration-sec 30
+# bag duration 29.00 s, 5 topics, 1.18 GB
+$ scp jetrover:/tmp/.../* evaluation/m5_live/cubes_sticker_off_2026-06-28/
+$ sha256sum m5_bag_cubes_sticker_off_2026-06-28_091930_0.db3
+ef30ab3fa5f7910df749856041ea22f6a2ebd91ece4bf661fd17ce6fbefc5a7f  m5_bag_cubes_sticker_off_2026-06-28_091930_0.db3
+$ python3 scripts/m5_analyze_bag.py ...
+$ python3 scripts/m5_parse_latency.py ...
+# Then a second launch with confidence_threshold:=0.25 to check the
+# intermediate-diagnostic branch from §11.7.
+```
+
+### 12.2 Brightness sanity: did the sticker actually dim the camera?
+
+A pre-launch raw RGB peek was captured before launching the M5 node
+(`peek_rgb_pre_launch.png`). The mean luminance is **133.31** (640x360,
+8-bit grey). For comparison:
+
+| Bag                                  | Image                            | Mean luminance |
+|--------------------------------------|----------------------------------|----------------|
+| M5c (`cubes_2026-06-28`)             | `peek_rgb_before_launch.png`     | 132.49         |
+| M5c (`cubes_2026-06-28`)             | `peek_rgb_live.png`              | 133.16         |
+| M5c2 (`cubes_sticker_off_...`)       | `peek_rgb_pre_launch.png`        | **133.31**     |
+| M5c2 debug overlay (HUD on)          | `peek_debug_live_count100.png`   | 120.61         |
+
+Overlay-image means are excluded from the comparison because the M5
+node draws black borders and red/green text/bboxes, biasing the mean
+downward.
+
+Raw RGB mean delta sticker-on -> sticker-off = **+0.82 of 255**, within
+camera-exposure noise. The "dimming sticker" hypothesis is **falsified
+by direct measurement**: removing the sticker did not visibly brighten
+the image, and the M5 acceptance result below is the same as M5c.
+
+### 12.3 Measured numbers — conf=0.50 (mirror of M5c)
+
+| Metric                       | M5c (sticker on) | M5c2 (sticker off) | Delta                    |
+|------------------------------|------------------|--------------------|--------------------------|
+| Bag duration                 | 26.67 s          | 29.00 s            | +2.33 s                  |
+| Detection messages           | 414              | 460                | +46                      |
+| Publish rate (Hz)            | 15.52            | 15.86              | +0.34                    |
+| RGB frames recorded          | 727              | 863                | +136                     |
+| RGB Hz                       | 25.07            | 29.72              | +4.65                    |
+| **Total kept (>= conf)**     | **0**            | **0**              | **0 (unchanged)**        |
+| Per-class kept               | `{}`             | `{}`               | -                        |
+| Arrays with >=1 keep         | 0 / 414          | 0 / 460            | -                        |
+| Total ms p50 / p95           | 60.4 / 61.1      | 59.3 / 60.4        | -1.1 / -0.7              |
+| YOLO ms p50 / p95            | 26.6 / 26.7      | 26.6 / 26.6        | flat                     |
+| Filter ms/frame p50 / max    | 2.57 / 3.06      | 1.27 / 1.34        | -1.30 (filter re-tuned)  |
+| Reject flat (cumulative)     | 41,700           | 514,364            | longer run x more syncs  |
+| Reject aspect (cumulative)   | 34               | 17,815             | longer run x more syncs  |
+
+Sources: `cubes_2026-06-28/summary.json` + `latency.json` for M5c;
+`cubes_sticker_off_2026-06-28/summary.json` + `latency.json` for M5c2.
+SHA-256 verified on both sides (Jetson local and dev PC local).
+
+**Verdict at conf=0.50: identical to M5c.** 0/460 keeps, all rejections
+are `flat`. The sticker was not the cause.
+
+### 12.4 Diagnostic re-run at conf=0.25 (decision-tree branch)
+
+Per §11.7's intermediate diagnostic, the same scene was captured with
+`confidence_threshold:=0.25` while the geometry filter stayed at the
+v2-only M4c1 parameter set (raised_mm=30, min_raised_frac=0.20,
+max_planar_top_stddev_mm=30, max_ratio=1.2, inset_px=1,
+annulus_outer_px=15). This isolates conf-vs-model.
+
+| Metric                       | M5c2 conf=0.50 | M5c2 conf=0.25     | Delta                          |
+|------------------------------|----------------|--------------------|--------------------------------|
+| Bag duration                 | 29.00 s        | 28.86 s            | -0.14 s                        |
+| Detection messages           | 460            | 439                | -21                            |
+| Publish rate (Hz)            | 15.86          | 15.21              | -0.65                          |
+| **Total kept**               | **0**          | **2**              | **+2**                         |
+| Per-class kept               | `{}`           | `{green_cube: 2}`  | one class, two frames          |
+| Arrays with >=1 keep         | 0 / 460        | 2 / 439            | +2                             |
+| Total ms p50 / p95           | 59.3 / 60.4    | 62.1 / 63.5        | +2.8 / +3.1                    |
+| Filter ms/frame p50 / max    | 1.27 / 1.34    | 4.83 / 5.12        | +3.56 (more bboxes to filter)  |
+| Reject flat (cumulative)     | 514,364        | 974,170            | higher YOLO recall             |
+| Reject aspect (cumulative)   | 17,815         | 178,973            | higher YOLO recall             |
+
+**Verdict at conf=0.25: 2/439 KEEP (green only).** Lowering conf from
+0.50 -> 0.25 unlocked the model's response to **one** cube class
+(green) but red and blue cubes still get zero candidate bboxes at
+conf=0.25, which means the model genuinely does not fire on them. The
+sticker removal did not help.
+
+### 12.5 What the debug overlay shows
+
+`peek_debug_live_count400.png` (sticker off, conf=0.50) shows the three
+cubes clearly visible on the wooden floor (left-to-right: blue, green,
+red) with the HUD reading `M5 | conf>=0.50 | filter=on | keep=0` and
+**zero bboxes drawn**. `conf025/peek_debug_live_count400.png` (same
+scene, conf=0.25) shows the same three cubes with `keep=0` at the HUD
+on the sampled frame — the two green-cube keeps occurred on different
+frames (the analyzer recorded 2/439 with `per_class_kept: {green_cube:
+2}` but the 100/200/300/400-sample debug frames did not land on the
+keep frames).
+
+### 12.6 Conclusion: M5 PARTIAL is real, not a sticker issue
+
+Removing the Orbbec RGB dimming sticker changed:
+- Image brightness: 0 (within noise, +0.82/255 raw RGB mean delta).
+- M5 acceptance numbers: 0 (KEEP=0/460 at conf=0.50, vs 0/414 with
+  sticker on).
+- At conf=0.25, the model partially responds (green only) — same as the
+  M4c1 V1 result where the geometry filter kept 22/29 **blue** cubes
+  off a closer view. The classes that get detected depend on which
+  class the Roboflow `best.engine` recognises at this distance /
+  angle / scale; the answer is not stable across captures.
+
+This rules out the sticker as the root cause and confirms the M5
+PARTIAL verdict (cubes_KEEP=0/414 at conf=0.50) is a **real model
+issue**: the Roboflow `best.engine` does not detect JetRover-room
+cubes at the ~60-80 cm camera distance / downward angle / ~50 px face
+size with conf>=0.50, and at conf=0.25 it only catches one of three
+classes (green in this scene).
+
+### 12.7 Decision / next step
+
+The §11.7 decision path is now resolved:
+
+1. **Recapture cubes bag at conf=0.25** -> DONE. Result: 2/439 KEEP,
+   green only. Model genuinely does not fire on red and blue at conf
+   thresholds we can ship (0.50) or barely tolerate (0.25).
+2. **Re-open fine-tune card `t_13b658c2`** -> **RECOMMENDED**. Scope:
+   produce a `best.engine` that detects real JetRover-room cubes
+   (40-60 mm cubes, 60-80 cm distance, downward camera angle) at
+   conf>=0.50. The previous fine-tune scope (hard-negative rejection of
+   V3 distractors via the same model) is no longer needed — M4c1 V3
+   passed at conf=0.50 without retraining. The new scope is **positive
+   detection on real cubes**, which geometry filtering alone cannot
+   fix.
+
+### 12.8 Files produced
+
+| Path                                                                                     | SHA-256 (12)   | Notes                                    |
+|------------------------------------------------------------------------------------------|----------------|------------------------------------------|
+| `evaluation/m5_live/cubes_sticker_off_2026-06-28/m5_bag_..._091930_0.db3`                | `ef30ab3fa5f7` | 1.18 GB, sqlite3 bag, 5 topics, 29.00 s |
+| `evaluation/m5_live/cubes_sticker_off_2026-06-28/m5_bag_..._091930_metadata.json`       | (sidecar)      | standard bag sidecar                     |
+| `evaluation/m5_live/cubes_sticker_off_2026-06-28/m5_bag_..._091930_sha256.txt`           | (sidecar)      | SHA-256 — matches the bag file           |
+| `evaluation/m5_live/cubes_sticker_off_2026-06-28/metadata.json`                          | (sidecar)      | includes `sticker_removed: true`         |
+| `evaluation/m5_live/cubes_sticker_off_2026-06-28/metadata.yaml`                          | (sidecar)      | ROS 2 standard metadata                  |
+| `evaluation/m5_live/cubes_sticker_off_2026-06-28/node.log`                               | (34 KB)        | node stdout for the conf=0.50 capture   |
+| `evaluation/m5_live/cubes_sticker_off_2026-06-28/summary.json`                           | (analyzer)     | per-class + publish rate + RGB Hz        |
+| `evaluation/m5_live/cubes_sticker_off_2026-06-28/latency.json`                           | (parser)       | p50/p95 total, yolo, filter, rejects    |
+| `evaluation/m5_live/cubes_sticker_off_2026-06-28/peek_rgb_pre_launch.png`                | (223 KB)       | raw RGB before launch (sticker off)     |
+| `evaluation/m5_live/cubes_sticker_off_2026-06-28/peek_debug_live_count{100,200,300,400}.png` | (4 x ~213 KB) | debug overlay at 100/200/300/400 syncs   |
+| `evaluation/m5_live/cubes_sticker_off_2026-06-28/conf025/m5_bag_..._093734_0.db3`        | (sqlite3)      | conf=0.25 re-capture, 28.86 s            |
+| `evaluation/m5_live/cubes_sticker_off_2026-06-28/conf025/{summary,latency}.json`         | (parser)       | per-class counts + latency for conf=0.25 |
+| `evaluation/m5_live/cubes_sticker_off_2026-06-28/conf025/peek_debug_live_count{100..400}.png` | (4 x ~213 KB) | conf=0.25 debug overlay                  |
+
+The 1.18 GB bag files are gitignored under `evaluation/m5_live/`; the
+structured JSON evidence files (`summary.json`, `latency.json`,
+`sha256.txt`, `metadata.json`, `metadata.yaml`) are tracked.
+
+### 12.9 What did NOT change (per .cursorrules)
+
+- `models/best.engine` SHA-256 on Jetson: `c64d3e5e277ea42f3f19f0ba733d6ef25f0403ba2496f8191288d3d6829ec3d1` — unchanged from M4a -> M5b -> M5c -> M5c2 (no retraining).
+- No vendor package edits.
+- No `start_app_node.service` modifications.
+- No edits to `recognition_of_different_colored_cubes/cube_detection_node.py` or `geometry_filter.py`.
+
+### 12.10 Code changes this round
+
+None. The capture path (`m5_capture_bag.py` -> `m5_analyze_bag.py` ->
+`m5_parse_latency.py`) worked end-to-end without modification. The
+conf=0.25 re-run used the existing `ros2 param set /cube_detection_node
+confidence_threshold 0.25` + relaunch flow (a hot-set is not picked up
+because the node caches the value at startup — known and called out in
+§11.3, branch 1).

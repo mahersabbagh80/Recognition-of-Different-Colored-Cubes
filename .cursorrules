@@ -79,19 +79,23 @@ source install/setup.bash
 
 ## Current Status
 
-**Active milestone:** **M5 PARTIAL** (implementation complete, acceptance gate pending §11.7 decision). Geometry post-filter + `confidence_threshold=0.50` chosen as the M4c1 mitigation; no model retraining. See canonical 2026-06-28 M5 entry in [`docs/LOGBOOK.md`](docs/LOGBOOK.md) for the full live-evidence summary, and [`evaluation/m5_live/report.md`](evaluation/m5_live/report.md) for the acceptance-bar tables + §11.7 decision path.
+**Active milestone:** **M5 PARTIAL** (implementation complete, acceptance gate pending §12.7 decision). Geometry post-filter + `confidence_threshold=0.50` chosen as the M4c1 mitigation; no model retraining. **M5c2 sticker-removed re-test (2026-06-28, card `t_737dbf1a`) confirms the M5 PARTIAL verdict is a real model issue, not a sticker issue**: conf=0.25 only unlocks green_cube (2/439), red and blue still zero. See canonical 2026-06-28 M5c2 entry in [`docs/LOGBOOK.md`](docs/LOGBOOK.md) for the full live-evidence summary, and [`evaluation/m5_live/report.md`](evaluation/m5_live/report.md) for the acceptance-bar tables + §12.7 decision path.
 
-**Active step:** Awaiting Maher decision on the M5 cubes-in-frame KEEP=0/414 at conf≥0.50 (model-accuracy blocker, not code/bringup). Two paths in `evaluation/m5_live/report.md` §11.7: (1) recapture cubes bag at conf=0.25 to disambiguate conf-vs-model, (2) re-open the fine-tune card (`t_13b658c2` was closed 2026-06-27 as no-longer-needed). M5 implementation (node, 29 rclpy parameters, 3 publishers, latency logging, geometry filter as a proper package module) is COMPLETE.
+**Active step:** Re-open fine-tune card `t_13b658c2` (was closed 2026-06-27 as no-longer-needed; should be re-opened with a positive-detection scope). M4c1 V3 hard-negative scope is no longer needed (M4c1 V3 passed at conf=0.50 without retraining); the new scope is **positive detection on real JetRover-room cubes (40-60 mm, 60-80 cm distance, downward angle) at conf≥0.50**, which the geometry filter cannot fix. M5 implementation (node, 29 rclpy parameters, 3 publishers, latency logging, geometry filter as a proper package module) is COMPLETE.
 
-**M5 live numbers at a glance (2026-06-28, conf=0.50, filter on)**
+**M5 live numbers at a glance (2026-06-28, filter on)**
 | Bag | SHA-256 (first 12) | KEEP | Publish rate | yolo p50 | filter p50 |
 |---|---|---|---|---|---|
 | Empty (`evaluation/m5_live/empty_2026-06-28/`) | `b0ceee5e5cd7` | 0/439 ✅ PASS | 15.78 Hz | 26.6 ms | 1.53 ms |
-| Cubes (`evaluation/m5_live/cubes_2026-06-28/`) | `d8e10908103a` | 0/414 ❌ FAIL | 15.52 Hz | 26.6 ms | 2.57 ms |
+| Cubes sticker-on conf=0.50 (`evaluation/m5_live/cubes_2026-06-28/`) | `d8e10908103a` | 0/414 ❌ FAIL | 15.52 Hz | 26.6 ms | 2.57 ms |
+| Cubes sticker-off conf=0.50 (`evaluation/m5_live/cubes_sticker_off_2026-06-28/`) | `ef30ab3fa5f7` | 0/460 ❌ FAIL | 15.86 Hz | 26.6 ms | 1.27 ms |
+| Cubes sticker-off conf=0.25 (same dir `/conf025/`) | (sqlite3) | 2/439 (`{green_cube:2}`) ❌ FAIL | 15.21 Hz | 26.6 ms | 4.83 ms |
 
-All 41,700 cubes-bag filter rejects are `flat` — YOLO at conf=0.50 fires only on floor texture, not on the actual cubes. The geometry filter is doing its job; the blocker is model accuracy. Models unchanged: `models/best.engine` SHA-256 `c64d3e5e…` (matches M4a — no retraining). Publish-rate ceiling 15.5–15.8 Hz is structural (TensorRT FP16 inference floor + sync overhead), not fixable by re-tuning the geometry filter — see `report.md` §10 for the three options.
+**Active step (revised):** The §11.7 decision tree is resolved — branch 1 (recapture at conf=0.25, see M5c2 row above) is done; branch 2 (re-open fine-tune) is the recommended next step. See `evaluation/m5_live/report.md` §12.7 for the full decision path.
 
-**Last completed step:** M5 docs reconciliation pass (2026-06-28, card `t_cec5aa68`). Consolidated the four overlapping M5 cluster entries (cards t_bb889759 / t_219505c6 / t_48167e72 / t_f7c27278) into one canonical M5 ship entry in `docs/LOGBOOK.md` with brief per-card pointer entries. This `.cursorrules` Current Status now mirrors the canonical entry instead of duplicating its numbers.
+All M5c2 conf=0.50 filter rejects are `flat` (514,364 over the 29 s bag, plus 17,815 `aspect`) — YOLO at conf=0.50 fires only on floor texture, not on the actual cubes, even with the sticker removed. The geometry filter is doing its job; the blocker is model accuracy, not lighting or optics. Models unchanged: `models/best.engine` SHA-256 `c64d3e5e…` (matches M4a — no retraining). At conf=0.25 the model partially responds (green only: 2/439) — same scene, same filter params, same M4c1 v2-only tuning. Publish-rate ceiling 15.2–15.9 Hz is structural (TensorRT FP16 inference floor + sync overhead), not fixable by re-tuning the geometry filter — see `report.md` §10 for the three options.
+
+**Last completed step:** M5c2 sticker-removed re-test (2026-06-28, card `t_737dbf1a`). Same scene as M5c but with the dimming sticker removed: KEEP=0/460 at conf=0.50 (no change vs M5c 0/414) and KEEP=2/439 at conf=0.25 (only green_cube detected; red and blue still zero). This confirms the M5 PARTIAL verdict is a model issue, not a sticker issue. Recommended next step (per §12.7): re-open fine-tune card `t_13b658c2` with positive-detection scope.
 
 **Prior steps (kept for history):**
 

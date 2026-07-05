@@ -1,0 +1,20 @@
+{
+  "label": "cubes_sticker_off_2026-06-28",
+  "bag_dir": ".",
+  "duration_sec": 29.002156998,
+  "topics_seen": [
+    "/cube_detections",
+    "/cube_detections/debug_image",
+    "/cube_detections/vendor_objects",
+    "/depth_cam/depth/image_raw",
+    "/depth_cam/rgb/image_raw"
+  ],
+  "detections_topic": "/cube_detections",
+  "num_detection_messages": 460,
+  "num_arrays_with_keeps": 0,
+  "total_kept": 0,
+  "per_class_kept": {},
+  "publish_rate_hz": 15.860889244607627,
+  "rgb_frames_seen": 863,
+  "rgb_mean_hz": 29.718091396577464
+}
