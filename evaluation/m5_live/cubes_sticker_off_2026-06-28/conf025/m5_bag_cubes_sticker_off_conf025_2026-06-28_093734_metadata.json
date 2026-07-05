@@ -1,0 +1,1 @@
+{"duration_sec": 30.0, "topics": ['/cube_detections', '/cube_detections/vendor_objects', '/cube_detections/debug_image', '/depth_cam/rgb/image_raw', '/depth_cam/depth/image_raw'], "format": "bag", "recorded_at_unix": 1782639189.3168418}

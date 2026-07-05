@@ -1,0 +1,22 @@
+{
+  "label": "conf025",
+  "bag_dir": ".",
+  "duration_sec": 28.859535117,
+  "topics_seen": [
+    "/cube_detections",
+    "/cube_detections/debug_image",
+    "/cube_detections/vendor_objects",
+    "/depth_cam/depth/image_raw",
+    "/depth_cam/rgb/image_raw"
+  ],
+  "detections_topic": "/cube_detections",
+  "num_detection_messages": 439,
+  "num_arrays_with_keeps": 2,
+  "total_kept": 2,
+  "per_class_kept": {
+    "green_cube": 2
+  },
+  "publish_rate_hz": 15.211610243208757,
+  "rgb_frames_seen": 858,
+  "rgb_mean_hz": 29.72670058930957
+}
