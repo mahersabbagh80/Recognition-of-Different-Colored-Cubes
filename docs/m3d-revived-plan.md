@@ -4,9 +4,9 @@ Date: 2026-06-28
 Card: `t_afcaa4a5` (M3d-revived planner; implementation goes to a new
 implementer card, not this one)
 Parent: `t_a2a113b6` (M4c1 review approval) + `t_4fcd206e` (M4c1 geometry filter)
-Predecessor docs: `docs/model-hard-negative-plan.md` (M3c — hard-negative
-plan), `docs/model-alternative-research.md` (M3c2 — alternatives research),
-`docs/model-objectness-addendum.md` (M3c3 — cube-objectness addendum).
+Predecessor docs: `docs/archive/model-hard-negative-plan.md` (M3c — hard-negative
+plan), `docs/archive/model-alternative-research.md` (M3c2 — alternatives research),
+`docs/archive/model-objectness-addendum.md` (M3c3 — cube-objectness addendum).
 Scope: research/planning only. No training, no exports, no model artifacts.
 
 ---
@@ -102,7 +102,7 @@ real JetRover-room images.
   already eliminates the four named M4b flat distractors
   (soil bag, cardboard package, decal, chair) at 0/30/30/30 KEEP on the
   V3+V4 validation set. The M3c hard-negative plan
-  (`docs/model-hard-negative-plan.md`) is therefore obsolete as the
+  (`docs/archive/model-hard-negative-plan.md`) is therefore obsolete as the
   primary path; it remains the fallback if M3d-revived leaves residual
   FPs that the geometry filter cannot handle.
 - **Not a class-set extension.** No `cube_other`, no yellow/orange
@@ -110,7 +110,7 @@ real JetRover-room images.
 - **Not an architecture swap.** The YOLOv5s + TensorRT FP16 + ROS 2
   pipeline is the vendor-aligned, validated artifact path
   (see `docs/architecture.md`, `docs/technical-stack.md`,
-  `docs/model-alternative-research.md` §3 option C — open-vocab
+  `docs/archive/model-alternative-research.md` §3 option C — open-vocab
   detectors are 5-25× slower on Orin Nano and rejected).
 - **Not a conf-threshold lowering.** The §11.7 diagnostic already
   confirmed that conf=0.25 unlocks only one of three classes.
@@ -237,7 +237,7 @@ python3 scripts/verify_camera_samples.py \
 - **No cube-shaped non-rgb toys.** The M3c3 addendum flagged cube-shaped
   wrong-color objects as the L4 residual (geometry cannot distinguish
   two cubes). That is out of scope for M3d-revived; it remains an open
-  question for the project's larger scope (see `docs/model-objectness-
+  question for the project's larger scope (see `docs/archive/model-objectness-
   addendum.md` §5 step C4). If Maher happens to have such a toy in the
   scene, the frame can be included with the cube bboxes only — don't
   label the toy.
@@ -288,7 +288,7 @@ Download the resulting zip to `data/roboflow/jetrover_positives_<DATE>/
 
 The existing normalized Roboflow positives at
 `data/roboflow_det/red-green-blue-cube-detection-1-yolov5pytorch/` MUST
-be retained. Per `docs/model-hard-negative-plan.md` §3.2, the M2
+be retained. Per `docs/archive/model-hard-negative-plan.md` §3.2, the M2
 model's 0.954 mAP@0.5 on Roboflow valid is valuable domain knowledge;
 removing the original positives to "clean" the dataset risks losing
 that knowledge for a tiny gain on JetRover-room frames.
@@ -422,7 +422,7 @@ view). Reasoning:
 
 The new artifact is `models/best_v2.pt` — kept separate from
 `models/best.pt` (preserved per the `.cursorrules` rollback discipline,
-mirroring the M3c protocol in `docs/model-hard-negative-plan.md` §8).
+mirroring the M3c protocol in `docs/archive/model-hard-negative-plan.md` §8).
 Promotion to `models/best.pt` happens only after a tester card confirms
 the M5 acceptance bar (see §5.3).
 
@@ -739,7 +739,7 @@ solves M5 PARTIAL within the project's 1-week time budget.
 JetRover room).**
 
 Cost: Branch B + the M3c plan's hard-negative capture
-(`docs/model-hard-negative-plan.md` §4) — another Maher session for
+(`docs/archive/model-hard-negative-plan.md` §4) — another Maher session for
 60 frames (30 cube-absent + 30 cube-present with distractors), ~1 hour
 of Maher time, and ~3 hours of implementer time. Total ~5-6 calendar
 days.
@@ -856,13 +856,13 @@ artifacts and actions in order:
 
 ### 8.1 Internal
 
-- `docs/model-hard-negative-plan.md` — predecessor hard-negative plan
+- `docs/archive/model-hard-negative-plan.md` — predecessor hard-negative plan
   (M3c); now obsolete as primary path, remains the fallback if M3d
   leaves residual FPs.
-- `docs/model-alternative-research.md` — M3c2 alternatives research;
+- `docs/archive/model-alternative-research.md` — M3c2 alternatives research;
   recommends depth/geometry filter as primary, M3c as fallback. M3d-
   revived is the M3c fallback, now scoped to positive detection.
-- `docs/model-objectness-addendum.md` — M3c3 cube-objectness addendum;
+- `docs/archive/model-objectness-addendum.md` — M3c3 cube-objectness addendum;
   the hybrid Phase 1 (geometry filter) + Phase 2 (conditional
   fine-tune) architecture M3d-revived executes.
 - `docs/milestones.md` — M5 status (PARTIAL 2026-06-28), M4b/M4c1

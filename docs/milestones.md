@@ -2,7 +2,7 @@
 
 ## Model strategy (one-week timeline)
 
-**Default path:** Follow the M2 source decision in [`model-options.md`](model-options.md): use raw compatible Roboflow weights if Maher's account exposes them; otherwise create a local YOLOv5s `best.pt` from the approved Roboflow dataset → export ONNX → TensorRT → deploy.
+**Default path:** Follow the M2 source decision in [`archive/model-options.md`](archive/model-options.md): use raw compatible Roboflow weights if Maher's account exposes them; otherwise create a local YOLOv5s `best.pt` from the approved Roboflow dataset → export ONNX → TensorRT → deploy.
 
 **Fallback path:** If standalone inference on robot camera images is below target accuracy, fine-tune with additional robot camera images only after the first local artifact has been tested. Do not collect and annotate a custom robot dataset upfront.
 
@@ -15,7 +15,7 @@ TensorRT export on the Jetson is the highest schedule risk — prioritize steps 
 | # | Milestone | Done when |
 |---|-----------|-----------|
 | M1 | Environment ready | Camera topic verified live, ROS 2 package scaffolding exists |
-| M2 | Model weights ready | Verified local `models/best.pt` obtained or produced; source/access decision documented in [`model-options.md`](model-options.md) |
+| M2 | Model weights ready | Verified local `models/best.pt` obtained or produced; source/access decision documented in [`archive/model-options.md`](archive/model-options.md) |
 | M3 | ONNX export | `best.pt` → `best.onnx` succeeds (fine-tune first only if needed) |
 | M4 | Model on Jetson | TensorRT engine running inference on saved images on Jetson |
 | M5 | ROS 2 node live | Node publishing to `/cube_detections`, `/cube_detections/vendor_objects`, and `/cube_detections/debug_image` with live vendor camera feed |
@@ -42,7 +42,7 @@ TensorRT export on the Jetson is the highest schedule risk — prioritize steps 
 
 ## M2 — Model Weights Ready
 
-- [x] Raw Roboflow `.pt` / `best.pt` availability checked and not available for the current account/pages (only `Deploy Model` is exposed) — see [`model-options.md`](model-options.md) "Implementation access check" and [`LOGBOOK.md`](LOGBOOK.md) 2026-06-24 entry
+- [x] Raw Roboflow `.pt` / `best.pt` availability checked and not available for the current account/pages (only `Deploy Model` is exposed) — see [`archive/model-options.md`](archive/model-options.md) "Implementation access check" and [`LOGBOOK.md`](LOGBOOK.md) 2026-06-24 entry
 - [x] Fallback approved: train/fine-tune YOLOv5s from the approved Roboflow YOLOv5-format dataset to produce a project-owned `models/best.pt`
 - [x] Save the trained artifact to `models/best.pt` and verify it loads (file exists, non-empty, Ultralytics/PyTorch load check)
 - [x] Record source/training metadata and class mapping for `models/best.pt` (source dataset, license, training command, class names) in a small sidecar file or in [`LOGBOOK.md`](LOGBOOK.md)
@@ -217,7 +217,7 @@ skip frames.
 
 1. **Verify vendor camera** — with `peripherals/depth_camera.launch.py` running, confirm `ros2 topic hz /depth_cam/rgb/image_raw`
 2. **Check versions** — PyTorch, ONNX, TensorRT on Jetson
-3. **Obtain weights** — follow `model-options.md`: raw Roboflow weights if available, otherwise create `best.pt` with a short YOLOv5s fine-tune from the approved Roboflow dataset
+3. **Obtain weights** — follow [`archive/model-options.md`](archive/model-options.md): raw Roboflow weights if available, otherwise create `best.pt` with a short YOLOv5s fine-tune from the approved Roboflow dataset
 4. **Export ONNX** — `best.pt` → `best.onnx`
 5. **TensorRT conversion** — ONNX → TensorRT FP16 `.engine` on Jetson
 6. **Standalone inference test** — `scripts/test_inference.py` on robot camera snapshots; if accuracy poor → fine-tune locally (RTX 4070 Ti, 20–30 epochs) and repeat steps 4–6

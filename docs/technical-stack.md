@@ -2,7 +2,7 @@
 
 This stack is revised for the vendor-first JetRover requirement: HiWonder packages under `src/vendor` provide camera bring-up and the vendor compatibility message contract; this project provides the cube-recognition package and must not modify vendor source.
 
-Primary architecture reference: [`architecture.md`](architecture.md). Vendor audit: [`vendor-audit.md`](vendor-audit.md). M2 model-source research: [`model-options.md`](model-options.md).
+Primary architecture reference: [`architecture.md`](architecture.md). Vendor audit: [`vendor-audit.md`](vendor-audit.md). M2 model-source research: [`archive/model-options.md`](archive/model-options.md).
 
 ---
 
@@ -68,7 +68,7 @@ Fallback: ONNX Runtime inference if TensorRT conversion fails. This is slower an
 
 ## Model Weights (M2 decision gate)
 
-See [`model-options.md`](model-options.md) for the current research decision. The earlier assumption that Roboflow Universe would expose a public YOLOv5 `best.pt` is not safe: the visible pages expose hosted Detection API access and dataset exports, while raw weight download appears account/plan-gated.
+See [`archive/model-options.md`](archive/model-options.md) for the M2 source decision. The earlier assumption that Roboflow Universe would expose a public YOLOv5 `best.pt` is not safe: the visible pages expose hosted Detection API access and dataset exports, while raw weight download appears account/plan-gated.
 
 | Step | Where | Action |
 |---|---|---|

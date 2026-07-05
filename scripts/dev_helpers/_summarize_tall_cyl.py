@@ -2,7 +2,7 @@
 """Dev helper: summarise M4c1 tall_cyl YOLO + geometry-filter output.
 
 Run from repo root:
-    python3 scripts/_summarize_tall_cyl.py
+    python3 scripts/dev_helpers/_summarize_tall_cyl.py
 """
 from __future__ import annotations
 

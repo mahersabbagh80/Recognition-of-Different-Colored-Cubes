@@ -227,7 +227,7 @@ Full ordered setup steps → [`docs/milestones.md`](docs/milestones.md)
 | `recognition_of_different_colored_cubes/` | ROS 2 Python package — `cube_detection_node.py` (live node) + `geometry_filter.py` (M4c1 KEEP/REJECT helper) |
 | `launch/` | `detection.launch.py` |
 | `config/` | Node parameters (`params.yaml`) |
-| `scripts/` | ONNX export, TensorRT conversion, standalone inference test |
+| `scripts/` | Capture, inference smoke tests, M4c/M5 eval harnesses — see [`scripts/README.md`](scripts/README.md) |
 | `models/` | `best.pt`, `best.onnx`, `.engine` — gitignored, not committed |
 | `training/` | Optional local fine-tune notebook (`train.ipynb`) |
 | `evaluation/` | 50-frame structured test script |

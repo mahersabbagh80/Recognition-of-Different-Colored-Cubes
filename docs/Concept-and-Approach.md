@@ -59,7 +59,7 @@ YOLOv8 (Ultralytics) is a stronger model than YOLOv5 on accuracy benchmarks and 
 
 | Path | When | What |
 |------|------|------|
-| **Default decision gate** | Start here | Check whether the selected Roboflow Universe model exposes raw compatible weights (`.pt` preferred); see [`model-options.md`](model-options.md) |
+| **Default decision gate** | Start here | Check whether the selected Roboflow Universe model exposes raw compatible weights (`.pt` preferred); see [`archive/model-options.md`](archive/model-options.md) |
 | **If raw weights are available** | After Maher/account approval | Save as `models/best.pt` → ONNX → TensorRT → deploy |
 | **If raw weights are not available** | Recommended fallback | Fine-tune YOLOv5s locally on dev PC (RTX 4070 Ti) from the approved Roboflow YOLOv5-format dataset, 20–30 epochs; add robot images only if still below target |
 
