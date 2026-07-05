@@ -1,0 +1,111 @@
+{
+  "frames_analysed": 10,
+  "conf_threshold": 0.25,
+  "results": [
+    {
+      "frame": 1,
+      "stamp_sec": 1782583501.073499,
+      "detections": []
+    },
+    {
+      "frame": 2,
+      "stamp_sec": 1782583505.817673,
+      "detections": [
+        {
+          "class": "blue_cube",
+          "conf": 0.6583,
+          "bbox_xyxy": [
+            539.4,
+            182.9,
+            623.2,
+            279.4
+          ]
+        }
+      ]
+    },
+    {
+      "frame": 3,
+      "stamp_sec": 1782583506.2897,
+      "detections": [
+        {
+          "class": "blue_cube",
+          "conf": 0.255,
+          "bbox_xyxy": [
+            539.8,
+            182.7,
+            622.9,
+            277.3
+          ]
+        }
+      ]
+    },
+    {
+      "frame": 4,
+      "stamp_sec": 1782583506.761847,
+      "detections": [
+        {
+          "class": "blue_cube",
+          "conf": 0.6429,
+          "bbox_xyxy": [
+            539.1,
+            183.2,
+            622.6,
+            278.9
+          ]
+        }
+      ]
+    },
+    {
+      "frame": 5,
+      "stamp_sec": 1782583507.2367308,
+      "detections": []
+    },
+    {
+      "frame": 6,
+      "stamp_sec": 1782583507.7017658,
+      "detections": [
+        {
+          "class": "blue_cube",
+          "conf": 0.2786,
+          "bbox_xyxy": [
+            539.4,
+            182.9,
+            622.9,
+            277.7
+          ]
+        }
+      ]
+    },
+    {
+      "frame": 7,
+      "stamp_sec": 1782583508.17378,
+      "detections": []
+    },
+    {
+      "frame": 8,
+      "stamp_sec": 1782583508.6458151,
+      "detections": [
+        {
+          "class": "blue_cube",
+          "conf": 0.3814,
+          "bbox_xyxy": [
+            539.8,
+            183.2,
+            622.1,
+            276.1
+          ]
+        }
+      ]
+    },
+    {
+      "frame": 9,
+      "stamp_sec": 1782583509.081941,
+      "detections": []
+    },
+    {
+      "frame": 10,
+      "stamp_sec": 1782583509.553835,
+      "detections": []
+    }
+  ]
+}

@@ -1,0 +1,31 @@
+{
+  "frames_analysed": 5,
+  "conf_threshold": 0.5,
+  "results": [
+    {
+      "frame": 1,
+      "stamp_sec": 1782583515.9181461,
+      "detections": []
+    },
+    {
+      "frame": 2,
+      "stamp_sec": 1782583520.494312,
+      "detections": []
+    },
+    {
+      "frame": 3,
+      "stamp_sec": 1782583520.9663858,
+      "detections": []
+    },
+    {
+      "frame": 4,
+      "stamp_sec": 1782583521.43838,
+      "detections": []
+    },
+    {
+      "frame": 5,
+      "stamp_sec": 1782583521.974376,
+      "detections": []
+    }
+  ]
+}

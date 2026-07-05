@@ -1,0 +1,286 @@
+{
+  "frames_analysed": 10,
+  "conf_threshold": 0.25,
+  "results": [
+    {
+      "frame": 1,
+      "stamp_sec": 1782579930.476021,
+      "detections": [
+        {
+          "class": "blue_cube",
+          "conf": 0.7236,
+          "bbox_xyxy": [
+            539.4,
+            182.1,
+            625.2,
+            270.2
+          ]
+        },
+        {
+          "class": "blue_cube",
+          "conf": 0.5751,
+          "bbox_xyxy": [
+            0.0,
+            80.3,
+            569.5,
+            355.1
+          ]
+        }
+      ]
+    },
+    {
+      "frame": 2,
+      "stamp_sec": 1782579935.324248,
+      "detections": [
+        {
+          "class": "blue_cube",
+          "conf": 0.547,
+          "bbox_xyxy": [
+            539.6,
+            182.1,
+            625.5,
+            276.5
+          ]
+        },
+        {
+          "class": "blue_cube",
+          "conf": 0.3605,
+          "bbox_xyxy": [
+            0.0,
+            84.0,
+            519.8,
+            347.5
+          ]
+        },
+        {
+          "class": "green_cube",
+          "conf": 0.3056,
+          "bbox_xyxy": [
+            538.7,
+            184.3,
+            625.3,
+            278.2
+          ]
+        }
+      ]
+    },
+    {
+      "frame": 3,
+      "stamp_sec": 1782579935.796649,
+      "detections": [
+        {
+          "class": "blue_cube",
+          "conf": 0.459,
+          "bbox_xyxy": [
+            540.2,
+            183.0,
+            625.0,
+            273.4
+          ]
+        },
+        {
+          "class": "blue_cube",
+          "conf": 0.2514,
+          "bbox_xyxy": [
+            0.0,
+            85.3,
+            501.8,
+            346.3
+          ]
+        }
+      ]
+    },
+    {
+      "frame": 4,
+      "stamp_sec": 1782579936.268218,
+      "detections": [
+        {
+          "class": "blue_cube",
+          "conf": 0.465,
+          "bbox_xyxy": [
+            540.0,
+            182.5,
+            623.3,
+            277.2
+          ]
+        },
+        {
+          "class": "blue_cube",
+          "conf": 0.3266,
+          "bbox_xyxy": [
+            0.0,
+            80.7,
+            537.5,
+            345.2
+          ]
+        }
+      ]
+    },
+    {
+      "frame": 5,
+      "stamp_sec": 1782579936.704264,
+      "detections": [
+        {
+          "class": "blue_cube",
+          "conf": 0.3183,
+          "bbox_xyxy": [
+            539.9,
+            183.3,
+            623.7,
+            277.4
+          ]
+        },
+        {
+          "class": "blue_cube",
+          "conf": 0.4002,
+          "bbox_xyxy": [
+            0.0,
+            85.4,
+            544.3,
+            341.6
+          ]
+        }
+      ]
+    },
+    {
+      "frame": 6,
+      "stamp_sec": 1782579937.244321,
+      "detections": [
+        {
+          "class": "blue_cube",
+          "conf": 0.4575,
+          "bbox_xyxy": [
+            539.6,
+            182.3,
+            624.1,
+            274.3
+          ]
+        },
+        {
+          "class": "blue_cube",
+          "conf": 0.3634,
+          "bbox_xyxy": [
+            0.0,
+            84.5,
+            503.3,
+            345.1
+          ]
+        },
+        {
+          "class": "green_cube",
+          "conf": 0.2846,
+          "bbox_xyxy": [
+            538.6,
+            184.3,
+            624.9,
+            277.1
+          ]
+        }
+      ]
+    },
+    {
+      "frame": 7,
+      "stamp_sec": 1782579937.748675,
+      "detections": [
+        {
+          "class": "blue_cube",
+          "conf": 0.5772,
+          "bbox_xyxy": [
+            539.5,
+            181.6,
+            623.2,
+            270.3
+          ]
+        },
+        {
+          "class": "blue_cube",
+          "conf": 0.5832,
+          "bbox_xyxy": [
+            0.0,
+            84.4,
+            569.5,
+            355.7
+          ]
+        }
+      ]
+    },
+    {
+      "frame": 8,
+      "stamp_sec": 1782579938.252332,
+      "detections": [
+        {
+          "class": "blue_cube",
+          "conf": 0.5458,
+          "bbox_xyxy": [
+            540.1,
+            183.4,
+            623.9,
+            278.9
+          ]
+        },
+        {
+          "class": "blue_cube",
+          "conf": 0.3859,
+          "bbox_xyxy": [
+            0.0,
+            83.8,
+            573.2,
+            356.3
+          ]
+        }
+      ]
+    },
+    {
+      "frame": 9,
+      "stamp_sec": 1782579938.72434,
+      "detections": [
+        {
+          "class": "blue_cube",
+          "conf": 0.3427,
+          "bbox_xyxy": [
+            539.6,
+            181.5,
+            623.3,
+            270.4
+          ]
+        },
+        {
+          "class": "blue_cube",
+          "conf": 0.313,
+          "bbox_xyxy": [
+            0.0,
+            85.9,
+            526.7,
+            339.3
+          ]
+        }
+      ]
+    },
+    {
+      "frame": 10,
+      "stamp_sec": 1782579939.264367,
+      "detections": [
+        {
+          "class": "blue_cube",
+          "conf": 0.7083,
+          "bbox_xyxy": [
+            539.7,
+            182.1,
+            625.0,
+            272.5
+          ]
+        },
+        {
+          "class": "green_cube",
+          "conf": 0.366,
+          "bbox_xyxy": [
+            539.0,
+            183.6,
+            625.1,
+            275.5
+          ]
+        }
+      ]
+    }
+  ]
+}

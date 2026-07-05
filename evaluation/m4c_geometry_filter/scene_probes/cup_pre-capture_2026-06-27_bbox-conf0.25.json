@@ -1,0 +1,216 @@
+{
+  "frames_analysed": 10,
+  "conf_threshold": 0.25,
+  "results": [
+    {
+      "frame": 1,
+      "stamp_sec": 1782581786.293825,
+      "detections": [
+        {
+          "class": "blue_cube",
+          "conf": 0.3105,
+          "bbox_xyxy": [
+            539.2,
+            182.0,
+            624.7,
+            271.9
+          ]
+        }
+      ]
+    },
+    {
+      "frame": 2,
+      "stamp_sec": 1782581790.738091,
+      "detections": [
+        {
+          "class": "red_cube",
+          "conf": 0.3121,
+          "bbox_xyxy": [
+            260.7,
+            132.5,
+            335.7,
+            213.2
+          ]
+        }
+      ]
+    },
+    {
+      "frame": 3,
+      "stamp_sec": 1782581791.2103648,
+      "detections": [
+        {
+          "class": "red_cube",
+          "conf": 0.3255,
+          "bbox_xyxy": [
+            254.6,
+            125.6,
+            338.7,
+            213.5
+          ]
+        },
+        {
+          "class": "blue_cube",
+          "conf": 0.3717,
+          "bbox_xyxy": [
+            539.2,
+            181.7,
+            621.9,
+            274.9
+          ]
+        }
+      ]
+    },
+    {
+      "frame": 4,
+      "stamp_sec": 1782581791.646236,
+      "detections": [
+        {
+          "class": "red_cube",
+          "conf": 0.3875,
+          "bbox_xyxy": [
+            248.9,
+            129.7,
+            334.6,
+            213.4
+          ]
+        }
+      ]
+    },
+    {
+      "frame": 5,
+      "stamp_sec": 1782581792.118189,
+      "detections": [
+        {
+          "class": "red_cube",
+          "conf": 0.3251,
+          "bbox_xyxy": [
+            248.8,
+            131.5,
+            340.1,
+            213.4
+          ]
+        }
+      ]
+    },
+    {
+      "frame": 6,
+      "stamp_sec": 1782581792.690092,
+      "detections": [
+        {
+          "class": "red_cube",
+          "conf": 0.3191,
+          "bbox_xyxy": [
+            258.4,
+            129.2,
+            334.7,
+            213.6
+          ]
+        },
+        {
+          "class": "blue_cube",
+          "conf": 0.4143,
+          "bbox_xyxy": [
+            539.6,
+            183.0,
+            622.6,
+            277.4
+          ]
+        }
+      ]
+    },
+    {
+      "frame": 7,
+      "stamp_sec": 1782581793.162095,
+      "detections": [
+        {
+          "class": "red_cube",
+          "conf": 0.3872,
+          "bbox_xyxy": [
+            253.0,
+            123.3,
+            334.1,
+            212.9
+          ]
+        }
+      ]
+    },
+    {
+      "frame": 8,
+      "stamp_sec": 1782581793.802144,
+      "detections": [
+        {
+          "class": "red_cube",
+          "conf": 0.35,
+          "bbox_xyxy": [
+            254.9,
+            125.2,
+            334.9,
+            213.1
+          ]
+        },
+        {
+          "class": "blue_cube",
+          "conf": 0.6319,
+          "bbox_xyxy": [
+            539.1,
+            182.1,
+            623.1,
+            279.5
+          ]
+        }
+      ]
+    },
+    {
+      "frame": 9,
+      "stamp_sec": 1782581794.270195,
+      "detections": [
+        {
+          "class": "red_cube",
+          "conf": 0.3238,
+          "bbox_xyxy": [
+            248.9,
+            134.8,
+            334.0,
+            213.3
+          ]
+        },
+        {
+          "class": "blue_cube",
+          "conf": 0.4202,
+          "bbox_xyxy": [
+            539.5,
+            182.9,
+            624.0,
+            274.0
+          ]
+        },
+        {
+          "class": "green_cube",
+          "conf": 0.2656,
+          "bbox_xyxy": [
+            538.4,
+            183.9,
+            624.9,
+            272.7
+          ]
+        }
+      ]
+    },
+    {
+      "frame": 10,
+      "stamp_sec": 1782581794.742487,
+      "detections": [
+        {
+          "class": "red_cube",
+          "conf": 0.2747,
+          "bbox_xyxy": [
+            249.5,
+            133.7,
+            335.7,
+            213.8
+          ]
+        }
+      ]
+    }
+  ]
+}
