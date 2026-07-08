@@ -57,51 +57,66 @@ Read these for full detail. Do not duplicate their content here.
 | Machine | Workspace | Access |
 |---------|-----------|--------|
 | Dev PC | `~/maher_ws` | local |
-| Jetson | `~/jetson_ws` | `ssh ubuntu@192.168.2.138` (DHCP — update if changed; alias `jetrover` may work) |
+| Jetson | `~/maher_ws` | `ssh ubuntu@192.168.2.138` (DHCP — update if changed; alias `jetrover` may work) |
 
-**Bringup (Jetson, before ROS 2 work):**
+**Bringup (Jetson):** `start_app_node.service` is **enabled and starts automatically** on every Jetson boot — it brings up camera, lidar, IMU, ekf, servo, odom, rosbridge, web_video_server. **Leave it running.** Only `sudo systemctl stop start_app_node.service` if a project node conflicts with vendor nodes. Verify it's up with `systemctl is-active start_app_node.service`.
+
+**Workspace overlay pattern (Jetson):** Two workspaces, source underlay first then overlay:
 
 ```bash
-sudo systemctl stop start_app_node.service
-cd ~/jetson_ws && source install/setup.bash
+ssh jetrover
+source /opt/ros/humble/setup.bash                          # ROS distro
+source /home/ubuntu/ros2_ws/install/setup.bash              # underlay (vendor bringup)
+source /home/ubuntu/maher_ws/install/setup.bash             # overlay (your projects)
 ```
 
-**Build this package on Jetson (once):**
+- Underlay: `/home/ubuntu/ros2_ws` — vendor stack (`bringup`, `simulations/jetrover_description`, `driver/*`, `interfaces`, etc.). Service runs nodes from here. Read-only — see `vendor/README.md`.
+- Overlay: `/home/ubuntu/maher_ws` — your projects (`src/Recognition-of-Different-Colored-Cubes`, `src/jetrover_description`, `src/2D-LiDAR-Mapping-with-SLAM`). Renamed from `jetson_ws` on 2026-07-08.
+- Helper workspace: `/home/ubuntu/third_party_ros2/third_party_ws` — vendor helpers (IMU calib, lidar filters, AprilTag, RF2O). Auto-loaded by vendor bringup via `/home/ubuntu/ros2_ws/install/setup.bash`.
+
+**Build this package on Jetson (after editing):**
 
 ```bash
-cd ~/jetson_ws/src && git clone <repo-url> Recognition-of-Different-Colored-Cubes
-cd ~/jetson_ws
-colcon build --packages-select recognition_of_different_colored_cubes --symlink-install
+ssh jetrover
+cd /home/ubuntu/maher_ws
+source /opt/ros/humble/setup.bash
 source install/setup.bash
+colcon build --packages-select recognition_of_different_colored_cubes --symlink-install
 ```
+
+**DDS: Fast DDS (`rmw_fastrtps_cpp`), not Cyclone.** The `fastdds.xml` on both machines configures unicast `initialPeersList` to the other machine's IP. Dev PC: `/home/maher/fastdds.xml` (peers → 192.168.2.138). Jetson: `/home/ubuntu/fastdds.xml` (peers → 192.168.2.102). Do **not** set `RMW_IMPLEMENTATION=rmw_cyclonedds_cpp` — it won't find the Jetson's discovery endpoints.
 
 ---
 
 ## Current Status
 
-**Active milestone:** **M5 PARTIAL** (implementation complete, acceptance gate pending §12.7 decision). Geometry post-filter + `confidence_threshold=0.50` chosen as the M4c1 mitigation; no model retraining. **M5c2 sticker-removed re-test (2026-06-28, card `t_737dbf1a`) confirms the M5 PARTIAL verdict is a real model issue, not a sticker issue**: conf=0.25 only unlocks green_cube (2/439), red and blue still zero. See canonical 2026-06-28 M5c2 entry in [`docs/LOGBOOK.md`](docs/LOGBOOK.md) for the full live-evidence summary, and [`evaluation/m5_live/report.md`](evaluation/m5_live/report.md) for the acceptance-bar tables + §12.7 decision path.
+**Active milestone:** **M5 PARTIAL** (implementation complete, acceptance gate failing). The M5 PARTIAL verdict from M5c2 (2026-06-28) is a confirmed model-accuracy issue, not a lighting/optics issue — see canonical 2026-06-28 M5c2 entry in [`docs/LOGBOOK.md`](docs/LOGBOOK.md) and [`evaluation/m5_live/report.md`](evaluation/m5_live/report.md) for the live-evidence summary.
 
-**Active step:** Re-open fine-tune card `t_13b658c2` (was closed 2026-06-27 as no-longer-needed; should be re-opened with a positive-detection scope). M4c1 V3 hard-negative scope is no longer needed (M4c1 V3 passed at conf=0.50 without retraining); the new scope is **positive detection on real JetRover-room cubes (40-60 mm, 60-80 cm distance, downward angle) at conf≥0.50**, which the geometry filter cannot fix. M5 implementation (node, 29 rclpy parameters, 3 publishers, latency logging, geometry filter as a proper package module) is COMPLETE.
+**Active step:** Decide how to fix the positive-detection gap. Three paths on the table (see `evaluation/m5_live/report.md` §11.7 and `docs/m3d-revived-plan.md` for full detail):
 
-**M5 live numbers at a glance (2026-06-28, filter on)**
-| Bag | SHA-256 (first 12) | KEEP | Publish rate | yolo p50 | filter p50 |
-|---|---|---|---|---|---|
-| Empty (`evaluation/m5_live/empty_2026-06-28/`) | `b0ceee5e5cd7` | 0/439 ✅ PASS | 15.78 Hz | 26.6 ms | 1.53 ms |
-| Cubes sticker-on conf=0.50 (`evaluation/m5_live/cubes_2026-06-28/`) | `d8e10908103a` | 0/414 ❌ FAIL | 15.52 Hz | 26.6 ms | 2.57 ms |
-| Cubes sticker-off conf=0.50 (`evaluation/m5_live/cubes_sticker_off_2026-06-28/`) | `ef30ab3fa5f7` | 0/460 ❌ FAIL | 15.86 Hz | 26.6 ms | 1.27 ms |
-| Cubes sticker-off conf=0.25 (same dir `/conf025/`) | (sqlite3) | 2/439 (`{green_cube:2}`) ❌ FAIL | 15.21 Hz | 26.6 ms | 4.83 ms |
+1. **Fine-tune on JetRover-room images** — `docs/m3d-revived-plan.md` (955 lines, 2026-06-28) specifies 80 new RGB frames + Roboflow positives, 30 epochs at lr0=0.0005 from `models/best.pt`, then re-export → ONNX → TensorRT. ~3-4 calendar days, one Maher physical capture session at the Jetson. Recommended path.
+2. **Lower confidence threshold** — already tried in M5c2; only unlocks green_cube (2/439), red and blue stay at zero. Insufficient on its own.
+3. **Document M5 PARTIAL** — accepts the project does not meet its primary success criteria (≥80% accuracy, ≥5 fps). Rejected for portfolio reasons.
 
-**Active step (revised):** The §11.7 decision tree is resolved — branch 1 (recapture at conf=0.25, see M5c2 row above) is done; branch 2 (re-open fine-tune) is the recommended next step. See `evaluation/m5_live/report.md` §12.7 for the full decision path.
+The 5 open questions in `docs/m3d-revived-plan.md` §9 (capture spec, Roboflow project choice, val split, calendar budget, fallback policy) are Maher's decisions; the M3d plan recommends defaults for all 5. Decisions will be recorded in `docs/m3d-decided.md` when made (NOT in kanban comments — see Working mode below).
 
-All M5c2 conf=0.50 filter rejects are `flat` (514,364 over the 29 s bag, plus 17,815 `aspect`) — YOLO at conf=0.50 fires only on floor texture, not on the actual cubes, even with the sticker removed. The geometry filter is doing its job; the blocker is model accuracy, not lighting or optics. Models unchanged: `models/best.engine` SHA-256 `c64d3e5e…` (matches M4a — no retraining). At conf=0.25 the model partially responds (green only: 2/439) — same scene, same filter params, same M4c1 v2-only tuning. Publish-rate ceiling 15.2–15.9 Hz is structural (TensorRT FP16 inference floor + sync overhead), not fixable by re-tuning the geometry filter — see `report.md` §10 for the three options.
+**Last completed step:** M5c2 sticker-removed re-test (2026-06-28). Same scene as M5c but with the dimming sticker removed from the Orbbec RGB camera: KEEP=0/460 at conf=0.50 (no change vs M5c 0/414) and KEEP=2/439 at conf=0.25 (only green_cube detected; red and blue still zero). This confirms the M5 PARTIAL verdict is a model issue, not a sticker issue.
 
-**Last completed step:** M5c2 sticker-removed re-test (2026-06-28, card `t_737dbf1a`). Same scene as M5c but with the dimming sticker removed: KEEP=0/460 at conf=0.50 (no change vs M5c 0/414) and KEEP=2/439 at conf=0.25 (only green_cube detected; red and blue still zero). This confirms the M5 PARTIAL verdict is a model issue, not a sticker issue. Recommended next step (per §12.7): re-open fine-tune card `t_13b658c2` with positive-detection scope.
+**Working mode (changed 2026-06-28):** Kanban workflow is **OFF**. The robotics-tutor profile is now the only agent (no implementer / researcher / tester / documenter / architect / orchestrator profiles in active use). Maher decides the role at each turn ("plan this", "research this", "implement this", "document this", "review this"). Decisions between sessions live in project files, not kanban comments. The kanban DB at `~/.hermes/kanban/boards/colored-cube-recognition/kanban.db` is read-only history. See `docs/learn/NOTES.md` "Working mode" section for full implications.
 
 **Prior steps (kept for history):**
 
 M4c1 supersedes the prior "raise conf to 0.50 or fine-tune on JetRover-room images" recommendation from the M4b card; the geometry filter is the **necessary** part of the M5 pre-ship gate, the fine-tune is the **conditional** part if Phase 1 leaves residual FPs on V3 or on a tight-bbox real cube.
 
-M4/M6 evaluation data — Phase A complete: 30 empty-scene JetRover RGB frames (640×360, q=92) captured from `/depth_cam/rgb/image_raw` on 2026-06-27 into `evaluation/camera_samples/empty_2026-06-27/` (gitignored), with `empty_metadata.json` sidecar (30/30 SHA-256 verified). Capture harness is `scripts/capture_frames.py` (Jetson-side rclpy subscriber saver) + `scripts/verify_camera_samples.py` (dev-PC-side sidecar checker). Phase B (cube-arranged captures at 20/40/60/80 cm per `docs/evaluation.md`) is gated on Maher physically placing cubes; on-demand commands are in the `t_1c0e63d1` kanban comment thread. A synchronised RGB+depth capture harness `scripts/capture_rgb_depth_sync.py` exists (used for M4c1); re-run with `--prefix empty` after Maher removes cubes to produce `evaluation/camera_samples/empty_depth_2026-06-27/` for V4. `.gitignore` excludes `evaluation/camera_samples/` and `evaluation/bags/`; `evaluation/m4c_geometry_filter/` is intentionally NOT excluded (the report and the harness outputs are tracked).
+M5c2 (2026-06-28, kanban card `t_737dbf1a`): sticker-removed re-test, confirmed model-accuracy issue, not sticker/lighting issue. 0/460 KEEP at conf=0.50; 2/439 KEEP at conf=0.25 (green only). See `evaluation/m5_live/report.md` §12 for the full bag analysis.
+
+M5 implementation COMPLETE: cube_detection_node (29 rclpy parameters, 3 publishers, latency logging), geometry filter as a proper package module, TensorRT FP16 backend, RGB+depth sync, camera intrinsics loading. Models at the time of M5c2: `models/best.engine` SHA-256 `c64d3e5e…` (matches M4a — no retraining), `models/best_hardneg.pt` (18.5 MB, M3c hard-negative fine-tune, frozen at 2026-06-27).
+
+M4c1 supersedes; M3c (hard-negative fine-tune with `best_hardneg.pt`) closed 2026-06-27 as no-longer-needed for the V3 scope but kept as fallback. The M3d-revived plan (`docs/m3d-revived-plan.md`) flips the scope from hard-negative rejection (already solved by geometry filter) to positive detection on real JetRover-room cubes.
+
+M4/M6 evaluation data — Phase A complete: 30 empty-scene JetRover RGB frames (640×360, q=92) captured from `/depth_cam/rgb/image_raw` on 2026-06-27 into `evaluation/camera_samples/empty_2026-06-27/` (gitignored), with `empty_metadata.json` sidecar (30/30 SHA-256 verified). Capture harness is `scripts/capture_frames.py` (Jetson-side rclpy subscriber saver) + `scripts/verify_camera_samples.py` (dev-PC-side sidecar checker). Phase B (cube-arranged captures at 20/40/60/80 cm per `docs/evaluation.md`) is gated on Maher physically placing cubes. A synchronised RGB+depth capture harness `scripts/capture_rgb_depth_sync.py` exists (used for M4c1). `.gitignore` excludes `evaluation/camera_samples/` and `evaluation/bags/`; `evaluation/m4c_geometry_filter/` is intentionally NOT excluded (the report and the harness outputs are tracked).
+
+M3 (ONNX export) and M4 (TensorRT FP16 engine on Jetson) both completed 2026-06-27. Artifacts: `models/best.onnx` (36.6 MB), `models/best.engine` (21.3 MB). M3 §3 export recipe and M4a trtexec recipe recorded in M3/M4 LOGBOOK entries.
 
 M2 fallback training produced `models/best.pt`; see LOGBOOK 2026-06-24 M2 training entry and `models/README.md` for the artifact, training command, per-class mAP, and known caveats.
 

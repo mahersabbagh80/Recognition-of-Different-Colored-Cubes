@@ -28,3 +28,14 @@
 ## Tooling quirks (kanban dispatcher)
 
 If a kanban card shows repeated `crashed` runs with the error `worker exited cleanly (rc=0) without calling kanban_complete or kanban_block — protocol violation`, the work itself may have succeeded — the worker just didn't signal the kanban on exit. Inspect the actual work (file system, side artifacts, runs/ directory) before retrying. This happened nine times during M2 training (`t_f6d3380d` runs #21–#28) before the worker finally signaled correctly on run #29.
+
+## Working mode (decided 2026-06-28)
+
+Maher decided: **kanban workflow OFF.** This profile (`robotics-tutor`) is now his only agent. The other Hermes profiles (`implementer`, `researcher`, `tester`, `documenter`, `architect`, `orchestrator`) are not in active use. Implications:
+
+- Do NOT create kanban cards, comment on existing ones, or invoke the dispatcher. The kanban DB at `~/.hermes/kanban/boards/colored-cube-recognition/kanban.db` exists from past work and is read-only history; treat it as such.
+- Do NOT suggest "let the implementer agent handle this" or "spawn a subagent." Maher + this profile only.
+- Roles collapse: I plan, research, implement, document, and test as needed. Maher says which role at each turn.
+- Single point of failure for review quality: when reviewing my own implementation, be extra careful. Maher should challenge "approved" verdicts that came too quickly.
+- Decisions that need to persist between sessions go into project files (e.g. `docs/m3d-decided.md`), not kanban comments.
+- `.cursorrules` rules still apply: implement incrementally, no commits without explicit instruction, scope discipline (M3 = ONNX, M4 = TensorRT, M5 = ROS integration — don't jump ahead).

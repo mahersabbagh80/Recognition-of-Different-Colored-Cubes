@@ -1,23 +1,25 @@
 #!/usr/bin/env python3
 """Capture still JPGs from a ROS 2 image topic.
 
-Default topic and target directory are set for the JetRover
-`/depth_cam/rgb/image_raw` topic. Saves up to ``--max-frames`` JPGs
-spaced at least ``--interval-s`` seconds apart, plus a JSON sidecar
-with per-frame metadata (seq, timestamp, sha256, byte size, encoding,
-width, height, frame_id).
+The target directory for each capture bucket is
+``<out-dir>/<prefix>/``. Saves up to ``--max-frames`` JPGs spaced at
+least ``--interval-s`` seconds apart, plus a JSON sidecar with
+per-frame metadata (seq, timestamp, sha256, byte size, encoding, width,
+height, frame_id).
 
 
 Run on the Jetson with the vendor bringup active (it owns the camera):
 
-DATE=$(date +%Y-%m-%d)
-
 python3 scripts/capture_frames.py \
     --topic /depth_cam/rgb/image_raw \
-    --out-dir "/home/ubuntu/cube_camera_samples/empty_${DATE}" \
+    --out-dir /home/ubuntu/cube_camera_samples \
     --max-frames 30 \
     --interval-s 1.0 \
     --prefix empty
+
+# Output:
+# /home/ubuntu/cube_camera_samples/empty/empty_0001.jpg
+# /home/ubuntu/cube_camera_samples/empty/empty_metadata.json
 """
 from __future__ import annotations
 
@@ -133,10 +135,19 @@ def main() -> int:
     )
     args = p.parse_args()
 
-    args.out_dir.mkdir(parents=True, exist_ok=True)
+    prefix_path = Path(args.prefix)
+    if (
+        not args.prefix
+        or prefix_path.name != args.prefix
+        or args.prefix in {".", ".."}
+    ):
+        p.error("--prefix must be a non-empty folder name, not a path")
+
+    bucket_dir = args.out_dir / args.prefix
+    bucket_dir.mkdir(parents=True, exist_ok=True)
     rclpy.init()
     node = FrameSaver(
-        str(args.topic), args.out_dir, args.max_frames, args.interval_s, args.prefix
+        str(args.topic), bucket_dir, args.max_frames, args.interval_s, args.prefix
     )
 
     deadline = time.monotonic() + args.timeout_s if args.timeout_s > 0 else None
@@ -156,7 +167,7 @@ def main() -> int:
         node.flush_metadata()
         node.destroy_node()
         rclpy.shutdown()
-    print(f"saved {node.saved} frame(s) to {args.out_dir}", file=sys.stderr)
+    print(f"saved {node.saved} frame(s) to {bucket_dir}", file=sys.stderr)
     return 0 if node.saved > 0 else 1
 
 
