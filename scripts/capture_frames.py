@@ -2,7 +2,7 @@
 """Capture still JPGs from a ROS 2 image topic.
 
 The target directory for each capture bucket is
-``<out-dir>/<prefix>/``. Saves up to ``--max-frames`` JPGs spaced at
+``<out-dir>/<date>/<prefix>/``. Saves up to ``--max-frames`` JPGs spaced at
 least ``--interval-s`` seconds apart, plus a JSON sidecar with
 per-frame metadata (seq, timestamp, sha256, byte size, encoding, width,
 height, frame_id).
@@ -18,8 +18,8 @@ python3 scripts/capture_frames.py \
     --prefix empty
 
 # Output:
-# /home/ubuntu/cube_camera_samples/empty/empty_0001.jpg
-# /home/ubuntu/cube_camera_samples/empty/empty_metadata.json
+# /home/ubuntu/cube_camera_samples/2026-07-08/empty/empty_0001.jpg
+# /home/ubuntu/cube_camera_samples/2026-07-08/empty/empty_metadata.json
 """
 from __future__ import annotations
 
@@ -143,7 +143,8 @@ def main() -> int:
     ):
         p.error("--prefix must be a non-empty folder name, not a path")
 
-    bucket_dir = args.out_dir / args.prefix
+    date_dir = time.strftime("%Y-%m-%d")
+    bucket_dir = args.out_dir / date_dir / args.prefix
     bucket_dir.mkdir(parents=True, exist_ok=True)
     rclpy.init()
     node = FrameSaver(
