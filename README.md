@@ -271,3 +271,9 @@ Browse the full tree on GitHub — this table only highlights non-obvious layout
 ## License
 
 Apache-2.0 — see [`LICENSE`](LICENSE).
+
+---
+
+## References
+
+- [ROS + Machine Learning Course — JetRover (Orin Nano) docs](https://docs.hiwonder.com/projects/JetRover/en/jetson-orin-nano/docs/6.ROS%2BMachine_Learning_Course.html) — official HiWonder ML + ROS tutorial; supervised-learning fundamentals and the vendor reference pattern for target detection on the JetRover.
