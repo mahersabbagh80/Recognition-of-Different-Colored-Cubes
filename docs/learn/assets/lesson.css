@@ -1,69 +1,101 @@
 /* learn_cube_recognition — shared lesson stylesheet
-   Goals: readable on screen, prints well, consistent across lessons.
-   Type: serif body for reading, sans for UI chrome and code labels.
+   Maher Brand System v1.1: Poppins, precise navy base, Cool Silver contrast
+   surfaces, and Electric Blue reserved for focus and actions.
 
-   Theming: light is default. Dark kicks in via (a) the OS preferring
-   dark, or (b) a manual <body class="dark"> override (set by the
-   toggle in lesson.js). Print is always light.
+   Theming: light is default. Dark kicks in via (a) the OS preferring dark,
+   or (b) a manual <body class="dark"> override (set by lesson.js).
+   Print is always light.
 */
 
-:root {
-  --bg: #fbfaf7;
-  --ink: #1a1a1a;
-  --ink-soft: #4a4a4a;
-  --ink-faint: #777;
-  --rule: #d8d3c7;
-  --accent: #8a3324;     /* terracotta — readable on cream, not aggressive */
-  --accent-soft: #f0e6e0;
-  --code-bg: #f1ede4;
-  --code-ink: #1a1a1a;
-  --link: #2a4a7a;
-  --link-visited: #6a3a8a;
-  --good: #2a6a2a;
-  --bad: #8a2424;
-  --quiz-bg: #ffffff;
-  --toggle-bg: #1a1a1a;
-  --toggle-fg: #fbfaf7;
+@font-face {
+  font-family: "Poppins";
+  src: url("fonts/poppins-400.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Poppins";
+  src: url("fonts/poppins-500.woff2") format("woff2");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Poppins";
+  src: url("fonts/poppins-600.woff2") format("woff2");
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Poppins";
+  src: url("fonts/poppins-700.woff2") format("woff2");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
 }
 
-/* Dark theme — warm dark, not pure black; lower eye strain for long reads */
+:root {
+  --bg: #dfe9f3;
+  --ink: #041d39;
+  --ink-soft: #09325d;
+  --ink-faint: #68809b;
+  --rule: #cadaeb;
+  --accent: #02adf8;
+  --accent-ink: #000916;
+  --accent-soft: #ffffff;
+  --code-bg: #ffffff;
+  --code-ink: #041d39;
+  --link: #09325d;
+  --link-visited: #041d39;
+  --good: #0f766e;
+  --bad: #b42318;
+  --quiz-bg: #ffffff;
+  --toggle-bg: #000916;
+  --toggle-fg: #cadaeb;
+}
+
+/* Dark theme — Near-black Navy base with Cool Silver reading contrast. */
 body.dark {
-  --bg: #15130f;
-  --ink: #e8e3d6;
-  --ink-soft: #b8b0a0;
-  --ink-faint: #807868;
-  --rule: #3a352c;
-  --accent: #d68a72;        /* warmer terracotta — pops on dark */
-  --accent-soft: #2a1f1a;
-  --code-bg: #1f1c17;
-  --code-ink: #e8e3d6;
-  --link: #8ab4f0;
-  --link-visited: #c098e0;
-  --good: #7ac27a;
-  --bad: #e07a7a;
-  --quiz-bg: #1f1c17;
-  --toggle-bg: #e8e3d6;
-  --toggle-fg: #15130f;
+  --bg: #000916;
+  --ink: #cadaeb;
+  --ink-soft: #dfe9f3;
+  --ink-faint: #68809b;
+  --rule: #09325d;
+  --accent: #02adf8;
+  --accent-ink: #000916;
+  --accent-soft: #041d39;
+  --code-bg: #041d39;
+  --code-ink: #dfe9f3;
+  --link: #b8efff;
+  --link-visited: #cadaeb;
+  --good: #ddf7f4;
+  --bad: #ff7a69;
+  --quiz-bg: #041d39;
+  --toggle-bg: #cadaeb;
+  --toggle-fg: #000916;
 }
 
 @media (prefers-color-scheme: dark) {
   body:not(.light) {
-    --bg: #15130f;
-    --ink: #e8e3d6;
-    --ink-soft: #b8b0a0;
-    --ink-faint: #807868;
-    --rule: #3a352c;
-    --accent: #d68a72;
-    --accent-soft: #2a1f1a;
-    --code-bg: #1f1c17;
-    --code-ink: #e8e3d6;
-    --link: #8ab4f0;
-    --link-visited: #c098e0;
-    --good: #7ac27a;
-    --bad: #e07a7a;
-    --quiz-bg: #1f1c17;
-    --toggle-bg: #e8e3d6;
-    --toggle-fg: #15130f;
+    --bg: #000916;
+    --ink: #cadaeb;
+    --ink-soft: #dfe9f3;
+    --ink-faint: #68809b;
+    --rule: #09325d;
+    --accent: #02adf8;
+    --accent-ink: #000916;
+    --accent-soft: #041d39;
+    --code-bg: #041d39;
+    --code-ink: #dfe9f3;
+    --link: #b8efff;
+    --link-visited: #cadaeb;
+    --good: #ddf7f4;
+    --bad: #ff7a69;
+    --quiz-bg: #041d39;
+    --toggle-bg: #cadaeb;
+    --toggle-fg: #000916;
   }
 }
 
@@ -74,54 +106,51 @@ html, body {
   padding: 0;
   background: var(--bg);
   color: var(--ink);
-  font-family: "Iowan Old Style", "Charter", "Georgia", "Cambria", "Liberation Serif", serif;
-  font-size: 17px;
-  line-height: 1.6;
+  font-family: "Poppins", "Inter", "Arial", sans-serif;
+  font-size: 16px;
+  line-height: 1.625;
 }
 
 main {
-  max-width: 38rem;
+  max-width: 44rem;
   margin: 2.5rem auto 4rem;
-  padding: 0 1.25rem;
+  padding: 0 1.5rem;
 }
 
 /* --- Typography --- */
 
 h1, h2, h3, h4 {
-  font-family: "Inter", "Helvetica Neue", "Segoe UI", "Liberation Sans", sans-serif;
+  font-family: "Poppins", "Inter", "Arial", sans-serif;
   color: var(--ink);
-  letter-spacing: -0.01em;
+  letter-spacing: -0.025em;
   line-height: 1.25;
 }
 
 h1 {
-  font-size: 1.9rem;
+  font-size: clamp(2.25rem, 6vw, 3rem);
   font-weight: 700;
-  margin: 0 0 0.25rem;
-  border-bottom: 2px solid var(--ink);
-  padding-bottom: 0.4rem;
+  margin: 0 0 0.5rem;
 }
 
 h2 {
-  font-size: 1.35rem;
+  font-size: 1.75rem;
   font-weight: 600;
-  margin: 2.5rem 0 0.6rem;
-  border-bottom: 1px solid var(--rule);
-  padding-bottom: 0.25rem;
+  margin: 3rem 0 0.75rem;
+  border-bottom: 2px solid var(--accent);
+  padding-bottom: 0.45rem;
 }
 
 h3 {
-  font-size: 1.1rem;
+  font-size: 1.2rem;
   font-weight: 600;
-  margin: 1.6rem 0 0.4rem;
+  margin: 1.8rem 0 0.5rem;
 }
 
-p { margin: 0.7rem 0; }
+p { margin: 0.75rem 0; }
 
 .lede {
   font-size: 1.05rem;
   color: var(--ink-soft);
-  font-style: italic;
   margin: 0.4rem 0 1.4rem;
 }
 
@@ -130,23 +159,23 @@ ul, ol {
   margin: 0.6rem 0;
 }
 
-li { margin: 0.2rem 0; }
+li { margin: 0.25rem 0; }
 
 strong { color: var(--ink); }
-em     { color: var(--ink-soft); }
+em { color: var(--ink-soft); }
 
 a {
   color: var(--link);
   text-decoration: none;
   border-bottom: 1px solid var(--rule);
 }
-a:hover { border-bottom-color: var(--link); }
+a:hover { border-bottom-color: var(--accent); }
 a:visited { color: var(--link-visited); }
 
 hr {
   border: none;
   border-top: 1px solid var(--rule);
-  margin: 2rem 0;
+  margin: 2.5rem 0;
 }
 
 /* --- Header / meta --- */
@@ -155,8 +184,8 @@ hr {
   display: flex;
   gap: 0.6rem;
   flex-wrap: wrap;
-  font-family: "Inter", "Helvetica Neue", sans-serif;
-  font-size: 0.8rem;
+  font-family: "Poppins", "Inter", sans-serif;
+  font-size: 0.75rem;
   color: var(--ink-faint);
   text-transform: uppercase;
   letter-spacing: 0.05em;
@@ -164,13 +193,13 @@ hr {
 }
 .lesson-meta span { white-space: nowrap; }
 .lesson-meta .tag {
-  background: var(--accent-soft);
-  color: var(--accent);
-  padding: 0.1rem 0.5rem;
-  border-radius: 0.2rem;
+  background: var(--accent);
+  color: var(--accent-ink);
+  padding: 0.13rem 0.55rem;
+  border-radius: 0;
   text-transform: none;
   letter-spacing: 0;
-  font-weight: 500;
+  font-weight: 600;
 }
 
 /* --- Code --- */
@@ -184,14 +213,14 @@ code, pre {
 :not(pre) > code {
   background: var(--code-bg);
   padding: 0.05em 0.35em;
-  border-radius: 0.2rem;
+  border-radius: 0;
   color: var(--code-ink);
 }
 
 pre {
   background: var(--code-bg);
   padding: 0.9rem 1rem;
-  border-radius: 0.3rem;
+  border-radius: 0;
   overflow-x: auto;
   line-height: 1.5;
   margin: 0.9rem 0;
@@ -201,20 +230,20 @@ pre {
 /* --- Callouts --- */
 
 .callout {
-  border-left: 3px solid var(--accent);
+  border-left: 4px solid var(--accent);
   background: var(--accent-soft);
-  padding: 0.7rem 1rem;
-  margin: 1.1rem 0;
-  border-radius: 0 0.2rem 0.2rem 0;
+  padding: 0.8rem 1rem;
+  margin: 1.25rem 0;
+  border-radius: 0;
 }
 .callout p:first-child { margin-top: 0; }
-.callout p:last-child  { margin-bottom: 0; }
+.callout p:last-child { margin-bottom: 0; }
 .callout-title {
-  font-family: "Inter", "Helvetica Neue", sans-serif;
-  font-size: 0.8rem;
+  font-family: "Poppins", "Inter", sans-serif;
+  font-size: 0.78rem;
   text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: var(--accent);
+  letter-spacing: 0.08em;
+  color: var(--ink-soft);
   font-weight: 600;
   margin: 0 0 0.3rem;
 }
@@ -225,7 +254,7 @@ pre {
   border: 1px solid var(--rule);
   background: var(--quiz-bg);
   padding: 1rem 1.1rem;
-  border-radius: 0.3rem;
+  border-radius: 0;
   margin: 1.2rem 0;
 }
 .quiz-q {
@@ -248,22 +277,23 @@ pre {
   color: var(--ink-soft);
 }
 .quiz.shown .answer { display: block; }
-.quiz .answer.correct  { color: var(--good); }
-.quiz .answer.wrong    { color: var(--bad);  }
+.quiz .answer.correct { color: var(--good); }
+.quiz .answer.wrong { color: var(--bad); }
 
 .check-btn {
   display: inline-block;
   margin-top: 0.6rem;
-  padding: 0.25rem 0.7rem;
-  background: var(--ink);
-  color: var(--bg);
+  padding: 0.3rem 0.75rem;
+  background: var(--accent);
+  color: var(--accent-ink);
   border: none;
-  border-radius: 0.2rem;
-  font-family: "Inter", sans-serif;
+  border-radius: 0;
+  font-family: "Poppins", "Inter", sans-serif;
   font-size: 0.85rem;
+  font-weight: 600;
   cursor: pointer;
 }
-.check-btn:hover { background: var(--accent); }
+.check-btn:hover { background: var(--ink); color: var(--bg); }
 
 /* --- Theme toggle (added by lesson.js) --- */
 
@@ -279,9 +309,9 @@ pre {
   justify-content: center;
   background: var(--toggle-bg);
   color: var(--toggle-fg);
-  border: 1px solid var(--rule);
-  border-radius: 50%;
-  font-family: "Inter", "Helvetica Neue", sans-serif;
+  border: 1px solid var(--accent);
+  border-radius: 0;
+  font-family: "Segoe UI Symbol", "Noto Sans Symbols2", "Arial", sans-serif;
   font-size: 1.05rem;
   cursor: pointer;
   line-height: 1;
@@ -292,7 +322,7 @@ pre {
 .theme-toggle:hover { transform: scale(1.08); }
 .theme-toggle:focus { outline: 2px solid var(--accent); outline-offset: 2px; }
 
-/* --- Foot --- */
+/* --- Footer --- */
 
 footer {
   margin-top: 3rem;
@@ -305,9 +335,9 @@ footer {
 /* --- Print --- */
 
 @media print {
-  body { background: #fff; }
+  body { background: #fff; color: #041d39; }
   main { max-width: none; margin: 0; padding: 0 0.5cm; }
   .check-btn { display: none; }
-  a { border-bottom: none; color: #000; }
-  pre { border: 1px solid #888; }
+  a { border-bottom: none; color: #041d39; }
+  pre { border: 1px solid #68809b; }
 }

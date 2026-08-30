@@ -90,9 +90,11 @@
   // --- Bootstrap ---
 
   function init() {
-    applyTheme(effectiveTheme());
     var btn = makeToggleButton();
     if (body) body.appendChild(btn);
+    // Create the control before applying the initial theme so applyTheme()
+    // can set its visible sun/moon label as well as the body class.
+    applyTheme(effectiveTheme());
     initQuizzes();
 
     // React to OS-level theme changes, but only if the user hasn't chosen.
