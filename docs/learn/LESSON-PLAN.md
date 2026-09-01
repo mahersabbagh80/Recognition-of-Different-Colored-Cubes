@@ -144,7 +144,7 @@ By the end of the lesson, Maher should be able to:
 
 ### Planned visuals
 
-1. A 12-station portrait Lesson Overview Sheet at `assets/lesson-0001-concept-art.png`, embedded at the beginning of the lesson and linked at full resolution. It covers the goal/scope; ROS image conversion; pixels/channels; coordinates/boxes; classification versus detection; detection anatomy; BGR→RGB and letterbox preparation; YOLOv5/TensorRT candidates; confidence thresholding; NMS; depth/geometry; ROS output and the M5 evidence note. Its footer maps the concepts to the current node functions.
+1. A 12-station tall portrait, hand-drawn technical Lesson Overview Sheet at `assets/lesson-0001-concept-art-handdrawn-portrait.png`, embedded at the beginning of the lesson and linked at full resolution. It covers the goal/scope; ROS image conversion; pixels/channels; coordinates/boxes; classification versus detection; detection anatomy; BGR→RGB and letterbox preparation; YOLOv5/TensorRT candidates; confidence thresholding; NMS; depth/geometry; ROS output and the M5 evidence note. Its footer maps the concepts to the current node functions. The earlier landscape artistic variant is preserved at `assets/lesson-0001-concept-art.png`, and the precise portrait technical sheet remains available at `assets/lesson-0001-concept-art-technical-sheet.png` for comparison.
 2. A clean vector camera frame with three colored cubes and final bounding boxes.
 3. A coordinate-grid diagram showing the top-left origin and box corners.
 4. A detection record showing class, score, and box as structured data.
