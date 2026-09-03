@@ -1,0 +1,315 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="864" height="1780" viewBox="0 0 864 1780" role="img" aria-labelledby="sheet-title sheet-desc">
+  <title id="sheet-title">Lesson 0002 overview: How YOLO produces predictions</title>
+  <desc id="sheet-desc">A portrait hand-drawn technical lesson overview with twelve numbered stations showing how the current YOLOv5 fused-decode tensor changes from 640 by 640 input into final cube detections.</desc>
+  <style><![CDATA[
+    @font-face { font-family: Poppins; src: url('fonts/poppins-400.woff2'); font-weight: 400; }
+    @font-face { font-family: Poppins; src: url('fonts/poppins-600.woff2'); font-weight: 600; }
+    * { font-family: Poppins, 'DejaVu Sans', sans-serif; }
+    .paper { fill: #f8f8f1; }
+    .panel { fill: #ffffff; stroke: #09325d; stroke-width: 2.2; }
+    .panel-soft { fill: #f2f7fb; stroke: #09325d; stroke-width: 1.8; }
+    .navy { fill: #041d39; }
+    .blue { fill: #09325d; }
+    .accent { fill: #02adf8; }
+    .silver { fill: #dfe9f3; }
+    .cool { fill: #cadaeb; }
+    .green { fill: #0f766e; }
+    .green-soft { fill: #ddf7f4; }
+    .red { fill: #b42318; }
+    .red-soft { fill: #ffe0dc; }
+    .amber { fill: #a15c00; }
+    .amber-soft { fill: #fff0c9; }
+    .white { fill: #ffffff; }
+    .outline { fill: none; stroke: #09325d; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+    .accent-line { fill: none; stroke: #02adf8; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+    .thin { fill: none; stroke: #68809b; stroke-width: 1.2; stroke-linecap: round; }
+    .title { font-size: 34px; font-weight: 600; letter-spacing: .4px; }
+    .subtitle { font-size: 17px; font-weight: 400; }
+    .badge { font-size: 14px; font-weight: 600; letter-spacing: .4px; }
+    .station-title { font-size: 14px; font-weight: 600; letter-spacing: .25px; }
+    .body { font-size: 11px; font-weight: 400; }
+    .small { font-size: 9px; font-weight: 400; }
+    .tiny { font-size: 8px; font-weight: 400; }
+    .center-title { font-size: 15px; font-weight: 600; }
+    .center-label { font-size: 11px; font-weight: 600; }
+    .center-small { font-size: 9px; font-weight: 400; }
+    .number { font-size: 13px; font-weight: 600; }
+  ]]></style>
+
+  <rect fill="#f8f8f1" x="0" y="0" width="864" height="1780"/>
+  <path d="M18 18 Q24 13 32 18 L832 18 Q846 18 846 32 L846 1748 Q846 1762 832 1762 L30 1762 Q17 1762 18 1748 Z" fill="none" stroke="#09325d" stroke-width="3"/>
+  <path d="M28 31 L835 31 M28 1749 L836 1749" stroke="#02adf8" stroke-width="1.4" opacity=".7"/>
+
+  <text x="432" y="61" text-anchor="middle" font-size="34px" font-weight="600" letter-spacing=".4px" fill="#041d39">HOW YOLO PRODUCES PREDICTIONS</text>
+  <text x="432" y="89" text-anchor="middle" font-size="17px" font-weight="400" fill="#09325d">From a 640×640 tensor to final cube boxes</text>
+  <rect x="257" y="103" width="350" height="28" rx="14" fill="#02adf8"/>
+  <text x="432" y="122" text-anchor="middle" font-size="14px" font-weight="600" letter-spacing=".4px" fill="#041d39">LESSON 0002 · YOLO OUTPUT DECODING</text>
+  <text x="432" y="150" text-anchor="middle" font-size="9px" font-weight="400" fill="#09325d">Read the numbered stations 1 → 12. The center ribbon shows the data flow.</text>
+
+  <!-- Left stations 1–6 -->
+  <g>
+    <rect fill="#ffffff" stroke="#09325d" stroke-width="2.2" x="28" y="170" width="238" height="150" rx="10"/>
+    <circle cx="49" cy="192" r="16" fill="#02adf8" stroke="#041d39" stroke-width="2"/><text x="49" y="197" text-anchor="middle" font-size="13px" font-weight="600" fill="#041d39">1</text>
+    <text x="74" y="195" font-size="14px" font-weight="600" letter-spacing=".25px" fill="#041d39">ONE IMAGE, MANY GUESSES</text>
+    <text x="42" y="220" font-size="11px" font-weight="400" fill="#09325d">YOLO evaluates many candidate</text>
+    <text x="42" y="236" font-size="11px" font-weight="400" fill="#09325d">locations in one forward pass.</text>
+    <text x="42" y="252" font-size="11px" font-weight="400" fill="#09325d">The output is dense; most</text>
+    <text x="42" y="268" font-size="11px" font-weight="400" fill="#09325d">candidates will be discarded.</text>
+    <!-- frame + candidate marks -->
+    <rect x="55" y="282" width="164" height="24" fill="#f2f7fb" stroke="#09325d" stroke-width="1.4"/>
+    <path d="M64 288 H210 M64 294 H210 M64 300 H210" fill="none" stroke="#68809b" stroke-width="1.2" stroke-linecap="round" opacity=".7"/>
+    <rect x="91" y="286" width="18" height="14" fill="none" stroke="#b42318" stroke-width="2"/>
+    <rect x="135" y="290" width="25" height="10" fill="none" stroke="#0f766e" stroke-width="2"/>
+    <rect x="181" y="284" width="14" height="19" fill="none" stroke="#1268a2" stroke-width="2"/>
+    <text x="42" y="314" font-size="8px" font-weight="400" fill="#09325d">one forward pass → many candidate rows</text>
+  </g>
+
+  <g>
+    <rect fill="#ffffff" stroke="#09325d" stroke-width="2.2" x="28" y="332" width="238" height="150" rx="10"/>
+    <circle cx="49" cy="354" r="16" fill="#02adf8" stroke="#041d39" stroke-width="2"/><text x="49" y="359" text-anchor="middle" font-size="13px" font-weight="600" fill="#041d39">2</text>
+    <text x="74" y="357" font-size="14px" font-weight="600" letter-spacing=".25px" fill="#041d39">8400 LOCATIONS</text>
+    <text x="42" y="382" font-size="11px" font-weight="400" fill="#09325d">At 640 input, three grids</text>
+    <text x="42" y="398" font-size="11px" font-weight="400" fill="#09325d">contribute 80² + 40² + 20²</text>
+    <text x="42" y="414" font-size="11px" font-weight="400" fill="#09325d">= 6,400 + 1,600 + 400</text>
+    <text x="42" y="430" font-size="11px" font-weight="400" fill="#09325d">= 8,400 candidate locations.</text>
+    <rect x="47" y="447" width="48" height="23" fill="#dfe9f3" stroke="#09325d"/>
+    <rect x="107" y="447" width="48" height="23" fill="#cadaeb" stroke="#09325d"/>
+    <rect x="167" y="447" width="48" height="23" fill="#b8efff" stroke="#09325d"/>
+    <text x="71" y="462" text-anchor="middle" font-size="8px" font-weight="400" fill="#041d39">80×80</text>
+    <text x="131" y="462" text-anchor="middle" font-size="8px" font-weight="400" fill="#041d39">40×40</text>
+    <text x="191" y="462" text-anchor="middle" font-size="8px" font-weight="400" fill="#041d39">20×20</text>
+    <text x="42" y="476" font-size="8px" font-weight="400" fill="#09325d">three detection scales, not 8400 final boxes</text>
+  </g>
+
+  <g>
+    <rect fill="#ffffff" stroke="#09325d" stroke-width="2.2" x="28" y="494" width="238" height="150" rx="10"/>
+    <circle cx="49" cy="516" r="16" fill="#02adf8" stroke="#041d39" stroke-width="2"/><text x="49" y="521" text-anchor="middle" font-size="13px" font-weight="600" fill="#041d39">3</text>
+    <text x="74" y="519" font-size="14px" font-weight="600" letter-spacing=".25px" fill="#041d39">TENSOR SHAPE</text>
+    <text x="42" y="544" font-size="11px" font-weight="400" fill="#09325d">[1, 7, 8400] means one image,</text>
+    <text x="42" y="560" font-size="11px" font-weight="400" fill="#09325d">7 values per location, and</text>
+    <text x="42" y="576" font-size="11px" font-weight="400" fill="#09325d">8,400 locations. It is not</text>
+    <text x="42" y="592" font-size="11px" font-weight="400" fill="#09325d">8,400 final detections.</text>
+    <rect x="44" y="608" width="207" height="22" fill="#041d39"/>
+    <text x="147" y="623" text-anchor="middle" font-size="11px" font-weight="600" fill="#ffffff">output0  [1, 7, 8400]</text>
+    <text x="42" y="640" font-size="8px" font-weight="400" fill="#09325d">batch × fields × candidate positions</text>
+  </g>
+
+  <g>
+    <rect fill="#ffffff" stroke="#09325d" stroke-width="2.2" x="28" y="656" width="238" height="150" rx="10"/>
+    <circle cx="49" cy="678" r="16" fill="#02adf8" stroke="#041d39" stroke-width="2"/><text x="49" y="683" text-anchor="middle" font-size="13px" font-weight="600" fill="#041d39">4</text>
+    <text x="74" y="681" font-size="14px" font-weight="600" letter-spacing=".25px" fill="#041d39">TRANSPOSE TO ROWS</text>
+    <text x="42" y="706" font-size="11px" font-weight="400" fill="#09325d">out[0].transpose() changes</text>
+    <text x="42" y="722" font-size="11px" font-weight="400" fill="#09325d">[7, 8400] into [8400, 7].</text>
+    <text x="42" y="738" font-size="11px" font-weight="400" fill="#09325d">Now each row is one candidate</text>
+    <text x="42" y="754" font-size="11px" font-weight="400" fill="#09325d">the decoder can inspect.</text>
+    <rect x="44" y="771" width="78" height="22" fill="#dfe9f3" stroke="#09325d"/><text x="83" y="786" text-anchor="middle" font-size="8px" font-weight="400" fill="#041d39">7 × 8400</text>
+    <path d="M127 782 H156" fill="none" stroke="#02adf8" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/><path d="M151 776 L160 782 L151 788" fill="none" stroke="#02adf8" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+    <rect x="165" y="771" width="83" height="22" fill="#b8efff" stroke="#09325d"/><text x="206" y="786" text-anchor="middle" font-size="8px" font-weight="400" fill="#041d39">8400 × 7</text>
+    <text x="42" y="801" font-size="8px" font-weight="400" fill="#09325d">one row = one candidate</text>
+  </g>
+
+  <g>
+    <rect fill="#ffffff" stroke="#09325d" stroke-width="2.2" x="28" y="818" width="238" height="150" rx="10"/>
+    <circle cx="49" cy="840" r="16" fill="#02adf8" stroke="#041d39" stroke-width="2"/><text x="49" y="845" text-anchor="middle" font-size="13px" font-weight="600" fill="#041d39">5</text>
+    <text x="74" y="843" font-size="14px" font-weight="600" letter-spacing=".25px" fill="#041d39">ONE CANDIDATE ROW</text>
+    <text x="42" y="868" font-size="11px" font-weight="400" fill="#09325d">[cx, cy, w, h, blue, green, red]</text>
+    <text x="42" y="884" font-size="11px" font-weight="400" fill="#09325d">The fused export already has</text>
+    <text x="42" y="900" font-size="11px" font-weight="400" fill="#09325d">pixel-space xywh and sigmoid</text>
+    <text x="42" y="916" font-size="11px" font-weight="400" fill="#09325d">class scores—no objectness column.</text>
+    <rect x="43" y="932" width="203" height="21" fill="#041d39"/>
+    <rect x="43" y="932" width="68" height="21" fill="#02adf8"/><rect x="111" y="932" width="45" height="21" fill="#dfe9f3"/><rect x="156" y="932" width="45" height="21" fill="#ddf7f4"/><rect x="201" y="932" width="45" height="21" fill="#ffe0dc"/>
+    <text x="77" y="947" text-anchor="middle" font-size="8px" font-weight="400" fill="#041d39">xywh</text><text x="133" y="947" text-anchor="middle" font-size="8px" font-weight="400" fill="#041d39">blue</text><text x="178" y="947" text-anchor="middle" font-size="8px" font-weight="400" fill="#041d39">green</text><text x="223" y="947" text-anchor="middle" font-size="8px" font-weight="400" fill="#041d39">red</text>
+    <text x="42" y="963" font-size="8px" font-weight="400" fill="#09325d">current artifact layout</text>
+  </g>
+
+  <g>
+    <rect fill="#ffffff" stroke="#09325d" stroke-width="2.2" x="28" y="980" width="238" height="150" rx="10"/>
+    <circle cx="49" cy="1002" r="16" fill="#02adf8" stroke="#041d39" stroke-width="2"/><text x="49" y="1007" text-anchor="middle" font-size="13px" font-weight="600" fill="#041d39">6</text>
+    <text x="74" y="1005" font-size="14px" font-weight="600" letter-spacing=".25px" fill="#041d39">CLASS SCORE</text>
+    <text x="42" y="1030" font-size="11px" font-weight="400" fill="#09325d">max(scores) chooses the score;</text>
+    <text x="42" y="1046" font-size="11px" font-weight="400" fill="#09325d">argmax(scores) chooses the ID.</text>
+    <text x="42" y="1062" font-size="11px" font-weight="400" fill="#09325d">Order: 0 blue, 1 green, 2 red.</text>
+    <text x="42" y="1078" font-size="11px" font-weight="400" fill="#09325d">The mapping matters.</text>
+    <rect x="47" y="1090" width="161" height="11" fill="#dfe9f3"/><rect x="47" y="1090" width="131" height="11" fill="#0f766e"/>
+    <text x="214" y="1099" font-size="8px" font-weight="400" fill="#0f766e">0.91</text>
+    <text x="42" y="1120" font-size="8px" font-weight="400" fill="#09325d">[0.08, 0.91, 0.14] → green_cube</text>
+  </g>
+
+  <!-- Center data-flow ribbon -->
+  <g>
+    <rect x="284" y="170" width="296" height="960" rx="12" fill="#edf5fa" stroke="#02adf8" stroke-width="2.4"/>
+    <text x="432" y="198" text-anchor="middle" font-size="15px" font-weight="600" fill="#041d39">THE CURRENT DECODER PATH</text>
+    <text x="432" y="216" text-anchor="middle" font-size="9px" font-weight="400" fill="#09325d">one model output → fewer, usable boxes</text>
+
+    <rect x="333" y="235" width="198" height="63" rx="7" fill="#ffffff" stroke="#09325d" stroke-width="1.8"/>
+    <text x="432" y="260" text-anchor="middle" font-size="11px" font-weight="600" fill="#041d39">RGB image</text>
+    <text x="432" y="278" text-anchor="middle" font-size="9px" font-weight="400" fill="#09325d">letterboxed to 640×640</text>
+    <rect x="359" y="284" width="146" height="7" fill="#dfe9f3"/><rect x="390" y="284" width="84" height="7" fill="#02adf8"/>
+
+    <path d="M432 300 V318" fill="none" stroke="#02adf8" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/><path d="M425 312 L432 320 L439 312" fill="none" stroke="#02adf8" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+    <rect x="333" y="323" width="198" height="63" rx="7" fill="#ffffff" stroke="#09325d" stroke-width="1.8"/>
+    <text x="432" y="348" text-anchor="middle" font-size="11px" font-weight="600" fill="#041d39">80² + 40² + 20²</text>
+    <text x="432" y="367" text-anchor="middle" font-size="9px" font-weight="400" fill="#09325d">8,400 candidate positions</text>
+
+    <path d="M432 388 V406" fill="none" stroke="#02adf8" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/><path d="M425 400 L432 408 L439 400" fill="none" stroke="#02adf8" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+    <rect x="333" y="411" width="198" height="63" rx="7" fill="#041d39" stroke="#02adf8" stroke-width="1.8"/>
+    <text x="432" y="437" text-anchor="middle" font-size="11px" font-weight="600" fill="#ffffff">output0  [1, 7, 8400]</text>
+    <text x="432" y="456" text-anchor="middle" font-size="9px" font-weight="400" fill="#cadaeb">fused-decode tensor</text>
+
+    <path d="M432 476 V494" fill="none" stroke="#02adf8" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/><path d="M425 488 L432 496 L439 488" fill="none" stroke="#02adf8" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+    <rect x="333" y="499" width="198" height="63" rx="7" fill="#b8efff" stroke="#09325d" stroke-width="1.8"/>
+    <text x="432" y="525" text-anchor="middle" font-size="11px" font-weight="600" fill="#041d39">transpose</text>
+    <text x="432" y="544" text-anchor="middle" font-size="9px" font-weight="400" fill="#09325d">[7, 8400] → [8400, 7]</text>
+
+    <path d="M432 564 V582" fill="none" stroke="#02adf8" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/><path d="M425 576 L432 584 L439 576" fill="none" stroke="#02adf8" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+    <rect x="333" y="587" width="198" height="63" rx="7" fill="#ffffff" stroke="#09325d" stroke-width="1.8"/>
+    <text x="432" y="613" text-anchor="middle" font-size="11px" font-weight="600" fill="#041d39">max + argmax</text>
+    <text x="432" y="632" text-anchor="middle" font-size="9px" font-weight="400" fill="#09325d">best class score and class ID</text>
+
+    <path d="M432 652 V670" fill="none" stroke="#02adf8" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/><path d="M425 664 L432 672 L439 664" fill="none" stroke="#02adf8" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+    <rect x="333" y="675" width="198" height="63" rx="7" fill="#fff0c9" stroke="#a15c00" stroke-width="1.8"/>
+    <text x="432" y="701" text-anchor="middle" font-size="11px" font-weight="600" fill="#041d39">confidence mask</text>
+    <text x="432" y="720" text-anchor="middle" font-size="9px" font-weight="400" fill="#09325d">cls_conf ≥ conf_thres</text>
+
+    <path d="M432 740 V758" fill="none" stroke="#02adf8" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/><path d="M425 752 L432 760 L439 752" fill="none" stroke="#02adf8" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+    <rect x="333" y="763" width="198" height="63" rx="7" fill="#ffffff" stroke="#09325d" stroke-width="1.8"/>
+    <text x="432" y="789" text-anchor="middle" font-size="11px" font-weight="600" fill="#041d39">xywh → xyxy</text>
+    <text x="432" y="808" text-anchor="middle" font-size="9px" font-weight="400" fill="#09325d">corners on the 640 canvas</text>
+
+    <path d="M432 828 V846" fill="none" stroke="#02adf8" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/><path d="M425 840 L432 848 L439 840" fill="none" stroke="#02adf8" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+    <rect x="333" y="851" width="198" height="63" rx="7" fill="#dfe9f3" stroke="#09325d" stroke-width="1.8"/>
+    <text x="432" y="877" text-anchor="middle" font-size="11px" font-weight="600" fill="#041d39">undo padding + clip</text>
+    <text x="432" y="896" text-anchor="middle" font-size="9px" font-weight="400" fill="#09325d">return to original image frame</text>
+
+    <path d="M432 916 V934" fill="none" stroke="#02adf8" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/><path d="M425 928 L432 936 L439 928" fill="none" stroke="#02adf8" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+    <rect x="333" y="939" width="198" height="63" rx="7" fill="#ddf7f4" stroke="#0f766e" stroke-width="1.8"/>
+    <text x="432" y="965" text-anchor="middle" font-size="11px" font-weight="600" fill="#041d39">per-class NMS</text>
+    <text x="432" y="984" text-anchor="middle" font-size="9px" font-weight="400" fill="#09325d">remove high-overlap duplicates</text>
+
+    <path d="M432 1004 V1022" fill="none" stroke="#02adf8" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/><path d="M425 1016 L432 1024 L439 1016" fill="none" stroke="#02adf8" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+    <rect x="333" y="1027" width="198" height="63" rx="7" fill="#041d39" stroke="#02adf8" stroke-width="1.8"/>
+    <text x="432" y="1053" text-anchor="middle" font-size="11px" font-weight="600" fill="#ffffff">final detections</text>
+    <text x="432" y="1072" text-anchor="middle" font-size="9px" font-weight="400" fill="#cadaeb">class · score · xyxy</text>
+    <text x="432" y="1114" text-anchor="middle" font-size="8px" font-weight="400" fill="#09325d">The model proposes; the decoder interprets.</text>
+  </g>
+
+  <!-- Right stations 7–12 -->
+  <g>
+    <rect fill="#ffffff" stroke="#09325d" stroke-width="2.2" x="598" y="170" width="238" height="150" rx="10"/>
+    <circle cx="619" cy="192" r="16" fill="#02adf8" stroke="#041d39" stroke-width="2"/><text x="619" y="197" text-anchor="middle" font-size="13px" font-weight="600" fill="#041d39">7</text>
+    <text x="644" y="195" font-size="14px" font-weight="600" letter-spacing=".25px" fill="#041d39">XYWH → XYXY</text>
+    <text x="612" y="220" font-size="11px" font-weight="400" fill="#09325d">Center/size is convenient for</text>
+    <text x="612" y="236" font-size="11px" font-weight="400" fill="#09325d">the model. The decoder computes</text>
+    <text x="612" y="252" font-size="11px" font-weight="400" fill="#09325d">left = cx − w/2, top = cy − h/2,</text>
+    <text x="612" y="268" font-size="11px" font-weight="400" fill="#09325d">right = cx + w/2, bottom = cy + h/2.</text>
+    <rect x="644" y="283" width="112" height="25" fill="#f2f7fb" stroke="#09325d"/>
+    <line x1="700" y1="283" x2="700" y2="308" stroke="#02adf8"/><line x1="644" y1="295" x2="756" y2="295" stroke="#02adf8"/>
+    <rect x="667" y="288" width="67" height="15" fill="none" stroke="#b42318" stroke-width="2"/>
+    <circle cx="700" cy="295" r="3" fill="#b42318"/>
+  </g>
+
+  <g>
+    <rect fill="#ffffff" stroke="#09325d" stroke-width="2.2" x="598" y="332" width="238" height="150" rx="10"/>
+    <circle cx="619" cy="354" r="16" fill="#02adf8" stroke="#041d39" stroke-width="2"/><text x="619" y="359" text-anchor="middle" font-size="13px" font-weight="600" fill="#041d39">8</text>
+    <text x="644" y="357" font-size="14px" font-weight="600" letter-spacing=".25px" fill="#041d39">CONFIDENCE MASK</text>
+    <text x="612" y="382" font-size="11px" font-weight="400" fill="#09325d">Keep a row only when its best</text>
+    <text x="612" y="398" font-size="11px" font-weight="400" fill="#09325d">class score ≥ conf_thres.</text>
+    <text x="612" y="414" font-size="11px" font-weight="400" fill="#09325d">Current node default: 0.50.</text>
+    <text x="612" y="430" font-size="11px" font-weight="400" fill="#09325d">This threshold is not IoU.</text>
+    <rect x="614" y="448" width="167" height="10" fill="#dfe9f3"/><rect x="614" y="448" width="84" height="10" fill="#02adf8"/>
+    <line x1="698" y1="442" x2="698" y2="464" stroke="#b42318" stroke-width="2"/>
+    <text x="786" y="457" font-size="8px" font-weight="400" fill="#b42318">0.50</text>
+    <text x="612" y="476" font-size="8px" font-weight="400" fill="#09325d">weak rows fade before NMS</text>
+  </g>
+
+  <g>
+    <rect fill="#ffffff" stroke="#09325d" stroke-width="2.2" x="598" y="494" width="238" height="150" rx="10"/>
+    <circle cx="619" cy="516" r="16" fill="#02adf8" stroke="#041d39" stroke-width="2"/><text x="619" y="521" text-anchor="middle" font-size="13px" font-weight="600" fill="#041d39">9</text>
+    <text x="644" y="519" font-size="14px" font-weight="600" letter-spacing=".25px" fill="#041d39">UNDO LETTERBOX</text>
+    <text x="612" y="544" font-size="11px" font-weight="400" fill="#09325d">Boxes live on the 640×640</text>
+    <text x="612" y="560" font-size="11px" font-weight="400" fill="#09325d">padded canvas. Subtract pad,</text>
+    <text x="612" y="576" font-size="11px" font-weight="400" fill="#09325d">divide by the resize ratio,</text>
+    <text x="612" y="592" font-size="11px" font-weight="400" fill="#09325d">then clip to the original frame.</text>
+    <rect x="650" y="607" width="122" height="27" fill="#041d39"/>
+    <rect x="671" y="613" width="80" height="15" fill="#ffffff"/>
+    <rect x="671" y="613" width="80" height="4" fill="#cadaeb"/><rect x="671" y="624" width="80" height="4" fill="#cadaeb"/>
+    <text x="612" y="640" font-size="8px" font-weight="400" fill="#09325d">640×360 example: pad_t = 140 px</text>
+  </g>
+
+  <g>
+    <rect fill="#ffffff" stroke="#09325d" stroke-width="2.2" x="598" y="656" width="238" height="150" rx="10"/>
+    <circle cx="619" cy="678" r="16" fill="#02adf8" stroke="#041d39" stroke-width="2"/><text x="619" y="683" text-anchor="middle" font-size="13px" font-weight="600" fill="#041d39">10</text>
+    <text x="644" y="681" font-size="14px" font-weight="600" letter-spacing=".25px" fill="#041d39">IoU = OVERLAP MEASURE</text>
+    <text x="612" y="706" font-size="11px" font-weight="400" fill="#09325d">Intersection over Union compares</text>
+    <text x="612" y="722" font-size="11px" font-weight="400" fill="#09325d">two xyxy boxes: overlap area /</text>
+    <text x="612" y="738" font-size="11px" font-weight="400" fill="#09325d">combined area. It tells NMS</text>
+    <text x="612" y="754" font-size="11px" font-weight="400" fill="#09325d">whether boxes are duplicates.</text>
+    <rect x="637" y="773" width="73" height="22" fill="none" stroke="#b42318" stroke-width="3"/>
+    <rect x="674" y="781" width="73" height="22" fill="none" stroke="#0f766e" stroke-width="3"/>
+    <rect x="674" y="781" width="36" height="14" fill="#02adf8" opacity=".45"/>
+    <text x="758" y="792" font-size="8px" font-weight="400" fill="#041d39">IoU</text>
+    <text x="612" y="801" font-size="8px" font-weight="400" fill="#09325d">higher overlap → stronger duplicate signal</text>
+  </g>
+
+  <g>
+    <rect fill="#ffffff" stroke="#09325d" stroke-width="2.2" x="598" y="818" width="238" height="150" rx="10"/>
+    <circle cx="619" cy="840" r="16" fill="#02adf8" stroke="#041d39" stroke-width="2"/><text x="619" y="845" text-anchor="middle" font-size="13px" font-weight="600" fill="#041d39">11</text>
+    <text x="644" y="843" font-size="14px" font-weight="600" letter-spacing=".25px" fill="#041d39">PER-CLASS NMS</text>
+    <text x="612" y="868" font-size="11px" font-weight="400" fill="#09325d">For each class separately:</text>
+    <text x="612" y="884" font-size="11px" font-weight="400" fill="#09325d">torchvision.ops.nms(boxes, scores,</text>
+    <text x="612" y="900" font-size="11px" font-weight="400" fill="#09325d">iou_thres) keeps the stronger box</text>
+    <text x="612" y="916" font-size="11px" font-weight="400" fill="#09325d">and suppresses high-overlap duplicates.</text>
+    <rect x="637" y="933" width="62" height="24" fill="none" stroke="#b42318" stroke-width="2" stroke-dasharray="5 3"/>
+    <rect x="648" y="938" width="62" height="24" fill="none" stroke="#0f766e" stroke-width="2" stroke-dasharray="5 3"/>
+    <path d="M721 946 H752" fill="none" stroke="#02adf8" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/><path d="M747 940 L756 946 L747 952" fill="none" stroke="#02adf8" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+    <rect x="765" y="938" width="55" height="24" fill="none" stroke="#1268a2" stroke-width="3"/>
+    <text x="612" y="963" font-size="8px" font-weight="400" fill="#09325d">same class → one useful box</text>
+  </g>
+
+  <g>
+    <rect fill="#ffffff" stroke="#09325d" stroke-width="2.2" x="598" y="980" width="238" height="150" rx="10"/>
+    <circle cx="619" cy="1002" r="16" fill="#02adf8" stroke="#041d39" stroke-width="2"/><text x="619" y="1007" text-anchor="middle" font-size="13px" font-weight="600" fill="#041d39">12</text>
+    <text x="644" y="1005" font-size="14px" font-weight="600" letter-spacing=".25px" fill="#041d39">FINAL DETECTION</text>
+    <text x="612" y="1030" font-size="11px" font-weight="400" fill="#09325d">The decoder returns:</text>
+    <text x="612" y="1046" font-size="11px" font-weight="400" fill="#09325d">(class_name, score, (x1,y1,x2,y2)).</text>
+    <text x="612" y="1062" font-size="11px" font-weight="400" fill="#09325d">_infer() sends decoded tuples</text>
+    <text x="612" y="1078" font-size="11px" font-weight="400" fill="#09325d">to the node callback.</text>
+    <rect x="612" y="1090" width="192" height="23" fill="#041d39"/>
+    <text x="708" y="1106" text-anchor="middle" class="tiny white">green_cube · 0.91 · xyxy</text>
+    <text x="612" y="1124" font-size="8px" font-weight="400" fill="#09325d">post-NMS result, ready for geometry</text>
+  </g>
+
+  <!-- Code map -->
+  <g>
+    <rect x="28" y="1160" width="808" height="234" rx="10" fill="#041d39" stroke="#02adf8" stroke-width="2.2"/>
+    <rect x="48" y="1178" width="152" height="28" rx="4" fill="#02adf8"/>
+    <text x="124" y="1197" text-anchor="middle" font-size="14px" font-weight="600" letter-spacing=".4px" fill="#041d39">CODE MAP</text>
+    <text x="52" y="1232" font-size="11px" font-weight="600" fill="#ffffff">_letterbox()</text>
+    <text x="210" y="1232" font-size="9px" font-weight="400" fill="#cadaeb">resize + pad; return ratio and pad</text>
+    <text x="52" y="1264" font-size="11px" font-weight="600" fill="#ffffff">_infer()</text>
+    <text x="210" y="1264" font-size="9px" font-weight="400" fill="#cadaeb">execute TensorRT; call the decoder</text>
+    <text x="52" y="1296" font-size="11px" font-weight="600" fill="#ffffff">_decode_yolov5_output()</text>
+    <text x="290" y="1296" font-size="9px" font-weight="400" fill="#cadaeb">transpose → max/argmax → mask → xyxy → NMS</text>
+    <text x="52" y="1328" font-size="11px" font-weight="600" fill="#ffffff">models/README.md</text>
+    <text x="236" y="1328" font-size="9px" font-weight="400" fill="#cadaeb">artifact contract: output0 [1, 7, 8400]</text>
+    <path d="M52 1352 H812" stroke="#09325d" stroke-width="1"/>
+    <text x="52" y="1376" font-size="9px" font-weight="400" fill="#cadaeb">Current implementation: confidence and NMS happen before the later geometry check.</text>
+  </g>
+
+  <!-- Artifact note -->
+  <g>
+    <rect x="28" y="1420" width="808" height="108" rx="10" fill="#ffffff" stroke="#09325d" stroke-width="2"/>
+    <circle cx="60" cy="1454" r="19" fill="#ddf7f4" stroke="#0f766e" stroke-width="2"/>
+    <path d="M51 1454 L58 1461 L70 1447" fill="none" stroke="#0f766e" stroke-width="3" stroke-linecap="round"/>
+    <text x="92" y="1455" font-size="14px" font-weight="600" letter-spacing=".25px" fill="#041d39">CURRENT ARTIFACT NOTE</text>
+    <text x="92" y="1478" font-size="11px" font-weight="400" fill="#09325d">best.onnx / best.engine use the fused-decode layout [1, 7, 8400].</text>
+    <text x="92" y="1494" font-size="11px" font-weight="400" fill="#09325d">Generic YOLO examples may show a different tensor; read this artifact first.</text>
+    <text x="92" y="1515" font-size="8px" font-weight="400" fill="#09325d">The lesson explains this implementation—not every possible YOLO export.</text>
+  </g>
+
+  <text x="432" y="1573" text-anchor="middle" font-size="9px" font-weight="400" fill="#09325d">MENTAL MODEL: propose many → interpret rows → keep strong classes → restore coordinates → suppress duplicates</text>
+  <path d="M92 1602 H772" stroke="#02adf8" stroke-width="2" stroke-dasharray="3 7"/>
+  <text x="432" y="1632" text-anchor="middle" class="small navy">Anchors: cube_detection_node.py · scripts/m3_smoke_inference.py · models/README.md</text>
+  <text x="432" y="1661" text-anchor="middle" font-size="8px" font-weight="400" fill="#09325d">Teaching examples are illustrative; the tensor shape and code path are project facts.</text>
+  <text x="432" y="1710" text-anchor="middle" font-size="14px" font-weight="600" letter-spacing=".4px" fill="#041d39">LESSON 0002 · READ THE OUTPUT BEFORE YOU TRUST THE BOX</text>
+</svg>

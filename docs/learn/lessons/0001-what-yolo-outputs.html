@@ -275,7 +275,7 @@ confidence:  a model score supporting the prediction</code></pre>
 <h2>2. What is an image?</h2>
 <p>A digital image is a rectangular grid of pixels. Each pixel stores numerical color values. A color image has multiple channels—for example, one channel for red, one for green, and one for blue.</p>
 
-<p>In this project, the camera image enters ROS 2 as a <code>sensor_msgs/Image</code>. <code>cv_bridge</code> converts it into an image array that Python can work with. The current node asks for a BGR OpenCV image in <code>cube_detection_node.py:442–445</code>; before inference, <code>cube_detection_node.py:508–510</code> reverses the channel order for the neural network.</p>
+<p>In this project, the camera image enters ROS 2 as a <code>sensor_msgs/Image</code>. <code>cv_bridge</code> converts it into an image array that Python can work with. The current node pairs RGB and depth with <code>message_filters.ApproximateTimeSynchronizer</code>; its configured timestamp tolerance is <code>0.05 s</code>, so the pair is approximate rather than guaranteed to have identical timestamps. The node asks for a BGR OpenCV image in <code>cube_detection_node.py:442–445</code>; before inference, <code>cube_detection_node.py:508–510</code> reverses the channel order for the neural network.</p>
 
 <p>For now, the important idea is:</p>
 
@@ -363,45 +363,65 @@ reason      → why the later geometry step kept it</code></pre>
 </div>
 
 <h2>5. The complete runtime pipeline</h2>
-<p>Here is the full process for one synchronized RGB/depth pair:</p>
+<p>Here is the full process for one approximately synchronized RGB/depth pair selected with a configured slop of <code>0.05 s</code>:</p>
 
 <div class="figure">
-  <svg class="diagram" viewBox="0 0 640 170" role="img" aria-labelledby="pipeline-title pipeline-desc">
+  <svg class="diagram" viewBox="0 0 640 235" role="img" aria-labelledby="pipeline-title pipeline-desc">
     <title id="pipeline-title">Colored-cube runtime pipeline</title>
-    <desc id="pipeline-desc">Camera images flow through ROS 2, conversion, preprocessing, YOLO and TensorRT, post-processing, depth checks, and ROS outputs.</desc>
+    <desc id="pipeline-desc">An ApproximateTimeSynchronizer pairs RGB and depth within a 0.05 second slop. RGB enters preparation, YOLO and TensorRT, and decoded per-class NMS. Depth joins afterward at the geometry check before ROS outputs are published.</desc>
     <defs>
       <marker id="arrow-flow" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto">
         <path d="M0,0 L9,4.5 L0,9 z" fill="#8a3324"/>
       </marker>
     </defs>
-    <rect x="8" y="60" width="96" height="48" rx="7" fill="#dfe5e7" stroke="#607d8b" stroke-width="2"/>
-    <text x="56" y="80" text-anchor="middle" class="label">Camera</text>
-    <text x="56" y="97" text-anchor="middle" class="tiny muted">RGB + depth</text>
-    <line x1="104" y1="84" x2="132" y2="84" stroke="#8a3324" stroke-width="2" marker-end="url(#arrow-flow)"/>
+    <rect x="8" y="94" width="96" height="48" rx="7" fill="#dfe5e7" stroke="#607d8b" stroke-width="2"/>
+    <text x="56" y="114" text-anchor="middle" class="label">Camera</text>
+    <text x="56" y="131" text-anchor="middle" class="tiny muted">RGB + depth</text>
+    <line x1="104" y1="118" x2="132" y2="118" stroke="#8a3324" stroke-width="2" marker-end="url(#arrow-flow)"/>
 
-    <rect x="134" y="60" width="96" height="48" rx="7" fill="#cde6f6" stroke="#1565c0" stroke-width="2"/>
-    <text x="182" y="80" text-anchor="middle" class="label">ROS 2</text>
-    <text x="182" y="97" text-anchor="middle" class="tiny muted">image topics</text>
-    <line x1="230" y1="84" x2="258" y2="84" stroke="#8a3324" stroke-width="2" marker-end="url(#arrow-flow)"/>
+    <rect x="134" y="94" width="96" height="48" rx="7" fill="#cde6f6" stroke="#1565c0" stroke-width="2"/>
+    <text x="182" y="114" text-anchor="middle" class="label">Pair</text>
+    <text x="182" y="131" text-anchor="middle" class="tiny muted">approx. sync</text>
+    <text x="182" y="153" text-anchor="middle" class="tiny muted">slop 0.05 s</text>
 
-    <rect x="260" y="60" width="96" height="48" rx="7" fill="#ffccbc" stroke="#bf360c" stroke-width="2"/>
-    <text x="308" y="80" text-anchor="middle" class="label">Prepare</text>
-    <text x="308" y="97" text-anchor="middle" class="tiny muted">convert + resize</text>
-    <line x1="356" y1="84" x2="384" y2="84" stroke="#8a3324" stroke-width="2" marker-end="url(#arrow-flow)"/>
+    <text x="278" y="41" class="tiny muted">RGB path</text>
+    <rect x="260" y="48" width="96" height="48" rx="7" fill="#ffccbc" stroke="#bf360c" stroke-width="2"/>
+    <text x="308" y="68" text-anchor="middle" class="label">Prepare RGB</text>
+    <text x="308" y="85" text-anchor="middle" class="tiny muted">BGR → RGB + pad</text>
+    <polyline points="230,105 244,105 244,72 260,72" fill="none" stroke="#8a3324" stroke-width="2" marker-end="url(#arrow-flow)"/>
 
-    <rect x="386" y="60" width="96" height="48" rx="7" fill="#ff8a65" stroke="#bf360c" stroke-width="2"/>
-    <text x="434" y="80" text-anchor="middle" class="label">YOLO + TRT</text>
-    <text x="434" y="97" text-anchor="middle" class="tiny muted">predict candidates</text>
-    <line x1="482" y1="84" x2="510" y2="84" stroke="#8a3324" stroke-width="2" marker-end="url(#arrow-flow)"/>
+    <rect x="386" y="48" width="96" height="48" rx="7" fill="#ff8a65" stroke="#bf360c" stroke-width="2"/>
+    <text x="434" y="68" text-anchor="middle" class="label">YOLO + TRT</text>
+    <text x="434" y="85" text-anchor="middle" class="tiny muted">RGB candidates</text>
+    <line x1="356" y1="72" x2="384" y2="72" stroke="#8a3324" stroke-width="2" marker-end="url(#arrow-flow)"/>
 
-    <rect x="512" y="60" width="120" height="48" rx="7" fill="#ffcc80" stroke="#e65100" stroke-width="2"/>
-    <text x="572" y="80" text-anchor="middle" class="label">Filter + publish</text>
-    <text x="572" y="97" text-anchor="middle" class="tiny muted">boxes + ROS outputs</text>
+    <rect x="512" y="48" width="120" height="48" rx="7" fill="#ffcc80" stroke="#e65100" stroke-width="2"/>
+    <text x="572" y="68" text-anchor="middle" class="label">Decode + NMS</text>
+    <text x="572" y="85" text-anchor="middle" class="tiny muted">per class</text>
+    <line x1="482" y1="72" x2="510" y2="72" stroke="#8a3324" stroke-width="2" marker-end="url(#arrow-flow)"/>
 
-    <text x="8" y="31" class="tiny muted">The node is the coordinator. The model is one stage inside the node.</text>
-    <text x="8" y="145" class="tiny muted">Later: the depth/geometry check asks whether a candidate looks like a raised cube-like object.</text>
+    <text x="278" y="151" class="tiny muted">Depth path</text>
+    <rect x="260" y="162" width="96" height="48" rx="7" fill="#dfe5e7" stroke="#607d8b" stroke-width="2"/>
+    <text x="308" y="182" text-anchor="middle" class="label">Depth image</text>
+    <text x="308" y="199" text-anchor="middle" class="tiny muted">later evidence</text>
+    <polyline points="230,131 244,131 244,186 260,186" fill="none" stroke="#8a3324" stroke-width="2" marker-end="url(#arrow-flow)"/>
+
+    <rect x="386" y="162" width="96" height="48" rx="7" fill="#ffccbc" stroke="#bf360c" stroke-width="2"/>
+    <text x="434" y="182" text-anchor="middle" class="label">Geometry</text>
+    <text x="434" y="199" text-anchor="middle" class="tiny muted">check candidates</text>
+    <line x1="356" y1="186" x2="384" y2="186" stroke="#8a3324" stroke-width="2" marker-end="url(#arrow-flow)"/>
+    <polyline points="572,96 572,186 484,186" fill="none" stroke="#8a3324" stroke-width="2" marker-end="url(#arrow-flow)"/>
+
+    <rect x="512" y="162" width="120" height="48" rx="7" fill="#ffcc80" stroke="#e65100" stroke-width="2"/>
+    <text x="572" y="182" text-anchor="middle" class="label">Publish</text>
+    <text x="572" y="199" text-anchor="middle" class="tiny muted">kept outputs</text>
+    <line x1="482" y1="186" x2="510" y2="186" stroke="#8a3324" stroke-width="2" marker-end="url(#arrow-flow)"/>
+
+    <text x="8" y="12" class="tiny muted">Approximate pairing: ApproximateTimeSynchronizer · slop 0.05 s.</text>
+    <text x="8" y="25" class="tiny muted">RGB enters YOLO/TensorRT; depth joins afterward at geometry filtering.</text>
+    <text x="8" y="229" class="tiny muted">Invalid or sparse depth is fail-open in the current geometry decision: the candidate is kept with a quality reason.</text>
   </svg>
-  <p class="figure-caption">Figure 2. The beginner-level mental model of the live node. Each stage has one job.</p>
+  <p class="figure-caption">Figure 2. The implementation-level mental model: approximate RGB/depth pairing, an RGB inference branch, and a later depth/geometry check.</p>
 </div>
 
 <div class="interaction" id="pipeline-interaction">
@@ -413,7 +433,7 @@ reason      → why the later geometry step kept it</code></pre>
     <button type="button" class="step-btn" data-stage="post">4. Post-process</button>
     <button type="button" class="step-btn" data-stage="publish">5. Publish</button>
   </div>
-  <p id="stage-detail" class="stage-detail" aria-live="polite"><strong>Camera:</strong> The vendor camera publishes RGB and depth images. The node receives them through ROS 2 topics.</p>
+  <p id="stage-detail" class="stage-detail" aria-live="polite"><strong>Camera:</strong> The vendor camera publishes RGB and depth images. The node receives an approximately synchronized pair through <code>ApproximateTimeSynchronizer</code> with a configured <code>0.05 s</code> slop.</p>
 </div>
 
 <h2>6. What happens after the model predicts?</h2>
@@ -422,10 +442,10 @@ reason      → why the later geometry step kept it</code></pre>
 <p>Two common ideas help:</p>
 <ol>
   <li><strong>Confidence thresholding:</strong> discard candidates below the selected score threshold.</li>
-  <li><strong>Non-maximum suppression (NMS):</strong> when several boxes overlap the same object, keep the strongest useful box and remove duplicates.</li>
+  <li><strong>Non-maximum suppression (NMS):</strong> within each class, when several boxes overlap the same object, keep the strongest useful box and remove weaker duplicates. The current implementation applies NMS per class, so overlapping boxes from different classes are not suppressed together.</li>
 </ol>
 
-<p>Today we only need the intuition. Lesson 2 will explain how the current YOLO output is decoded and how NMS is implemented in <code>_decode_yolov5_output()</code>.</p>
+<p>Today we only need the intuition. Lesson 2 will explain how the current YOLO output is decoded and how NMS is implemented in <code>_decode_yolov5_output()</code>. In this node, <code>_infer()</code> returns decoded detections after confidence filtering and per-class NMS; it does not pass the raw engine tensor directly to <code>_sync_cb()</code>.</p>
 
 <div class="interaction" id="nms-interaction">
   <p class="interaction-title">Interactive: overlapping candidates before and after NMS</p>
@@ -433,7 +453,7 @@ reason      → why the later geometry step kept it</code></pre>
   <div class="figure" style="margin-bottom: 0;">
     <svg class="diagram" viewBox="0 0 560 230" role="img" aria-labelledby="nms-title nms-desc">
       <title id="nms-title">NMS illustration</title>
-      <desc id="nms-desc">Several overlapping candidate boxes surround one cube. A toggle hides the weaker boxes and leaves one final box.</desc>
+      <desc id="nms-desc">Several overlapping candidate boxes of one class surround one cube. A toggle hides weaker boxes and leaves one final box; different classes are evaluated separately.</desc>
       <rect x="0" y="0" width="560" height="230" fill="#d6c09b"/>
       <polygon points="238,124 280,102 323,122 280,145" fill="#55a9df"/>
       <polygon points="238,124 280,145 280,190 238,168" fill="#2678b5"/>
@@ -453,7 +473,7 @@ reason      → why the later geometry step kept it</code></pre>
         <text x="18" y="49" class="tiny muted">The weaker duplicates are not published.</text>
       </g>
     </svg>
-    <p id="nms-caption" class="figure-caption">The model can make multiple overlapping guesses. NMS reduces them to a cleaner result.</p>
+    <p id="nms-caption" class="figure-caption">The model can make multiple overlapping guesses. NMS reduces same-class duplicates to a cleaner result; different classes are handled separately.</p>
   </div>
 </div>
 
@@ -496,25 +516,27 @@ reason      → why the later geometry step kept it</code></pre>
 </div>
 
 <h2>7. Map the mental model to the real code</h2>
-<p>The current node has one main synchronized callback and several focused helpers:</p>
+<p>The current node has one main callback for an approximately synchronized RGB/depth pair and several focused helpers:</p>
 
 <table>
   <thead>
     <tr><th>Code</th><th>Plain-language job</th></tr>
   </thead>
   <tbody>
-    <tr><td><code>_letterbox()</code><br><small>lines 72–94</small></td><td>Resize and pad the camera image while remembering how to map boxes back to the original image.</td></tr>
-    <tr><td><code>_decode_yolov5_output()</code><br><small>lines 97–145</small></td><td>Turn model numbers into image boxes, class names, scores, and a de-duplicated list.</td></tr>
-    <tr><td><code>_sync_cb()</code><br><small>lines 437–502</small></td><td>Coordinate image conversion, inference, geometry filtering, publishing, and timing.</td></tr>
-    <tr><td><code>_infer()</code><br><small>lines 504–530</small></td><td>Prepare one RGB frame and execute the TensorRT engine.</td></tr>
-    <tr><td><code>_publish_outputs()</code><br><small>lines 532–541</small></td><td>Send kept detections and the optional debug image to ROS 2 topics.</td></tr>
+    <tr><td><code>_letterbox()</code><br><small>lines 72–94</small></td><td>Resize and pad the already RGB frame while remembering how to map boxes back to the original image. It does not perform the BGR→RGB conversion.</td></tr>
+    <tr><td><code>_decode_yolov5_output()</code><br><small>lines 97–145</small></td><td>Decode model numbers into image boxes, class names, and scores; apply the confidence threshold and per-class NMS.</td></tr>
+    <tr><td><code>_sync_cb()</code><br><small>lines 437–502</small></td><td>Receive an approximately synchronized RGB/depth pair via <code>ApproximateTimeSynchronizer</code> (slop <code>0.05 s</code>), then coordinate inference, geometry filtering, publishing, and timing.</td></tr>
+    <tr><td><code>_infer()</code><br><small>lines 504–530</small></td><td>Convert BGR→RGB, call <code>_letterbox()</code>, normalize/transpose, execute TensorRT, and return decoded detections—not raw engine output.</td></tr>
+    <tr><td><code>_publish_outputs()</code><br><small>lines 532–541</small></td><td>Publish kept detections to <code>/cube_detections</code> and <code>/cube_detections/vendor_objects</code>; optionally publish the debug image to <code>/cube_detections/debug_image</code>.</td></tr>
   </tbody>
 </table>
 
 <div class="callout">
   <p class="callout-title">The model is not the whole application</p>
-  <p>YOLO/TensorRT performs one important stage: producing predictions. The ROS 2 node is responsible for receiving camera data, preparing it, interpreting the model output, applying the depth check, and publishing messages.</p>
+  <p>YOLO/TensorRT performs one important stage on the RGB branch: producing predictions. The ROS 2 node receives an approximately synchronized RGB/depth pair, prepares RGB for the engine, interprets the decoded output, applies the later depth/geometry check, and publishes messages. Invalid or sparse depth is kept by the current fail-open geometry decision rather than automatically rejecting a candidate.</p>
 </div>
+
+<p>Depth is a later evidence check, not a replacement detector. With valid, sufficiently sampled depth, geometry can reject a candidate that does not look like a raised cube-like object. If the geometry statistics are invalid or fewer than the configured minimum number of valid depth pixels are available, this implementation keeps the candidate with a low-depth-quality reason. A whole depth frame with the wrong shape or type is skipped before publishing.</p>
 
 <h2>8. A real example from this project</h2>
 <p>The following two images come from the M5 live test. A human can see three small cubes in the RGB frame. The debug overlay says <code>keep=0</code> because no candidate passed the current model and geometry pipeline at the selected threshold.</p>
@@ -558,7 +580,7 @@ reason      → why the later geometry step kept it</code></pre>
   <div class="answer"></div>
 </div>
 
-<div class="quiz" data-correct="0" data-correct-text="NMS removes weaker overlapping boxes that refer to the same physical object, leaving a cleaner final result.">
+<div class="quiz" data-correct="0" data-correct-text="NMS removes weaker overlapping boxes for the same class and physical object, leaving a cleaner final result. Different classes are evaluated separately.">
   <p class="quiz-q">Why do we need NMS?</p>
   <ol>
     <li><label><input type="radio" name="q3" value="0"> To reduce several overlapping guesses to a useful box.</label></li>
@@ -583,7 +605,7 @@ reason      → why the later geometry step kept it</code></pre>
 
 <div class="callout">
   <p class="callout-title">One-minute explain-back</p>
-  <p>“The camera produces an image. The node prepares that image and gives it to the detector. The detector proposes objects, and each proposal has a class, a box, and a score. Weak or duplicate proposals are filtered. The remaining information is published as ROS 2 messages and a debug image.”</p>
+  <p>“The camera produces RGB and depth images. The node pairs them approximately, prepares RGB, and gives only RGB to the detector. The detector proposes objects, and each proposal has a class, a box, and a score. Weak same-class duplicates are filtered, then depth checks the candidates when usable; sparse depth is kept by the current fail-open rule. The remaining information is published as ROS 2 messages and, optionally, a debug image.”</p>
 </div>
 
 <p>If you can explain that flow, you understand the central idea of this lesson. The details of the neural-network tensor come next.</p>
@@ -631,11 +653,11 @@ reason      → why the later geometry step kept it</code></pre>
   });
 
   var stages = {
-    camera: 'The vendor camera publishes RGB and depth images. The node receives them through ROS 2 topics.',
-    prepare: 'cv_bridge converts the ROS image messages. The RGB frame is channel-converted, resized, padded, normalized, and arranged for the model.',
-    model: 'TensorRT executes the YOLOv5 engine on the Jetson GPU. The result is a set of numerical candidate predictions.',
-    post: 'The node decodes boxes, applies the confidence threshold and NMS, then checks the surviving candidates with the depth/geometry filter.',
-    publish: 'The kept detections become vision_msgs/Detection2DArray and vendor-compatible messages. An annotated debug image can also be published.'
+    camera: 'The vendor camera publishes RGB and depth images. The node receives an approximately synchronized pair through ApproximateTimeSynchronizer with a configured 0.05 s slop.',
+    prepare: 'cv_bridge converts the ROS image messages. The RGB frame is converted BGR → RGB, resized and padded, normalized, and arranged for the model; _letterbox only resizes and pads.',
+    model: 'TensorRT executes the YOLOv5 engine on the Jetson GPU. _infer() returns decoded detections—not the raw engine tensor—after confidence filtering and per-class NMS.',
+    post: 'The node decodes boxes and applies NMS separately per class, then checks surviving candidates with the later depth/geometry filter. Invalid or sparse depth is kept with a quality reason.',
+    publish: 'The kept detections become vision_msgs/Detection2DArray and vendor-compatible messages on /cube_detections and /cube_detections/vendor_objects. An annotated debug image can also be published on /cube_detections/debug_image.'
   };
   var stageButtons = document.querySelectorAll('.step-btn');
   var stageDetail = document.getElementById('stage-detail');
@@ -663,8 +685,8 @@ reason      → why the later geometry step kept it</code></pre>
       nmsButton.textContent = showingAfter ? 'Show final result' : 'Show overlapping candidates';
       if (nmsCaption) {
         nmsCaption.textContent = showingAfter
-          ? 'The model can make multiple overlapping guesses. NMS reduces them to a cleaner result.'
-          : 'NMS keeps one useful box and removes weaker duplicates.';
+          ? 'The model can make multiple overlapping guesses of the same class. NMS reduces them to a cleaner result; different classes are handled separately.'
+          : 'NMS keeps one useful box and removes weaker same-class duplicates; different classes are evaluated separately.';
       }
     });
   }
