@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Colored-cube perception learning workspace</title>
+  <link rel="stylesheet" href="assets/lesson.css">
+</head>
+<body>
+<main data-course-dashboard>
+  <header class="reference-header">
+    <p class="brand-kicker">Software · AI · Robotics / Learning workspace</p>
+    <h1>Own the colored-cube perception stack</h1>
+    <p class="lede">Learn the current system deeply enough to debug its boundaries, defend its decisions, and explain its evidence without overclaiming.</p>
+  </header>
+
+  <nav class="course-nav" aria-label="Workspace navigation"><a href="MISSION.md">Mission</a><a href="LESSON-PLAN.md">Curriculum plan</a><a href="reference/index.html">Quick references</a><a href="RESOURCES.md">Source shelf</a></nav>
+
+  <section class="dashboard-grid" aria-label="Current learning state">
+    <div class="dashboard-card"><span class="eyebrow">Engineering status</span><strong>M5 PARTIAL</strong><p>Runtime and empty-scene behavior work; reliable room-domain positive detection remains unresolved.</p></div>
+    <div class="dashboard-card"><span class="eyebrow">Verified contract</span><strong>[1, 7, 8400]</strong><p>One batch item, seven fields, and 8,400 candidate positions for the current export.</p></div>
+    <div class="dashboard-card"><span class="eyebrow">Learning evidence</span><strong id="learning-state">Not yet measured</strong><p id="learning-detail">Complete an explain-back with the agent before treating lesson exposure as mastery.</p></div>
+  </section>
+
+  <div class="callout"><p class="callout-title">Choose your entrance</p><p><strong>New to the material?</strong> Start with Lesson 0001. <strong>Already reviewed the course?</strong> Attempt Lesson 0009’s final explain-back without notes; use the gaps to select the next lesson.</p></div>
+
+  <h2>Lessons</h2>
+  <ol class="course-list">
+    <li><a href="lessons/0001-what-yolo-outputs.html"><strong>What YOLO outputs</strong><span>Detection, boxes, confidence, candidates, and final outputs.</span></a></li>
+    <li><a href="lessons/0002-how-yolo-produces-predictions.html"><strong>How YOLO produces predictions</strong><span>The current tensor contract, decoder, inverse letterbox, and NMS.</span></a></li>
+    <li><a href="lessons/0003-pytorch-and-model-training.html"><strong>PyTorch and model training</strong><span>Labels, loss, gradients, validation, and checkpoint selection.</span></a></li>
+    <li><a href="lessons/0004-why-the-model-fails-on-the-robot.html"><strong>Why the model fails on the robot</strong><span>Domain gap, evidence boundaries, and failure localization.</span></a></li>
+    <li><a href="lessons/0005-onnx-and-tensorrt.html"><strong>ONNX and TensorRT</strong><span>Artifact conversion, FP16, compatibility, and verification.</span></a></li>
+    <li><a href="lessons/0006-ros-2-perception-wiring.html"><strong>ROS 2 perception wiring</strong><span>Topics, synchronization, QoS, conversion, and publication.</span></a></li>
+    <li><a href="lessons/0007-depth-and-geometry-filtering.html"><strong>Depth and geometry filtering</strong><span>Z-depth, calibration assumptions, decision policy, and known defect.</span></a></li>
+    <li><a href="lessons/0008-evaluation-and-fine-tuning.html"><strong>Evaluation and fine-tuning</strong><span>Metrics, test matrices, hard negatives, gates, and rollback.</span></a></li>
+    <li><a href="lessons/0009-project-walkthrough-and-interview-practice.html"><strong>Project walkthrough and interview practice</strong><span>Explain the complete system, evidence, trade-offs, and next experiment.</span></a></li>
+  </ol>
+
+  <h2>Quick references</h2>
+  <div class="reference-grid compact">
+    <a class="reference-card" href="reference/image-and-tensor-contracts.html"><strong>Image and tensor contracts</strong><span>Representation and coordinates.</span></a>
+    <a class="reference-card" href="reference/yolo-output-and-decoding.html"><strong>YOLO decoding</strong><span>`[1,7,8400]` to detections.</span></a>
+    <a class="reference-card" href="reference/training-and-evaluation.html"><strong>Training and evaluation</strong><span>Evidence and metrics.</span></a>
+    <a class="reference-card" href="reference/onnx-and-tensorrt.html"><strong>ONNX and TensorRT</strong><span>Deployment boundaries.</span></a>
+    <a class="reference-card" href="reference/ros2-and-depth.html"><strong>ROS 2 and depth</strong><span>Runtime and geometry policy.</span></a>
+  </div>
+
+  <h2>How progress becomes durable</h2>
+  <p>Each lesson after the first begins with retrieval from earlier lessons. The browser saves your self-rating locally, but that is only practice evidence. When you explain or apply a concept with the agent, the agent records the demonstrated understanding in <code>learning-records/</code> and uses it to choose the next challenge.</p>
+
+  <footer><p>Project-specific learning workspace · <a href="NOTES.md">Teaching notes</a> · <a href="history/README.md">Historical records</a></p></footer>
+</main>
+<script src="assets/quiz.js"></script>
+</body>
+</html>

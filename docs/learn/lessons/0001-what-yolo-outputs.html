@@ -419,7 +419,7 @@ reason      → why the later geometry step kept it</code></pre>
 
     <text x="8" y="12" class="tiny muted">Approximate pairing: ApproximateTimeSynchronizer · slop 0.05 s.</text>
     <text x="8" y="25" class="tiny muted">RGB enters YOLO/TensorRT; depth joins afterward at geometry filtering.</text>
-    <text x="8" y="229" class="tiny muted">Invalid or sparse depth is fail-open in the current geometry decision: the candidate is kept with a quality reason.</text>
+    <text x="8" y="229" class="tiny muted">Wrong whole-frame depth drops the frame; sparse per-box depth keeps a candidate with a quality reason.</text>
   </svg>
   <p class="figure-caption">Figure 2. The implementation-level mental model: approximate RGB/depth pairing, an RGB inference branch, and a later depth/geometry check.</p>
 </div>
@@ -533,13 +533,13 @@ reason      → why the later geometry step kept it</code></pre>
 
 <div class="callout">
   <p class="callout-title">The model is not the whole application</p>
-  <p>YOLO/TensorRT performs one important stage on the RGB branch: producing predictions. The ROS 2 node receives an approximately synchronized RGB/depth pair, prepares RGB for the engine, interprets the decoded output, applies the later depth/geometry check, and publishes messages. Invalid or sparse depth is kept by the current fail-open geometry decision rather than automatically rejecting a candidate.</p>
+  <p>YOLO/TensorRT performs one important stage on the RGB branch: producing predictions. The ROS 2 node receives an approximately synchronized RGB/depth pair, prepares RGB for the engine, interprets the decoded output, applies the later depth/geometry check, and publishes messages. The boundary matters: a wrong-shape or wrong-type whole depth frame makes the callback return before inference, while missing or sparse statistics for one otherwise valid candidate box take the geometry helper's fail-open branch.</p>
 </div>
 
 <p>Depth is a later evidence check, not a replacement detector. With valid, sufficiently sampled depth, geometry can reject a candidate that does not look like a raised cube-like object. If the geometry statistics are invalid or fewer than the configured minimum number of valid depth pixels are available, this implementation keeps the candidate with a low-depth-quality reason. A whole depth frame with the wrong shape or type is skipped before publishing.</p>
 
 <h2>8. A real example from this project</h2>
-<p>The following two images come from the M5 live test. A human can see three small cubes in the RGB frame. The debug overlay says <code>keep=0</code> because no candidate passed the current model and geometry pipeline at the selected threshold.</p>
+<p>The following two images come from the M5 live test. A human can see three small cubes in the RGB frame. The debug overlay says <code>keep=0</code> because no candidate passed the current model and geometry pipeline at the selected threshold. <span class="source-note">[<a href="../../../evaluation/m5_live/report.md">M5 evidence</a>]</span></p>
 
 <div class="real-pair">
   <figure>
@@ -559,10 +559,10 @@ reason      → why the later geometry step kept it</code></pre>
 <div class="quiz" data-correct="1" data-correct-text="Object detection includes both the class and the location. Classification only answers what is present; detection also answers where it is.">
   <p class="quiz-q">Which sentence describes object detection?</p>
   <ol>
-    <li><label><input type="radio" name="q1" value="0"> “This image contains a cube.”</label></li>
-    <li><label><input type="radio" name="q1" value="1"> “There is a red cube inside this rectangle.”</label></li>
-    <li><label><input type="radio" name="q1" value="2"> “The camera produced three color channels.”</label></li>
-    <li><label><input type="radio" name="q1" value="3"> “The Jetson is running Linux.”</label></li>
+    <li><label><input type="radio" name="q1" value="0"> “A red cube is somewhere inside this image.”</label></li>
+    <li><label><input type="radio" name="q1" value="1"> “A red cube lies inside this predicted rectangle.”</label></li>
+    <li><label><input type="radio" name="q1" value="2"> “This image contains red, green, and blue channels.”</label></li>
+    <li><label><input type="radio" name="q1" value="3"> “The camera captured this image at thirty hertz.”</label></li>
   </ol>
   <button type="button" class="check-btn">Check</button>
   <div class="answer"></div>
@@ -571,10 +571,10 @@ reason      → why the later geometry step kept it</code></pre>
 <div class="quiz" data-correct="2" data-correct-text="A confidence score is model evidence, not a guarantee. A model can still be wrong, especially on images unlike its training data.">
   <p class="quiz-q">What does a confidence score mean?</p>
   <ol>
-    <li><label><input type="radio" name="q2" value="0"> It proves the object is real.</label></li>
-    <li><label><input type="radio" name="q2" value="1"> It is the distance from the camera in meters.</label></li>
-    <li><label><input type="radio" name="q2" value="2"> It is a score representing how strongly the model supports the prediction.</label></li>
-    <li><label><input type="radio" name="q2" value="3"> It is the number of pixels in the bounding box.</label></li>
+    <li><label><input type="radio" name="q2" value="0"> It is the measured probability that the object physically exists.</label></li>
+    <li><label><input type="radio" name="q2" value="1"> It is the estimated distance between camera and detected object.</label></li>
+    <li><label><input type="radio" name="q2" value="2"> It measures how strongly the model supports this particular prediction.</label></li>
+    <li><label><input type="radio" name="q2" value="3"> It counts how many pixels fall inside the predicted box.</label></li>
   </ol>
   <button type="button" class="check-btn">Check</button>
   <div class="answer"></div>
@@ -583,10 +583,10 @@ reason      → why the later geometry step kept it</code></pre>
 <div class="quiz" data-correct="0" data-correct-text="NMS removes weaker overlapping boxes for the same class and physical object, leaving a cleaner final result. Different classes are evaluated separately.">
   <p class="quiz-q">Why do we need NMS?</p>
   <ol>
-    <li><label><input type="radio" name="q3" value="0"> To reduce several overlapping guesses to a useful box.</label></li>
-    <li><label><input type="radio" name="q3" value="1"> To change a red cube into a blue cube.</label></li>
-    <li><label><input type="radio" name="q3" value="2"> To convert ROS messages into pixels.</label></li>
-    <li><label><input type="radio" name="q3" value="3"> To train the model from new images.</label></li>
+    <li><label><input type="radio" name="q3" value="0"> To suppress weaker overlapping boxes for the same predicted class.</label></li>
+    <li><label><input type="radio" name="q3" value="1"> To merge overlapping boxes from every class into one label.</label></li>
+    <li><label><input type="radio" name="q3" value="2"> To convert model-space boxes back into original-image coordinates.</label></li>
+    <li><label><input type="radio" name="q3" value="3"> To remove every candidate whose score is below threshold.</label></li>
   </ol>
   <button type="button" class="check-btn">Check</button>
   <div class="answer"></div>
@@ -605,7 +605,7 @@ reason      → why the later geometry step kept it</code></pre>
 
 <div class="callout">
   <p class="callout-title">One-minute explain-back</p>
-  <p>“The camera produces RGB and depth images. The node pairs them approximately, prepares RGB, and gives only RGB to the detector. The detector proposes objects, and each proposal has a class, a box, and a score. Weak same-class duplicates are filtered, then depth checks the candidates when usable; sparse depth is kept by the current fail-open rule. The remaining information is published as ROS 2 messages and, optionally, a debug image.”</p>
+  <p>“The camera produces RGB and depth images. The node pairs them approximately, prepares RGB, and gives only RGB to the detector. The detector proposes objects, and each proposal has a class, a box, and a score. Weak same-class duplicates are filtered, then depth checks the candidates when usable. A malformed whole depth frame drops that frame, while sparse per-box evidence keeps that candidate under the current fail-open rule. The remaining information is published as ROS 2 messages and, optionally, a debug image.”</p>
 </div>
 
 <p>If you can explain that flow, you understand the central idea of this lesson. The details of the neural-network tensor come next.</p>
@@ -656,7 +656,7 @@ reason      → why the later geometry step kept it</code></pre>
     camera: 'The vendor camera publishes RGB and depth images. The node receives an approximately synchronized pair through ApproximateTimeSynchronizer with a configured 0.05 s slop.',
     prepare: 'cv_bridge converts the ROS image messages. The RGB frame is converted BGR → RGB, resized and padded, normalized, and arranged for the model; _letterbox only resizes and pads.',
     model: 'TensorRT executes the YOLOv5 engine on the Jetson GPU. _infer() returns decoded detections—not the raw engine tensor—after confidence filtering and per-class NMS.',
-    post: 'The node decodes boxes and applies NMS separately per class, then checks surviving candidates with the later depth/geometry filter. Invalid or sparse depth is kept with a quality reason.',
+    post: 'The node decodes boxes and applies NMS separately per class, then checks surviving candidates with the later depth/geometry filter. A malformed whole depth frame drops the frame; sparse per-box evidence keeps that candidate with a quality reason.',
     publish: 'The kept detections become vision_msgs/Detection2DArray and vendor-compatible messages on /cube_detections and /cube_detections/vendor_objects. An annotated debug image can also be published on /cube_detections/debug_image.'
   };
   var stageButtons = document.querySelectorAll('.step-btn');

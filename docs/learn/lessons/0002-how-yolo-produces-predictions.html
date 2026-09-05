@@ -269,7 +269,38 @@ final:  (class_name, score, (x1, y1, x2, y2))</code></pre>
   </div>
 </div>
 
-<p>So the output has <code>6,400 + 2,000 = 8,400</code> candidate positions. The exact internal anchor and stride calculations are inside the exported graph; this lesson only needs the observable output contract and the decoder that consumes it.</p>
+<p>So the output has <code>6,400 + 2,000 = 8,400</code> candidate positions. In this checkout, the loaded checkpoint identifies itself as a YOLOv5u-style model: its split detection head is anchor-free, uses strides 8/16/32, and produces distributional box predictions (DFL) plus class scores without a separate objectness field. Those architectural facts explain the three grids; the exported <code>[1,7,8400]</code> tensor remains the operational contract that the decoder must obey.</p>
+
+<h3>Where does the <code>640×640</code> model input come from?</h3>
+<p><strong>It is not a universal YOLO requirement.</strong> The camera supplies the original RGB frame at the resolution produced by the camera stream; that frame may be rectangular and does not have to be <code>640×640</code>. In this project, <code>640×640</code> is a deliberate model-and-deployment contract: the model was trained with <code>imgsz=640</code>, exported with a static input of <code>[1, 3, 640, 640]</code>, and the TensorRT engine and ROS node are configured to use the same shape.</p>
+
+<div class="callout">
+  <p class="callout-title">The engineering decision behind 640</p>
+  <p>The size balances visual detail against inference cost. A larger input can preserve more detail for small objects but requires more computation and memory; a smaller input is cheaper but can make small cubes harder to distinguish. The project documentation records the verified reason as consistency with the training resolution and the TensorRT deployment. The historical choice of 640 over every other possible size is an engineering trade-off, not a mathematical law imposed by YOLO.</p>
+</div>
+
+<p><code>_letterbox()</code> bridges the camera frame and the model canvas. It scales the whole image by one ratio, preserving its aspect ratio, then adds padding until the result is square. For a teaching example, a <code>640×360</code> camera frame keeps its width, remains <code>640×360</code> after resizing, and receives <code>140</code> pixels of padding above and below. The model sees a <code>640×640</code> canvas, but the decoder later subtracts that padding and divides by the resize ratio so boxes return to the original frame.</p>
+
+<figure class="figure">
+  <svg class="diagram" viewBox="0 0 760 210" role="img" aria-labelledby="input-contract-title input-contract-desc">
+    <title id="input-contract-title">From the camera frame to the model canvas</title>
+    <desc id="input-contract-desc">A rectangular 640 by 360 camera frame is preserved at its aspect ratio, placed inside a 640 by 640 square canvas, and padded above and below before inference.</desc>
+    <rect x="0" y="0" width="760" height="210" fill="#dfe9f3"/>
+    <rect x="30" y="58" width="220" height="124" fill="#ffffff" stroke="#09325d" stroke-width="2"/>
+    <text x="140" y="38" text-anchor="middle" class="label">original camera frame</text>
+    <text x="140" y="202" text-anchor="middle" class="tiny muted">example: 640×360</text>
+    <path d="M284 120 H368" class="axis"/>
+    <text x="326" y="104" text-anchor="middle" class="tiny muted">letterbox</text>
+    <rect x="420" y="30" width="150" height="150" fill="#041d39" stroke="#09325d" stroke-width="2"/>
+    <rect x="420" y="63" width="150" height="84" fill="#ffffff"/>
+    <text x="495" y="20" text-anchor="middle" class="label">model canvas</text>
+    <text x="495" y="198" text-anchor="middle" class="tiny muted">640×640 = image + padding</text>
+    <text x="582" y="72" class="tiny muted">pad_t=140</text>
+    <text x="582" y="91" class="tiny muted">pad_b=140</text>
+    <text x="30" y="18" class="tiny muted">The exact source resolution can vary; the model contract is fixed here.</text>
+  </svg>
+  <figcaption class="figure-caption">The input-size decision belongs to the model artifact. Letterboxing makes a varying camera frame fit that fixed canvas without stretching it.</figcaption>
+</figure>
 
 <div class="interaction" id="grid-interaction">
   <p class="interaction-title">Interactive: change the detection scale</p>
@@ -306,7 +337,7 @@ final:  (class_name, score, (x1, y1, x2, y2))</code></pre>
 </div>
 
 <h2>3. How do we read <code>[1, 7, 8400]</code>?</h2>
-<p>The current ONNX and TensorRT artifacts document <code>output0</code> as a float32 tensor with shape <code>[1, 7, 8400]</code>. Read the axes as:</p>
+<p>The current ONNX and TensorRT artifacts document <code>output0</code> as a float32 tensor with shape <code>[1, 7, 8400]</code>. <span class="source-note">[<a href="../../../models/README.md">artifact contract</a> · <a href="../../../recognition_of_different_colored_cubes/cube_detection_node.py">decoder</a>]</span> Read the axes as:</p>
 
 <table class="candidate-table">
   <thead>
@@ -600,7 +631,7 @@ boxes, cls_conf, cls_id = boxes[mask], cls_conf[mask], cls_id[mask]</code></pre>
     <input id="nms-slider" type="range" min="30" max="80" value="45" step="5">
     <output id="nms-value" for="nms-slider">0.45</output>
   </div>
-  <p id="nms-readout" class="readout" aria-live="polite">Example duplicate IoU = 0.62. At threshold 0.45, the lower-scoring box is suppressed.</p>
+  <p id="nms-readout" class="readout" aria-live="polite">Example duplicate IoU ≈ 0.54. At threshold 0.45, the lower-scoring box is suppressed.</p>
   <button type="button" class="action-btn" id="nms-toggle" aria-pressed="false">Show overlapping candidates</button>
   <div class="figure" style="margin-bottom: 0;">
     <svg class="diagram" viewBox="0 0 560 240" role="img" aria-labelledby="nms-title nms-desc">
@@ -615,8 +646,8 @@ boxes, cls_conf, cls_id = boxes[mask], cls_conf[mask], cls_id[mask]</code></pre>
         <text x="180" y="215" class="tiny muted">red_cube 0.72</text><text x="300" y="215" class="tiny muted">red_cube 0.58</text>
       </g>
       <g id="nms-after" class="hidden">
-        <rect x="214" y="58" width="180" height="125" fill="none" stroke="#0f766e" stroke-width="4"/>
-        <rect x="214" y="38" width="116" height="18" rx="3" fill="#0f766e"/><text x="220" y="51" fill="white" font-size="11">red_cube · 0.72</text>
+        <rect x="174" y="77" width="190" height="120" fill="none" stroke="#b42318" stroke-width="4"/>
+        <rect x="174" y="57" width="116" height="18" rx="3" fill="#b42318"/><text x="180" y="70" fill="white" font-size="11">red_cube · 0.72</text>
         <text x="18" y="29" class="label">After NMS: one strongest box</text>
         <text x="18" y="50" class="tiny muted">The weaker overlapping duplicate is not returned.</text>
       </g>
@@ -624,6 +655,7 @@ boxes, cls_conf, cls_id = boxes[mask], cls_conf[mask], cls_id[mask]</code></pre>
     <p id="nms-caption" class="figure-caption">Per-class NMS keeps the stronger same-class box and suppresses the duplicate.</p>
   </div>
 </div>
+<div class="callout"><p class="callout-title">Border-box detail</p><p>The repository decoder first removes letterbox padding and divides by the letterbox scale, then clips boxes to the original camera-frame dimensions before NMS. Clipping can change the IoU of candidates that cross an image border, so compute IoU from these inverse-letterboxed, original-frame-clipped boxes when reproducing the code path.</p></div>
 
 <h2>11. Map the algorithm to the real code</h2>
 <p>The current implementation separates model execution from output interpretation. The critical functions are:</p>
@@ -651,10 +683,10 @@ boxes, cls_conf, cls_id = boxes[mask], cls_conf[mask], cls_id[mask]</code></pre>
 <div class="quiz" data-correct="1" data-correct-text="The current artifact has one batch item, seven fields per candidate, and 8,400 candidate positions. After selecting the batch item and transposing, the decoder sees 8,400 rows of seven values.">
   <p class="quiz-q">What is the best interpretation of <code>[1, 7, 8400]</code>?</p>
   <ol>
-    <li><label><input type="radio" name="q1" value="0"> One final box with 7,8400 pixels.</label></li>
+    <li><label><input type="radio" name="q1" value="0"> One final detection containing seven values and 8,400 image pixels.</label></li>
     <li><label><input type="radio" name="q1" value="1"> One image, seven fields per candidate, and 8,400 candidate positions.</label></li>
-    <li><label><input type="radio" name="q1" value="2"> Seven images, one class, and 8,400 final detections.</label></li>
-    <li><label><input type="radio" name="q1" value="3"> A 1×7 image with 8,400 color channels.</label></li>
+    <li><label><input type="radio" name="q1" value="2"> Seven images, one field per candidate, and 8,400 final detections.</label></li>
+    <li><label><input type="radio" name="q1" value="3"> One image, 8,400 channels per field, and seven candidate positions.</label></li>
   </ol>
   <button type="button" class="check-btn">Check</button>
   <div class="answer"></div>
@@ -663,10 +695,10 @@ boxes, cls_conf, cls_id = boxes[mask], cls_conf[mask], cls_id[mask]</code></pre>
 <div class="quiz" data-correct="2" data-correct-text="The decoder takes the maximum of the three class scores as the candidate confidence and the argmax index as the class ID. In the current order, ID 1 is green_cube.">
   <p class="quiz-q">For the score vector <code>[0.08, 0.91, 0.14]</code>, what does the current decoder choose?</p>
   <ol>
-    <li><label><input type="radio" name="q2" value="0"> <code>blue_cube</code> with score <code>0.08</code></label></li>
-    <li><label><input type="radio" name="q2" value="1"> <code>red_cube</code> with score <code>0.14</code></label></li>
+    <li><label><input type="radio" name="q2" value="0"> <code>blue_cube</code> with score <code>0.91</code></label></li>
+    <li><label><input type="radio" name="q2" value="1"> <code>red_cube</code> with score <code>0.91</code></label></li>
     <li><label><input type="radio" name="q2" value="2"> <code>green_cube</code> with score <code>0.91</code></label></li>
-    <li><label><input type="radio" name="q2" value="3"> All three classes with the same score</label></li>
+    <li><label><input type="radio" name="q2" value="3"> <code>green_cube</code> with score <code>0.14</code></label></li>
   </ol>
   <button type="button" class="check-btn">Check</button>
   <div class="answer"></div>
@@ -675,10 +707,10 @@ boxes, cls_conf, cls_id = boxes[mask], cls_conf[mask], cls_id[mask]</code></pre>
 <div class="quiz" data-correct="0" data-correct-text="The current loop groups indices by class before calling torchvision.ops.nms, so boxes of different classes are not compared by this NMS step.">
   <p class="quiz-q">What does per-class NMS mean in this implementation?</p>
   <ol>
-    <li><label><input type="radio" name="q3" value="0"> Same-class boxes are compared for duplicate suppression; different classes are handled separately.</label></li>
-    <li><label><input type="radio" name="q3" value="1"> Only the red class is passed to NMS.</label></li>
-    <li><label><input type="radio" name="q3" value="2"> NMS changes every box to the most common class.</label></li>
-    <li><label><input type="radio" name="q3" value="3"> NMS runs before the model creates candidate rows.</label></li>
+    <li><label><input type="radio" name="q3" value="0"> NMS compares same-class boxes while processing different classes separately.</label></li>
+    <li><label><input type="radio" name="q3" value="1"> NMS compares every box regardless of its predicted class.</label></li>
+    <li><label><input type="radio" name="q3" value="2"> NMS compares only boxes assigned to the red class.</label></li>
+    <li><label><input type="radio" name="q3" value="3"> NMS compares boxes before class scores select their labels.</label></li>
   </ol>
   <button type="button" class="check-btn">Check</button>
   <div class="answer"></div>
@@ -726,6 +758,7 @@ boxes, cls_conf, cls_id = boxes[mask], cls_conf[mask], cls_id[mask]</code></pre>
   <li><a href="../../../recognition_of_different_colored_cubes/cube_detection_node.py">Current detection node source</a> — <code>_letterbox()</code>, <code>_decode_yolov5_output()</code>, and <code>_infer()</code>.</li>
   <li><a href="../../../scripts/m3_smoke_inference.py">M3 ONNX Runtime smoke script</a> — a CPU-readable copy of the post-processing path.</li>
   <li><a href="https://github.com/ultralytics/yolov5">Ultralytics YOLOv5 repository</a> — the model family and reference inference implementation.</li>
+  <li><a href="https://docs.ultralytics.com/models/yolov5/">Ultralytics YOLOv5 documentation</a> — distinguishes the current anchor-free YOLOv5u models from earlier anchor-based YOLOv5 releases.</li>
   <li><a href="https://docs.pytorch.org/vision/main/generated/torchvision.ops.nms.html">Torchvision NMS documentation</a> — the exact NMS contract used by this project’s decoder.</li>
   <li><a href="../LESSON-PLAN.md">Learning plan</a> — the complete teaching sequence.</li>
 </ul>
@@ -889,7 +922,7 @@ boxes, cls_conf, cls_id = boxes[mask], cls_conf[mask], cls_id[mask]</code></pre>
     if (!nmsSlider) return;
     var threshold = Number(nmsSlider.value) / 100;
     if (nmsValue) nmsValue.textContent = threshold.toFixed(2);
-    if (nmsReadout) nmsReadout.textContent = 'Example duplicate IoU = 0.62. At threshold ' + threshold.toFixed(2) + ', ' + (0.62 > threshold ? 'the lower-scoring box is suppressed.' : 'both example boxes remain because the overlap does not exceed the threshold.');
+    if (nmsReadout) nmsReadout.textContent = 'Example duplicate IoU ≈ 0.54. At threshold ' + threshold.toFixed(2) + ', ' + (0.54 > threshold ? 'the lower-scoring box is suppressed.' : 'both example boxes remain because the overlap does not exceed the threshold.');
   }
   if (nmsSlider) {
     nmsSlider.addEventListener('input', updateNmsThreshold);

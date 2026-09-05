@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="864" height="520" viewBox="0 0 864 520" role="img" aria-labelledby="title desc">
+  <title id="title">Lesson 0007 corrected overview</title>
+  <desc id="desc">The current code selects depth farther than the floor reference, which is opposite to a raised surface in a z-depth image.</desc>
+  <rect width="864" height="520" fill="#000916"/>
+  <rect x="28" y="28" width="808" height="86" fill="#041d39" stroke="#02adf8" stroke-width="3"/>
+  <text x="52" y="62" fill="#02adf8" font-family="Inter,Arial,sans-serif" font-size="14" font-weight="700">LESSON 0007 · CORRECTED OVERVIEW</text>
+  <text x="52" y="94" fill="#dfe9f3" font-family="Inter,Arial,sans-serif" font-size="26" font-weight="700">Literal code behavior ≠ validated height geometry</text>
+  <rect x="28" y="140" width="246" height="250" rx="6" fill="#041d39" stroke="#cadaeb" stroke-width="2"/>
+  <text x="48" y="174" fill="#b8efff" font-family="Inter,Arial,sans-serif" font-size="16" font-weight="700">1 · Z-DEPTH TRUTH</text>
+  <rect x="70" y="210" width="160" height="24" fill="#0f766e"/>
+  <rect x="92" y="264" width="116" height="24" fill="#b42318"/>
+  <path d="M150 244 V256" stroke="#02adf8" stroke-width="3"/>
+  <text x="150" y="226" fill="#fff" text-anchor="middle" font-family="Inter,Arial,sans-serif" font-size="12">floor · 479 mm</text>
+  <text x="150" y="281" fill="#fff" text-anchor="middle" font-family="Inter,Arial,sans-serif" font-size="12">top · 465 mm</text>
+  <text x="48" y="332" fill="#cadaeb" font-family="Inter,Arial,sans-serif" font-size="13">Closer surface → smaller depth</text>
+  <text x="48" y="354" fill="#cadaeb" font-family="Inter,Arial,sans-serif" font-size="13">for z-depth along the optical axis.</text>
+  <rect x="309" y="140" width="246" height="250" rx="6" fill="#041d39" stroke="#ff7a69" stroke-width="2"/>
+  <text x="329" y="174" fill="#ff7a69" font-family="Inter,Arial,sans-serif" font-size="16" font-weight="700">2 · CURRENT PREDICATE</text>
+  <text x="432" y="238" fill="#fff" text-anchor="middle" font-family="monospace" font-size="16">depth &gt; floor + 30</text>
+  <text x="432" y="278" fill="#ff7a69" text-anchor="middle" font-family="Inter,Arial,sans-serif" font-size="34" font-weight="700">WRONG SIGN</text>
+  <text x="329" y="332" fill="#cadaeb" font-family="Inter,Arial,sans-serif" font-size="13">It selects farther pixels, so the</text>
+  <text x="329" y="354" fill="#cadaeb" font-family="Inter,Arial,sans-serif" font-size="13">variable name “raised” is misleading.</text>
+  <rect x="590" y="140" width="246" height="250" rx="6" fill="#041d39" stroke="#02adf8" stroke-width="2"/>
+  <text x="610" y="174" fill="#b8efff" font-family="Inter,Arial,sans-serif" font-size="16" font-weight="700">3 · EVIDENCE BOUNDARY</text>
+  <text x="610" y="218" fill="#dfe9f3" font-family="Inter,Arial,sans-serif" font-size="14">Observed KEEP/REJECT counts</text>
+  <text x="610" y="242" fill="#dfe9f3" font-family="Inter,Arial,sans-serif" font-size="14">describe current software behavior.</text>
+  <text x="610" y="286" fill="#ff7a69" font-family="Inter,Arial,sans-serif" font-size="14">They do not validate physical</text>
+  <text x="610" y="310" fill="#ff7a69" font-family="Inter,Arial,sans-serif" font-size="14">height classification.</text>
+  <text x="610" y="354" fill="#cadaeb" font-family="Inter,Arial,sans-serif" font-size="13">Correct + regression-test first.</text>
+  <rect x="28" y="420" width="808" height="66" fill="#041d39" stroke="#09325d" stroke-width="2"/>
+  <text x="52" y="449" fill="#02adf8" font-family="Inter,Arial,sans-serif" font-size="12" font-weight="700">POLICY NOTE</text>
+  <text x="52" y="472" fill="#dfe9f3" font-family="Inter,Arial,sans-serif" font-size="13">Sparse per-box depth → KEEP favors recall/availability; it is not automatically a safety guarantee.</text>
+</svg>

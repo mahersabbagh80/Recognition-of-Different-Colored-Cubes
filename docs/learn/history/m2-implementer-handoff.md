@@ -1,4 +1,8 @@
-# M2 — What the implementer did, and why it matters for M3+
+# Archived M2 implementer handoff
+
+> **Historical record, archived 2026-09-05.** This captures the state and assumptions of the original M2 handoff. It is not a current teaching reference. Current model and decoder contracts are maintained in `models/README.md`, `recognition_of_different_colored_cubes/cube_detection_node.py`, and `docs/learn/reference/yolo-output-and-decoding.html`.
+
+## M2 — What the implementer did, and why it mattered for M3+
 
 > A reference document. Anchored to: kanban cards `t_83eec93d` (M2 Roboflow raw weights, done), `t_f6d3380d` (M2 fallback training, blocked — review-required), `t_4e0c409b` (M2 docs wording, done); review card `t_6fffb30b` (tester, todo, not started).
 > Read time: ~10 min. Return here whenever M3–M5 work touches a question about the model itself.
@@ -123,4 +127,4 @@ When you start M3 (ONNX export), the things from this story that matter:
 
 When you start M5 (ROS integration):
 
-- The `CubeDetection` dataclass in `cube_detection_node.py` already has the right shape (`class_name: str`, `score: float`, `box: Sequence[float]`). The post-NMS conversion from the raw `(1, 25200, 8)` tensor to this dataclass is the function you'll write — Ultralytics' `model.predict()` does it for you on the dev PC; on the Jetson under TensorRT, you do it by hand.
+- **Superseded assumption:** this handoff originally predicted a traditional YOLOv5-style `(1, 25200, 8)` output. The exported artifact was later verified as a YOLOv5u-style fused output with shape `[1, 7, 8400]`, decoded as 8,400 rows of `cx, cy, w, h` plus three class scores. Use the current model notes and decoder, not the earlier expectation.

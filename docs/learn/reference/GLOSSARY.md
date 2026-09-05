@@ -1,5 +1,7 @@
 # Computer Vision and Machine Learning Glossary
 
+> **Source glossary:** this long-form Markdown file remains the vocabulary source. For printable learner-facing summaries, use [`reference/index.html`](index.html) and its five compact HTML quick-reference sheets.
+
 **Status:** Living reference  
 **Audience:** Maher — learning computer vision through the colored-cube detector  
 **Created:** 2026-09-01  

@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="864" height="520" viewBox="0 0 864 520" role="img" aria-labelledby="title desc">
+  <title id="title">Lesson 0008 corrected overview</title>
+  <desc id="desc">An evaluation overview separates ground-truth accuracy, runtime counts, and a still-inconsistent future data plan.</desc>
+  <rect width="864" height="520" fill="#000916"/>
+  <rect x="28" y="28" width="808" height="86" fill="#041d39" stroke="#02adf8" stroke-width="3"/>
+  <text x="52" y="62" fill="#02adf8" font-family="Inter,Arial,sans-serif" font-size="14" font-weight="700">LESSON 0008 · CORRECTED OVERVIEW</text>
+  <text x="52" y="94" fill="#dfe9f3" font-family="Inter,Arial,sans-serif" font-size="26" font-weight="700">Measure the question you actually asked</text>
+  <rect x="28" y="140" width="246" height="250" rx="6" fill="#041d39" stroke="#02adf8" stroke-width="2"/>
+  <text x="48" y="174" fill="#b8efff" font-family="Inter,Arial,sans-serif" font-size="16" font-weight="700">1 · ACCURACY</text>
+  <text x="48" y="218" fill="#dfe9f3" font-family="Inter,Arial,sans-serif" font-size="14">Needs labelled truth:</text>
+  <text x="48" y="248" fill="#fff" font-family="monospace" font-size="14">class + box + IoU match</text>
+  <text x="48" y="294" fill="#cadaeb" font-family="Inter,Arial,sans-serif" font-size="13">Then compute precision, recall,</text>
+  <text x="48" y="316" fill="#cadaeb" font-family="Inter,Arial,sans-serif" font-size="13">AP, or a defined frame metric.</text>
+  <rect x="309" y="140" width="246" height="250" rx="6" fill="#041d39" stroke="#0f766e" stroke-width="2"/>
+  <text x="329" y="174" fill="#b8efff" font-family="Inter,Arial,sans-serif" font-size="16" font-weight="700">2 · RUNTIME COUNTS</text>
+  <text x="329" y="218" fill="#dfe9f3" font-family="Inter,Arial,sans-serif" font-size="14">m5_analyze_bag.py counts:</text>
+  <text x="329" y="250" fill="#fff" font-family="monospace" font-size="14">keeps + class IDs + rates</text>
+  <text x="329" y="294" fill="#cadaeb" font-family="Inter,Arial,sans-serif" font-size="13">Useful coverage diagnostics.</text>
+  <text x="329" y="326" fill="#ff7a69" font-family="Inter,Arial,sans-serif" font-size="13">Not ground-truth accuracy.</text>
+  <rect x="590" y="140" width="246" height="250" rx="6" fill="#041d39" stroke="#ff7a69" stroke-width="2"/>
+  <text x="610" y="174" fill="#ff7a69" font-family="Inter,Arial,sans-serif" font-size="16" font-weight="700">3 · FUTURE PLAN</text>
+  <text x="610" y="216" fill="#dfe9f3" font-family="Inter,Arial,sans-serif" font-size="14">Capture table totals 80:</text>
+  <text x="610" y="244" fill="#dfe9f3" font-family="Inter,Arial,sans-serif" font-size="14">mixed 3-cube, single-cube,</text>
+  <text x="610" y="268" fill="#dfe9f3" font-family="Inter,Arial,sans-serif" font-size="14">occlusion, edge, held-out,</text>
+  <text x="610" y="292" fill="#dfe9f3" font-family="Inter,Arial,sans-serif" font-size="14">and background-only frames.</text>
+  <text x="610" y="334" fill="#ff7a69" font-family="Inter,Arial,sans-serif" font-size="13">Other plan prose totals 88.</text>
+  <text x="610" y="356" fill="#cadaeb" font-family="Inter,Arial,sans-serif" font-size="13">Reconcile before capture.</text>
+  <rect x="28" y="420" width="808" height="66" fill="#041d39" stroke="#09325d" stroke-width="2"/>
+  <text x="52" y="449" fill="#02adf8" font-family="Inter,Arial,sans-serif" font-size="12" font-weight="700">EVIDENCE LOOP</text>
+  <text x="52" y="472" fill="#dfe9f3" font-family="Inter,Arial,sans-serif" font-size="13">Define gate → collect labelled cases → match predictions to truth → change one cause → rerun → promote or roll back.</text>
+</svg>

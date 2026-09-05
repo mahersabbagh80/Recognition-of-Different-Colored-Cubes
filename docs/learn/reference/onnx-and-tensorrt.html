@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>ONNX and TensorRT</title><link rel="stylesheet" href="../assets/lesson.css"></head>
+<body><main class="reference-page">
+<header class="reference-header"><p class="brand-kicker">Quick reference 04</p><h1>ONNX and TensorRT</h1><p class="lede">One intended detector function, three artifact and verification boundaries.</p></header>
+<nav class="course-nav" aria-label="Reference navigation"><a href="index.html">All references</a><a href="../index.html">Course home</a><a href="../lessons/0005-onnx-and-tensorrt.html">Full lesson</a></nav>
+
+<table class="metric-table"><thead><tr><th>Artifact</th><th>Purpose</th><th>Verify</th></tr></thead><tbody>
+<tr><td><code>best.pt</code></td><td>PyTorch/Ultralytics checkpoint for loading or continued training.</td><td>Class map, task, weights, validation behavior.</td></tr>
+<tr><td><code>best.onnx</code></td><td>Portable graph boundary with declared operators and tensor contracts.</td><td>Checker, input/output metadata, real-image smoke inference, comparison with checkpoint.</td></tr>
+<tr><td><code>best.engine</code></td><td>TensorRT plan optimized for the target Jetson/runtime and FP16 execution.</td><td>Load on target, binding shapes and types, output comparison, latency, live behavior.</td></tr>
+</tbody></table>
+
+<h2>Questions at export time</h2>
+<ul><li>Is the input shape static or dynamic?</li><li>Which ONNX opset and operators are used?</li><li>Is postprocessing inside or outside the exported graph?</li><li>Which precision is used, and how much numerical drift is acceptable?</li><li>Does the target TensorRT/CUDA/device combination match the built engine?</li></ul>
+
+<div class="callout"><p class="callout-title">Verification rule</p><p>A structural ONNX check cannot prove live accuracy, and a random-input TensorRT benchmark cannot prove detector correctness. Validate structure, numerical behavior, deployment-domain behavior, and performance separately.</p></div>
+<footer><p>Project anchors: <a href="../../../models/README.md">artifact notes</a> · <a href="../../../scripts/m3_smoke_inference.py">ONNX smoke test</a> · <a href="../RESOURCES.md">sources</a></p></footer>
+</main><script src="../assets/quiz.js"></script></body></html>

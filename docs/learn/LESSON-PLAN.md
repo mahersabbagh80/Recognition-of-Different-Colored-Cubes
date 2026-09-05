@@ -88,14 +88,14 @@ Every lesson begins with a standalone **Lesson Overview Sheet**: a readable PNG 
 | ID | Lesson | Main question | Project anchor | Status |
 |---|---|---|---|---|
 | 0001 | [From Pixels to Detections](lessons/0001-what-yolo-outputs.html) | How does a camera image become a structured cube detection? | `cube_detection_node.py`, especially `_letterbox`, `_sync_cb`, `CubeDetection` | Implemented; learner review pending |
-| 0002 | [How YOLO Produces Predictions](lessons/0002-how-yolo-produces-predictions.html) | Why does YOLO create many candidates, and how do decoding and NMS produce final boxes? | `_decode_yolov5_output`, `models/README.md` | Implemented; validation complete; learner review pending |
-| 0003 | [PyTorch and Model Training](lessons/0003-pytorch-and-model-training.html) | What are datasets, labels, epochs, validation, checkpoints, and fine-tuning? | `models/best.pt`, `models/README.md`, training scripts | Implemented; validation complete; learner review pending |
-| 0004 | [Why the Model Fails on the Robot](lessons/0004-why-the-model-fails-on-the-robot.html) | Why can validation look good while live inference fails? | M4/M5 evaluation reports, domain-gap evidence | Implemented; validation complete; learner review pending |
-| 0005 | [ONNX and TensorRT](lessons/0005-onnx-and-tensorrt.html) | Why does the model travel through `best.pt → best.onnx → best.engine`? | `models/README.md`, export and TensorRT commands | Implemented; validation complete; learner review pending |
-| 0006 | [ROS 2 Perception Wiring](lessons/0006-ros-2-perception-wiring.html) | How do nodes, topics, messages, `cv_bridge`, and QoS connect the detector? | `cube_detection_node.py`, `package.xml`, launch/config files | Implemented; validation complete; learner review pending |
-| 0007 | [Depth and Geometry Filtering](lessons/0007-depth-and-geometry-filtering.html) | How does depth provide a second check for a raised cube-like object? | `geometry_filter.py`, M4c1 evidence | Implemented; validation complete; learner review pending |
-| 0008 | [Evaluation and Fine-Tuning](lessons/0008-evaluation-and-fine-tuning.html) | How do we measure success and improve the model responsibly? | `evaluation/`, `docs/evaluation.md`, M3d-revived plan | Implemented; validation complete; learner review pending |
-| 0009 | [Project Walkthrough and Interview Practice](lessons/0009-project-walkthrough-and-interview-practice.html) | Can Maher explain the complete system, trade-offs, failures, and next steps? | Full repository and evidence | Implemented; validation complete; learner review pending |
+| 0002 | [How YOLO Produces Predictions](lessons/0002-how-yolo-produces-predictions.html) | Why does YOLO create many candidates, and how do decoding and NMS produce final boxes? | `_decode_yolov5_output`, `models/README.md` | Implemented; technical corrections applied; learner review pending |
+| 0003 | [PyTorch and Model Training](lessons/0003-pytorch-and-model-training.html) | What are datasets, labels, epochs, validation, checkpoints, and fine-tuning? | `models/best.pt`, `models/README.md`, training scripts | Implemented; technical corrections applied; learner review pending |
+| 0004 | [Why the Model Fails on the Robot](lessons/0004-why-the-model-fails-on-the-robot.html) | Why can validation look good while live inference fails? | M4/M5 evaluation reports, domain-gap evidence | Implemented; technical corrections applied; learner review pending |
+| 0005 | [ONNX and TensorRT](lessons/0005-onnx-and-tensorrt.html) | Why does the model travel through `best.pt → best.onnx → best.engine`? | `models/README.md`, export and TensorRT commands | Implemented; technical corrections applied; learner review pending |
+| 0006 | [ROS 2 Perception Wiring](lessons/0006-ros-2-perception-wiring.html) | How do nodes, topics, messages, `cv_bridge`, and QoS connect the detector? | `cube_detection_node.py`, `package.xml`, launch/config files | Implemented; technical corrections applied; learner review pending |
+| 0007 | [Depth and Geometry Filtering](lessons/0007-depth-and-geometry-filtering.html) | What does the current depth predicate compute, and why is its sign not valid height reasoning? | `geometry_filter.py`, M4c1 evidence | Implemented; known production-code defect documented; learner review pending |
+| 0008 | [Evaluation and Fine-Tuning](lessons/0008-evaluation-and-fine-tuning.html) | How do we measure success and improve the model responsibly? | `evaluation/`, `docs/evaluation.md`, M3d-revived plan | Implemented; planning inconsistencies documented; learner review pending |
+| 0009 | [Project Walkthrough and Interview Practice](lessons/0009-project-walkthrough-and-interview-practice.html) | Can Maher explain the complete system, trade-offs, failures, and next steps? | Full repository and evidence | Implemented; technical corrections applied; learner review pending |
 
 The order is intentional: concepts needed to read the runtime path come before training and deployment internals, and evaluation is taught before the next fine-tuning decision.
 
@@ -216,7 +216,7 @@ The lesson uses the tested read-only command `.venv-m2/bin/python scripts/m3_smo
 
 ## 7. Lessons 0003–0009 specifications
 
-The following specifications keep the remaining pages aligned with the repository instead of turning them into generic machine-learning or ROS tutorials. Each page has a twelve-station portrait overview, small interactive checks, a read-only exercise, an explain-back prompt, postponements, local anchors, and primary external references.
+The following specifications keep the remaining pages aligned with the repository instead of turning them into generic machine-learning or ROS tutorials. Each page has a visual overview or explanatory diagrams, small interactive checks, a read-only exercise, an explain-back prompt, postponements, local anchors, and primary external references. A visual that contains a superseded technical claim must be withheld until it is regenerated.
 
 ### Lesson 0003 — PyTorch and Model Training
 
@@ -248,20 +248,20 @@ The following specifications keep the remaining pages aligned with the repositor
 - **Objectives:** Trace topics and message types; explain approximate RGB/depth synchronization; distinguish `cv_bridge` encodings; locate parameters, launch, and package dependencies; use read-only graph inspection.
 - **Anchors:** `cube_detection_node.py`, `package.xml`, `config/params.yaml`, and `launch/detection.launch.py`.
 - **Visuals:** ROS graph, callback sequence, QoS boundary, message contracts, and output fan-out.
-- **Exercise:** Compile the Python sources locally, then inspect `ros2 topic info/echo/hz` on the already-running Jetson stack if available.
+- **Exercise:** Parse the Python sources with `ast.parse` (which does not create bytecode), then inspect `ros2 topic info/echo/hz` on the already-running Jetson stack if available.
 
 ### Lesson 0007 — Depth and Geometry Filtering
 
-- **Question:** How does depth provide a second check for a raised cube-like object without becoming a second detector?
-- **Objectives:** Explain aligned pixel assumptions and depth units; derive the floor annulus and raised fraction; interpret extent/aspect/planarity; explain fail-open low-quality decisions; read M4c1 limits.
+- **Question:** What does the current depth post-filter compute, and why must its predicate be corrected before it is called a raised-object check?
+- **Objectives:** Explain aligned pixel assumptions and depth units; derive the annulus and literal selected fraction; identify the reversed range-depth sign; interpret extent/aspect/planarity; describe fail-open as a recall/availability policy; read M4c1 limits without overclaiming.
 - **Anchors:** `geometry_filter.py`, node depth handling, `config/params.yaml`, and `evaluation/m4c_geometry_filter/report.md`.
-- **Visuals:** RGB/depth coordinate sharing, annulus, raised subset, 3-D extent, aspect/planar checks, and decision tree.
+- **Visuals:** RGB/depth coordinate sharing, annulus, selected subset, 3-D extent, aspect/planar checks, and decision tree. The former overview sheet is withheld because it teaches the incorrect sign as “raised.”
 - **Exercise:** Run a synthetic, read-only `decide()` example and predict its verdict before reading the output.
 
 ### Lesson 0008 — Evaluation and Fine-Tuning
 
 - **Question:** How do we measure success and improve the model without promoting an unverified experiment?
-- **Objectives:** Match metrics to questions; build a controlled test matrix; separate capture provenance from labels; read the M5 matrix; distinguish the unexecuted M3d plan from evidence; preserve rollback.
+- **Objectives:** Match metrics to questions; distinguish class-occurrence counts from ground-truth accuracy; build a controlled test matrix; separate capture provenance from labels; read the M5 matrix; identify contradictions in the unexecuted M3d plan; preserve rollback.
 - **Anchors:** `docs/evaluation.md`, `evaluation/m5_live/report.md`, `scripts/capture_frames.py`, `scripts/m5_analyze_bag.py`, and `docs/m3d-revived-plan.md`.
 - **Visuals:** Metric matrix, capture/replay loop, current M5 counts, acceptance gates, positive-domain data, hold-out split, and rollback.
 - **Exercise:** Audit `evaluation/evaluate.py` as a placeholder and use the recorded report/analyzer workflow as the current evidence path.
@@ -297,14 +297,16 @@ For project-specific behavior, prefer sources in this order:
 
 Primary external references for this learning track:
 
-- [PyTorch beginner workflow](https://pytorch.org/tutorials/beginner/basics/intro.html)
-- [Ultralytics YOLOv5 documentation](https://docs.ultralytics.com/yolov5/)
-- [Ultralytics YOLOv5 repository](https://github.com/ultralytics/yolov5)
+The maintained source shelf and lesson-to-source map live in [`docs/learn/RESOURCES.md`](RESOURCES.md). It includes the foundational books, current official documentation, version-pinned deployment references, project-specific authority files, and maintenance rules. Keep this section as the short authority-order summary; update the shelf when a dependency or model artifact changes.
+
+Useful starting points from that shelf:
+
+- [PyTorch Learn the Basics](https://docs.pytorch.org/tutorials/beginner/basics/intro.html)
+- [Ultralytics YOLOv5 and YOLOv5u](https://docs.ultralytics.com/models/yolov5)
 - [ONNX introduction](https://onnx.ai/onnx/intro/)
-- [NVIDIA TensorRT 8.6 Quick Start Guide](https://docs.nvidia.com/deeplearning/tensorrt/archives/tensorrt-861/quick-start-guide/index.html)
-- [ROS 2 nodes](https://raw.githubusercontent.com/ros2/ros2_documentation/humble/source/Concepts/Basic/About-Nodes.rst)
-- [ROS 2 topics](https://raw.githubusercontent.com/ros2/ros2_documentation/humble/source/Concepts/Basic/About-Topics.rst)
-- [ROS 2 QoS](https://raw.githubusercontent.com/ros2/ros2_documentation/humble/source/Concepts/Intermediate/About-Quality-of-Service-Settings.rst)
+- [NVIDIA TensorRT Quick Start Guide](https://docs.nvidia.com/deeplearning/tensorrt/latest/getting-started/quick-start-guide.html)
+- [ROS 2 Humble topics source](https://raw.githubusercontent.com/ros2/ros2_documentation/humble/source/Concepts/Basic/About-Topics.rst)
+- [ROS 2 Humble QoS source](https://raw.githubusercontent.com/ros2/ros2_documentation/humble/source/Concepts/Intermediate/About-Quality-of-Service-Settings.rst)
 
 ---
 

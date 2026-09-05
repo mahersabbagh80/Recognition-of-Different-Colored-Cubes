@@ -1,41 +1,34 @@
-# NOTES.md — Teaching session notes
+# Teaching notes
 
-## User profile (from interview)
+Last refreshed: 2026-09-05
 
-- Engineering background, light math. Want systems / pipelines / debugging, not derivations.
-- Mission: own M3–M5 decisions on the project + explain the stack in robotics SWE interviews (Agile Robots, Nura).
-- Time budget: ~1 hour per session. One short lesson + quiz + tiny exercise per session.
-- Project: YOLOv5s + TensorRT FP16 on Jetson Orin Nano via ROS 2 Humble. Current state: M2 done, M3 (ONNX export) next.
-- Language: English only (per system memory).
+## Learner and mission
 
-## Working notes
+- Maher has an engineering background and prefers systems, pipelines, debugging, and causal “why” explanations over long mathematical derivations.
+- The mission is to own the M3–M7 perception decisions and explain them convincingly in robotics software-engineering interviews.
+- Use English, concrete examples, and current repository evidence. Clearly label general concepts versus checkout-specific contracts.
+- Give a practical visual or GUI path before terminal commands when both are reasonable.
 
-- Workspace at `~/maher_ws/learn_cube_recognition/`. Keep all teaching content here; do not touch the project's `src/` tree.
-- The project has a `.cursorrules` that bans HSV/LAB/contour approaches — don't even mention them as alternatives in lessons.
-- Anchor every lesson to a real file/line in the project. Concrete beats abstract.
-- Don't re-teach ROS 2 basics (node structure, QoS mechanics) at the level the `robotics-tutor` profile already covers — link to the skill if the user needs to revisit, don't duplicate.
-- The first lesson is M3 (ONNX export) anchored, because that's literally the next thing the user is doing.
-- Per the teach skill: reference docs in `reference/`, lessons in `lessons/`, learning records in `learning-records/`, reusable components in `assets/`. Build the shared stylesheet first.
+## Current project anchor
 
-## Preferences to remember
+- Workspace: `docs/learn/` inside this repository.
+- Runtime stack: a YOLOv5u-style, YOLOv5s-sized checkpoint exported through ONNX to TensorRT FP16 on Jetson Orin Nano with ROS 2 Humble.
+- Current model contract: input `[1, 3, 640, 640]`; output `[1, 7, 8400]`; class order `blue_cube`, `green_cube`, `red_cube`.
+- Current engineering evidence: M5 is PARTIAL. The runtime path and empty-scene rejection work, while reliable positive detection in the JetRover room remains unresolved.
+- The geometry filter’s current `depth > floor + threshold` selection has the wrong sign for raised surfaces in z-depth and must not be described as validated height reasoning.
 
-- Short lessons over long ones.
-- Systems focus over math.
-- Concrete file/line references in the project.
-- "Why this, not that" framing is welcomed (project makes lots of explicit tradeoffs).
-- **Dark theme by default** for lesson reading. The shared stylesheet auto-applies `prefers-color-scheme: dark`; user can still toggle via the button in the top-right of each lesson. Print is always light. Don't author any new lessons that hard-code light-only colors — use CSS variables.
+## Teaching workflow
 
-## Tooling quirks (kanban dispatcher)
+- Start with `MISSION.md`, then inspect evidence-based files in `learning-records/` before choosing the next lesson.
+- If no learning record exists, use a lesson’s retrieval block or the Lesson 0009 explain-back as a diagnostic; do not assume exposure equals mastery.
+- Create a numbered learning record only after Maher demonstrates understanding, discloses prior knowledge, or corrects a misconception.
+- Lessons use `assets/lesson.css` and `assets/quiz.js`; reusable explanations belong in printable HTML files under `reference/`.
+- Keep historical workspace, agent, and milestone notes under `history/`; they are not current teaching state.
 
-If a kanban card shows repeated `crashed` runs with the error `worker exited cleanly (rc=0) without calling kanban_complete or kanban_block — protocol violation`, the work itself may have succeeded — the worker just didn't signal the kanban on exit. Inspect the actual work (file system, side artifacts, runs/ directory) before retrying. This happened nine times during M2 training (`t_f6d3380d` runs #21–#28) before the worker finally signaled correctly on run #29.
+## Preferences to preserve
 
-## Working mode (decided 2026-06-28)
-
-Maher decided: **kanban workflow OFF.** This profile (`robotics-tutor`) is now his only agent. The other Hermes profiles (`implementer`, `researcher`, `tester`, `documenter`, `architect`, `orchestrator`) are not in active use. Implications:
-
-- Do NOT create kanban cards, comment on existing ones, or invoke the dispatcher. The kanban DB at `~/.hermes/kanban/boards/colored-cube-recognition/kanban.db` exists from past work and is read-only history; treat it as such.
-- Do NOT suggest "let the implementer agent handle this" or "spawn a subagent." Maher + this profile only.
-- Roles collapse: I plan, research, implement, document, and test as needed. Maher says which role at each turn.
-- Single point of failure for review quality: when reviewing my own implementation, be extra careful. Maher should challenge "approved" verdicts that came too quickly.
-- Decisions that need to persist between sessions go into project files (e.g. `docs/m3d-decided.md`), not kanban comments.
-- `.cursorrules` rules still apply: implement incrementally, no commits without explicit instruction, scope discipline (M3 = ONNX, M4 = TensorRT, M5 = ROS integration — don't jump ahead).
+- One focused lesson per session, normally within one hour.
+- Dark theme by default; print output remains light.
+- Project files and measured outputs before generic examples.
+- “Why this, not that?” framing is welcome when it explains a real engineering trade-off.
+- No commits unless Maher explicitly requests one.
