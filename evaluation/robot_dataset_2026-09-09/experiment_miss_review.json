@@ -1,0 +1,740 @@
+{
+  "checkpoint_sha256": "296663e9bdea5f7b9b7ef138654362716450947b2851078dfae464ae3bfe7984",
+  "inference": {
+    "device": "cpu",
+    "imgsz": 640,
+    "rect": false,
+    "conf": 0.001,
+    "iou": 0.7,
+    "max_det": 300
+  },
+  "matching_iou": 0.5,
+  "threshold_counts": {
+    "0.001": {
+      "blue_cube": {
+        "tp": 4,
+        "fp": 5,
+        "fn": 0
+      },
+      "green_cube": {
+        "tp": 4,
+        "fp": 2,
+        "fn": 0
+      },
+      "red_cube": {
+        "tp": 4,
+        "fp": 0,
+        "fn": 0
+      }
+    },
+    "0.1": {
+      "blue_cube": {
+        "tp": 2,
+        "fp": 0,
+        "fn": 2
+      },
+      "green_cube": {
+        "tp": 4,
+        "fp": 0,
+        "fn": 0
+      },
+      "red_cube": {
+        "tp": 4,
+        "fp": 0,
+        "fn": 0
+      }
+    },
+    "0.25": {
+      "blue_cube": {
+        "tp": 2,
+        "fp": 0,
+        "fn": 2
+      },
+      "green_cube": {
+        "tp": 4,
+        "fp": 0,
+        "fn": 0
+      },
+      "red_cube": {
+        "tp": 4,
+        "fp": 0,
+        "fn": 0
+      }
+    },
+    "0.5": {
+      "blue_cube": {
+        "tp": 2,
+        "fp": 0,
+        "fn": 2
+      },
+      "green_cube": {
+        "tp": 3,
+        "fp": 0,
+        "fn": 1
+      },
+      "red_cube": {
+        "tp": 4,
+        "fp": 0,
+        "fn": 0
+      }
+    }
+  },
+  "frames": [
+    {
+      "image_id": "dist40cm/dist40cm_0001.jpg",
+      "ground_truth": [
+        {
+          "class_name": "red_cube",
+          "bbox_xyxy": [
+            288,
+            86,
+            303,
+            106
+          ]
+        },
+        {
+          "class_name": "green_cube",
+          "bbox_xyxy": [
+            322,
+            85,
+            339,
+            104
+          ]
+        },
+        {
+          "class_name": "blue_cube",
+          "bbox_xyxy": [
+            360,
+            85,
+            376,
+            104
+          ]
+        }
+      ],
+      "predictions": [
+        {
+          "class_name": "red_cube",
+          "confidence": 0.8668307662010193,
+          "bbox_xyxy": [
+            287.31353759765625,
+            87.68341064453125,
+            303.40545654296875,
+            106.13671875
+          ]
+        },
+        {
+          "class_name": "blue_cube",
+          "confidence": 0.8579874038696289,
+          "bbox_xyxy": [
+            359.958251953125,
+            85.25991821289062,
+            376.7530517578125,
+            105.13348388671875
+          ]
+        },
+        {
+          "class_name": "green_cube",
+          "confidence": 0.8551046252250671,
+          "bbox_xyxy": [
+            321.8345947265625,
+            86.19784545898438,
+            338.9522705078125,
+            105.52029418945312
+          ]
+        },
+        {
+          "class_name": "green_cube",
+          "confidence": 0.0038467589765787125,
+          "bbox_xyxy": [
+            0.0,
+            135.01239013671875,
+            26.576553344726562,
+            172.10882568359375
+          ]
+        }
+      ],
+      "candidates": [
+        {
+          "ground_truth": {
+            "class_name": "red_cube",
+            "bbox_xyxy": [
+              288,
+              86,
+              303,
+              106
+            ]
+          },
+          "overlapping_candidates": [
+            {
+              "class_name": "red_cube",
+              "confidence": 0.8668307662010193,
+              "bbox_xyxy": [
+                287.31353759765625,
+                87.68341064453125,
+                303.40545654296875,
+                106.13671875
+              ],
+              "iou": 0.8527268350141609
+            }
+          ]
+        },
+        {
+          "ground_truth": {
+            "class_name": "green_cube",
+            "bbox_xyxy": [
+              322,
+              85,
+              339,
+              104
+            ]
+          },
+          "overlapping_candidates": [
+            {
+              "class_name": "green_cube",
+              "confidence": 0.8551046252250671,
+              "bbox_xyxy": [
+                321.8345947265625,
+                86.19784545898438,
+                338.9522705078125,
+                105.52029418945312
+              ],
+              "iou": 0.8574260546694179
+            }
+          ]
+        },
+        {
+          "ground_truth": {
+            "class_name": "blue_cube",
+            "bbox_xyxy": [
+              360,
+              85,
+              376,
+              104
+            ]
+          },
+          "overlapping_candidates": [
+            {
+              "class_name": "blue_cube",
+              "confidence": 0.8579874038696289,
+              "bbox_xyxy": [
+                359.958251953125,
+                85.25991821289062,
+                376.7530517578125,
+                105.13348388671875
+              ],
+              "iou": 0.8872849436062111
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "image_id": "dist40cm/dist40cm_0012.jpg",
+      "ground_truth": [
+        {
+          "class_name": "red_cube",
+          "bbox_xyxy": [
+            288,
+            86,
+            303,
+            106
+          ]
+        },
+        {
+          "class_name": "green_cube",
+          "bbox_xyxy": [
+            322,
+            85,
+            339,
+            104
+          ]
+        },
+        {
+          "class_name": "blue_cube",
+          "bbox_xyxy": [
+            360,
+            85,
+            376,
+            104
+          ]
+        }
+      ],
+      "predictions": [
+        {
+          "class_name": "green_cube",
+          "confidence": 0.8638444542884827,
+          "bbox_xyxy": [
+            321.9235534667969,
+            86.30154418945312,
+            338.9567565917969,
+            105.69009399414062
+          ]
+        },
+        {
+          "class_name": "red_cube",
+          "confidence": 0.8599396347999573,
+          "bbox_xyxy": [
+            287.42803955078125,
+            87.67839050292969,
+            303.47454833984375,
+            106.04750061035156
+          ]
+        },
+        {
+          "class_name": "blue_cube",
+          "confidence": 0.8497104048728943,
+          "bbox_xyxy": [
+            360.57745361328125,
+            85.66506958007812,
+            376.69635009765625,
+            105.27749633789062
+          ]
+        },
+        {
+          "class_name": "green_cube",
+          "confidence": 0.01649666018784046,
+          "bbox_xyxy": [
+            0.0,
+            135.477294921875,
+            25.841136932373047,
+            172.2222900390625
+          ]
+        }
+      ],
+      "candidates": [
+        {
+          "ground_truth": {
+            "class_name": "red_cube",
+            "bbox_xyxy": [
+              288,
+              86,
+              303,
+              106
+            ]
+          },
+          "overlapping_candidates": [
+            {
+              "class_name": "red_cube",
+              "confidence": 0.8599396347999573,
+              "bbox_xyxy": [
+                287.42803955078125,
+                87.67839050292969,
+                303.47454833984375,
+                106.04750061035156
+              ],
+              "iou": 0.858997394092834
+            }
+          ]
+        },
+        {
+          "ground_truth": {
+            "class_name": "green_cube",
+            "bbox_xyxy": [
+              322,
+              85,
+              339,
+              104
+            ]
+          },
+          "overlapping_candidates": [
+            {
+              "class_name": "green_cube",
+              "confidence": 0.8638444542884827,
+              "bbox_xyxy": [
+                321.9235534667969,
+                86.30154418945312,
+                338.9567565917969,
+                105.69009399414062
+              ],
+              "iou": 0.8498267328621104
+            }
+          ]
+        },
+        {
+          "ground_truth": {
+            "class_name": "blue_cube",
+            "bbox_xyxy": [
+              360,
+              85,
+              376,
+              104
+            ]
+          },
+          "overlapping_candidates": [
+            {
+              "class_name": "blue_cube",
+              "confidence": 0.8497104048728943,
+              "bbox_xyxy": [
+                360.57745361328125,
+                85.66506958007812,
+                376.69635009765625,
+                105.27749633789062
+              ],
+              "iou": 0.8381902116918454
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "image_id": "spread_out/spread_out_0001.jpg",
+      "ground_truth": [
+        {
+          "class_name": "red_cube",
+          "bbox_xyxy": [
+            187,
+            57,
+            203,
+            73
+          ]
+        },
+        {
+          "class_name": "green_cube",
+          "bbox_xyxy": [
+            414,
+            60,
+            428,
+            75
+          ]
+        },
+        {
+          "class_name": "blue_cube",
+          "bbox_xyxy": [
+            501,
+            147,
+            531,
+            172
+          ]
+        }
+      ],
+      "predictions": [
+        {
+          "class_name": "red_cube",
+          "confidence": 0.784214973449707,
+          "bbox_xyxy": [
+            187.2906494140625,
+            57.611724853515625,
+            201.58636474609375,
+            72.97640991210938
+          ]
+        },
+        {
+          "class_name": "green_cube",
+          "confidence": 0.5202797651290894,
+          "bbox_xyxy": [
+            415.06878662109375,
+            60.0133056640625,
+            427.88287353515625,
+            74.6593017578125
+          ]
+        },
+        {
+          "class_name": "blue_cube",
+          "confidence": 0.009226245805621147,
+          "bbox_xyxy": [
+            499.41888427734375,
+            143.40264892578125,
+            529.4259643554688,
+            171.27618408203125
+          ]
+        },
+        {
+          "class_name": "blue_cube",
+          "confidence": 0.0019015733851119876,
+          "bbox_xyxy": [
+            489.1064453125,
+            140.56573486328125,
+            534.45849609375,
+            175.25482177734375
+          ]
+        },
+        {
+          "class_name": "blue_cube",
+          "confidence": 0.0016047048848122358,
+          "bbox_xyxy": [
+            496.264404296875,
+            136.44277954101562,
+            530.4364013671875,
+            172.64053344726562
+          ]
+        },
+        {
+          "class_name": "blue_cube",
+          "confidence": 0.0013966449769213796,
+          "bbox_xyxy": [
+            497.77294921875,
+            126.233154296875,
+            539.19775390625,
+            174.8756103515625
+          ]
+        }
+      ],
+      "candidates": [
+        {
+          "ground_truth": {
+            "class_name": "red_cube",
+            "bbox_xyxy": [
+              187,
+              57,
+              203,
+              73
+            ]
+          },
+          "overlapping_candidates": [
+            {
+              "class_name": "red_cube",
+              "confidence": 0.784214973449707,
+              "bbox_xyxy": [
+                187.2906494140625,
+                57.611724853515625,
+                201.58636474609375,
+                72.97640991210938
+              ],
+              "iou": 0.8580045459530083
+            }
+          ]
+        },
+        {
+          "ground_truth": {
+            "class_name": "green_cube",
+            "bbox_xyxy": [
+              414,
+              60,
+              428,
+              75
+            ]
+          },
+          "overlapping_candidates": [
+            {
+              "class_name": "green_cube",
+              "confidence": 0.5202797651290894,
+              "bbox_xyxy": [
+                415.06878662109375,
+                60.0133056640625,
+                427.88287353515625,
+                74.6593017578125
+              ],
+              "iou": 0.8936907947063446
+            }
+          ]
+        },
+        {
+          "ground_truth": {
+            "class_name": "blue_cube",
+            "bbox_xyxy": [
+              501,
+              147,
+              531,
+              172
+            ]
+          },
+          "overlapping_candidates": [
+            {
+              "class_name": "blue_cube",
+              "confidence": 0.009226245805621147,
+              "bbox_xyxy": [
+                499.41888427734375,
+                143.40264892578125,
+                529.4259643554688,
+                171.27618408203125
+              ],
+              "iou": 0.769888724701765
+            },
+            {
+              "class_name": "blue_cube",
+              "confidence": 0.0016047048848122358,
+              "bbox_xyxy": [
+                496.264404296875,
+                136.44277954101562,
+                530.4364013671875,
+                172.64053344726562
+              ],
+              "iou": 0.5882388449759771
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "image_id": "spread_out/spread_out_0004.jpg",
+      "ground_truth": [
+        {
+          "class_name": "red_cube",
+          "bbox_xyxy": [
+            187,
+            57,
+            203,
+            73
+          ]
+        },
+        {
+          "class_name": "green_cube",
+          "bbox_xyxy": [
+            414,
+            60,
+            428,
+            75
+          ]
+        },
+        {
+          "class_name": "blue_cube",
+          "bbox_xyxy": [
+            501,
+            147,
+            531,
+            172
+          ]
+        }
+      ],
+      "predictions": [
+        {
+          "class_name": "red_cube",
+          "confidence": 0.7896487712860107,
+          "bbox_xyxy": [
+            187.102294921875,
+            57.356597900390625,
+            201.55047607421875,
+            73.06204223632812
+          ]
+        },
+        {
+          "class_name": "green_cube",
+          "confidence": 0.4630192220211029,
+          "bbox_xyxy": [
+            415.091064453125,
+            59.971099853515625,
+            428.01239013671875,
+            74.51605224609375
+          ]
+        },
+        {
+          "class_name": "blue_cube",
+          "confidence": 0.031005382537841797,
+          "bbox_xyxy": [
+            500.8306579589844,
+            143.77371215820312,
+            529.1917724609375,
+            171.10366821289062
+          ]
+        },
+        {
+          "class_name": "blue_cube",
+          "confidence": 0.0075242104940116405,
+          "bbox_xyxy": [
+            492.5008544921875,
+            141.86492919921875,
+            531.7882080078125,
+            172.78448486328125
+          ]
+        },
+        {
+          "class_name": "blue_cube",
+          "confidence": 0.005734826438128948,
+          "bbox_xyxy": [
+            499.14971923828125,
+            135.43466186523438,
+            533.3783569335938,
+            173.97561645507812
+          ]
+        }
+      ],
+      "candidates": [
+        {
+          "ground_truth": {
+            "class_name": "red_cube",
+            "bbox_xyxy": [
+              187,
+              57,
+              203,
+              73
+            ]
+          },
+          "overlapping_candidates": [
+            {
+              "class_name": "red_cube",
+              "confidence": 0.7896487712860107,
+              "bbox_xyxy": [
+                187.102294921875,
+                57.356597900390625,
+                201.55047607421875,
+                73.06204223632812
+              ],
+              "iou": 0.8798048925574654
+            }
+          ]
+        },
+        {
+          "ground_truth": {
+            "class_name": "green_cube",
+            "bbox_xyxy": [
+              414,
+              60,
+              428,
+              75
+            ]
+          },
+          "overlapping_candidates": [
+            {
+              "class_name": "green_cube",
+              "confidence": 0.4630192220211029,
+              "bbox_xyxy": [
+                415.091064453125,
+                59.971099853515625,
+                428.01239013671875,
+                74.51605224609375
+              ],
+              "iou": 0.8899732134854267
+            }
+          ]
+        },
+        {
+          "ground_truth": {
+            "class_name": "blue_cube",
+            "bbox_xyxy": [
+              501,
+              147,
+              531,
+              172
+            ]
+          },
+          "overlapping_candidates": [
+            {
+              "class_name": "blue_cube",
+              "confidence": 0.031005382537841797,
+              "bbox_xyxy": [
+                500.8306579589844,
+                143.77371215820312,
+                529.1917724609375,
+                171.10366821289062
+              ],
+              "iou": 0.8036174137123553
+            },
+            {
+              "class_name": "blue_cube",
+              "confidence": 0.0075242104940116405,
+              "bbox_xyxy": [
+                492.5008544921875,
+                141.86492919921875,
+                531.7882080078125,
+                172.78448486328125
+              ],
+              "iou": 0.6174122534976025
+            },
+            {
+              "class_name": "blue_cube",
+              "confidence": 0.005734826438128948,
+              "bbox_xyxy": [
+                499.14971923828125,
+                135.43466186523438,
+                533.3783569335938,
+                173.97561645507812
+              ],
+              "iou": 0.5685244958534135
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "purpose": "Post-hoc development diagnosis only; fixed 0.50 result remains unchanged."
+}

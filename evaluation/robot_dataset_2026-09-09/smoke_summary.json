@@ -1,0 +1,25 @@
+{
+  "status": "training smoke completed",
+  "epochs": 3,
+  "run": "/home/maher/maher_ws/src/Recognition-of-Different-Colored-Cubes/runs/robot_2026-09-09/smoke_3ep",
+  "checkpoint": "/home/maher/maher_ws/src/Recognition-of-Different-Colored-Cubes/runs/robot_2026-09-09/smoke_3ep/weights/best.pt",
+  "checkpoint_sha256": "2b003e88597173252ffc40adbc41164cde26f0f7707b093574ef1fe7a9625ba0",
+  "class_names": {
+    "0": "blue_cube",
+    "1": "green_cube",
+    "2": "red_cube"
+  },
+  "validation_metrics": {
+    "metrics/precision(B)": 0.01416980865283308,
+    "metrics/recall(B)": 0.9166666666666666,
+    "metrics/mAP50(B)": 0.2438472614948478,
+    "metrics/mAP50-95(B)": 0.0997954451213216,
+    "fitness": 0.0997954451213216
+  },
+  "limitations": "Four same-session validation frames from two setups; pipeline smoke only, not final detector acceptance or robot performance",
+  "saved_checkpoint_reload_output_shape": [
+    1,
+    7,
+    8400
+  ]
+}

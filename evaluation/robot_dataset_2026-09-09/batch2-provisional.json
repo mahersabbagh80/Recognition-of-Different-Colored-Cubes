@@ -1,0 +1,456 @@
+{
+  "source_root": "/home/maher/maher_ws/src/Recognition-of-Different-Colored-Cubes/evaluation/camera_samples/jetrover_positives_2026-07-08",
+  "selection": "Last frame per capture group; modest within-setup variation, not independent new scenes. No new approval inferred.",
+  "frames": [
+    {
+      "image_id": "background/background_0012.jpg",
+      "sha256": "619cbcfec65c54614235e98b3d1683859aacb7f537562cba7d7e07226185c668",
+      "width": 640,
+      "height": 360,
+      "session_id": "jetrover_positives_2026-07-08",
+      "scene_id": "background",
+      "timestamp": "2026-07-08T17:58:18.325455872Z",
+      "annotation_status": "provisional",
+      "reviewer": "Codex visual inspection of full frame and enlarged target regions, 2026-09-09; human review pending",
+      "distance_cm": null,
+      "distance_bucket_claim": null,
+      "objects": [],
+      "annotation_method": "Used reviewed first-frame coordinates as proposals, then visually checked on this different last frame. No automatic human approval propagation."
+    },
+    {
+      "image_id": "blue_green/blue_green_0004.jpg",
+      "sha256": "c08f44430dadafa4d43e890eebd034462035691d1cd76bb8a317d7ae943e2f1b",
+      "width": 640,
+      "height": 360,
+      "session_id": "jetrover_positives_2026-07-08",
+      "scene_id": "blue_green",
+      "timestamp": "2026-07-08T18:18:47.298866944Z",
+      "annotation_status": "provisional",
+      "reviewer": "Codex visual inspection of full frame and enlarged target regions, 2026-09-09; human review pending",
+      "distance_cm": null,
+      "distance_bucket_claim": null,
+      "objects": [
+        {
+          "class_name": "green_cube",
+          "bbox_xyxy": [
+            301,
+            110,
+            321,
+            133
+          ]
+        },
+        {
+          "class_name": "blue_cube",
+          "bbox_xyxy": [
+            337,
+            104,
+            358,
+            126
+          ]
+        }
+      ],
+      "annotation_method": "Used reviewed first-frame coordinates as proposals, then visually checked on this different last frame. No automatic human approval propagation."
+    },
+    {
+      "image_id": "dist20cm/dist20cm_0012.jpg",
+      "sha256": "720dc3cc197862a2748916e1d767dfcb3154147c01e85aa5bce918e2b2c1b768",
+      "width": 640,
+      "height": 360,
+      "session_id": "jetrover_positives_2026-07-08",
+      "scene_id": "dist20cm",
+      "timestamp": "2026-07-08T17:50:41.209981952Z",
+      "annotation_status": "provisional",
+      "reviewer": "Codex visual inspection of full frame and enlarged target regions, 2026-09-09; human review pending",
+      "distance_cm": null,
+      "distance_bucket_claim": "dist20cm",
+      "objects": [
+        {
+          "class_name": "red_cube",
+          "bbox_xyxy": [
+            284,
+            193,
+            310,
+            225
+          ]
+        },
+        {
+          "class_name": "green_cube",
+          "bbox_xyxy": [
+            341,
+            198,
+            366,
+            229
+          ]
+        },
+        {
+          "class_name": "blue_cube",
+          "bbox_xyxy": [
+            392,
+            200,
+            424,
+            233
+          ]
+        }
+      ],
+      "annotation_method": "Used reviewed first-frame coordinates as proposals, then visually checked on this different last frame. No automatic human approval propagation."
+    },
+    {
+      "image_id": "dist40cm/dist40cm_0012.jpg",
+      "sha256": "d6784cb078209b7f284ceca5d10b04c05c3c6f35cda1da2a0f0a9a0442e6d0f3",
+      "width": 640,
+      "height": 360,
+      "session_id": "jetrover_positives_2026-07-08",
+      "scene_id": "dist40cm",
+      "timestamp": "2026-07-08T17:55:38.670121984Z",
+      "annotation_status": "provisional",
+      "reviewer": "Codex visual inspection of full frame and enlarged target regions, 2026-09-09; human review pending",
+      "distance_cm": null,
+      "distance_bucket_claim": "dist40cm",
+      "objects": [
+        {
+          "class_name": "red_cube",
+          "bbox_xyxy": [
+            288,
+            86,
+            303,
+            106
+          ]
+        },
+        {
+          "class_name": "green_cube",
+          "bbox_xyxy": [
+            322,
+            85,
+            339,
+            104
+          ]
+        },
+        {
+          "class_name": "blue_cube",
+          "bbox_xyxy": [
+            360,
+            85,
+            376,
+            104
+          ]
+        }
+      ],
+      "annotation_method": "Used reviewed first-frame coordinates as proposals, then visually checked on this different last frame. No automatic human approval propagation."
+    },
+    {
+      "image_id": "dist60cm/dist60cm_0012.jpg",
+      "sha256": "20e4e8874dea8a7475d5ef3aac38ff67ec0a4d9940a3877f1d498250c6a37e33",
+      "width": 640,
+      "height": 360,
+      "session_id": "jetrover_positives_2026-07-08",
+      "scene_id": "dist60cm",
+      "timestamp": "2026-07-08T18:43:26.469147904Z",
+      "annotation_status": "provisional",
+      "reviewer": "Codex visual inspection of full frame and enlarged target regions, 2026-09-09; human review pending",
+      "distance_cm": null,
+      "distance_bucket_claim": "dist60cm",
+      "objects": [
+        {
+          "class_name": "green_cube",
+          "bbox_xyxy": [
+            271,
+            44,
+            283,
+            57
+          ]
+        },
+        {
+          "class_name": "red_cube",
+          "bbox_xyxy": [
+            313,
+            48,
+            325,
+            60
+          ]
+        },
+        {
+          "class_name": "blue_cube",
+          "bbox_xyxy": [
+            366,
+            46,
+            380,
+            61
+          ]
+        }
+      ],
+      "annotation_method": "Used reviewed first-frame coordinates as proposals, then visually checked on this different last frame. No automatic human approval propagation."
+    },
+    {
+      "image_id": "dist80cm/dist80cm_0012.jpg",
+      "sha256": "1c897ab314fef77574d027463bc0a6ba51b103bd1b1f3f6cbd784b86ca3fdcbf",
+      "width": 640,
+      "height": 360,
+      "session_id": "jetrover_positives_2026-07-08",
+      "scene_id": "dist80cm",
+      "timestamp": "2026-07-08T17:57:28.707055104Z",
+      "annotation_status": "provisional",
+      "reviewer": "Codex visual inspection of full frame and enlarged target regions, 2026-09-09; human review pending",
+      "distance_cm": null,
+      "distance_bucket_claim": "dist80cm",
+      "objects": [
+        {
+          "class_name": "red_cube",
+          "bbox_xyxy": [
+            287,
+            17,
+            298,
+            28
+          ]
+        },
+        {
+          "class_name": "green_cube",
+          "bbox_xyxy": [
+            312,
+            18,
+            324,
+            28
+          ]
+        },
+        {
+          "class_name": "blue_cube",
+          "bbox_xyxy": [
+            344,
+            18,
+            354,
+            28
+          ]
+        }
+      ],
+      "annotation_method": "Used reviewed first-frame coordinates as proposals, then visually checked on this different last frame. No automatic human approval propagation."
+    },
+    {
+      "image_id": "red_blue/red_blue_0004.jpg",
+      "sha256": "2af7f0611593276f584e66131254df390813e819fa0975737ebb34f2e05077b7",
+      "width": 640,
+      "height": 360,
+      "session_id": "jetrover_positives_2026-07-08",
+      "scene_id": "red_blue",
+      "timestamp": "2026-07-08T18:31:56.332144896Z",
+      "annotation_status": "provisional",
+      "reviewer": "Codex visual inspection of full frame and enlarged target regions, 2026-09-09; human review pending",
+      "distance_cm": null,
+      "distance_bucket_claim": null,
+      "objects": [
+        {
+          "class_name": "red_cube",
+          "bbox_xyxy": [
+            303,
+            97,
+            320,
+            117
+          ]
+        },
+        {
+          "class_name": "blue_cube",
+          "bbox_xyxy": [
+            345,
+            94,
+            364,
+            116
+          ]
+        }
+      ],
+      "annotation_method": "Used reviewed first-frame coordinates as proposals, then visually checked on this different last frame. No automatic human approval propagation."
+    },
+    {
+      "image_id": "red_green/red_green_0004.jpg",
+      "sha256": "b8b9cb5f3c2c975d61c93951ed54ceaae3fbcb5ebbedf3773e505e966a5440e3",
+      "width": 640,
+      "height": 360,
+      "session_id": "jetrover_positives_2026-07-08",
+      "scene_id": "red_green",
+      "timestamp": "2026-07-08T18:19:14.859866880Z",
+      "annotation_status": "provisional",
+      "reviewer": "Codex visual inspection of full frame and enlarged target regions, 2026-09-09; human review pending",
+      "distance_cm": null,
+      "distance_bucket_claim": null,
+      "objects": [
+        {
+          "class_name": "red_cube",
+          "bbox_xyxy": [
+            291,
+            102,
+            312,
+            123
+          ]
+        },
+        {
+          "class_name": "green_cube",
+          "bbox_xyxy": [
+            336,
+            108,
+            356,
+            130
+          ]
+        }
+      ],
+      "annotation_method": "Used reviewed first-frame coordinates as proposals, then visually checked on this different last frame. No automatic human approval propagation."
+    },
+    {
+      "image_id": "red_green_blue/red_green_blue_0004.jpg",
+      "sha256": "e31bd95fa1252b786608067c4a3a43de5446e8b5a22a536150e59dcd74ad6c4a",
+      "width": 640,
+      "height": 360,
+      "session_id": "jetrover_positives_2026-07-08",
+      "scene_id": "red_green_blue",
+      "timestamp": "2026-07-08T18:20:29.803001088Z",
+      "annotation_status": "provisional",
+      "reviewer": "Codex visual inspection of full frame and enlarged target regions, 2026-09-09; human review pending",
+      "distance_cm": null,
+      "distance_bucket_claim": null,
+      "objects": [
+        {
+          "class_name": "red_cube",
+          "bbox_xyxy": [
+            291,
+            102,
+            312,
+            123
+          ]
+        },
+        {
+          "class_name": "green_cube",
+          "bbox_xyxy": [
+            336,
+            108,
+            356,
+            130
+          ]
+        },
+        {
+          "class_name": "blue_cube",
+          "bbox_xyxy": [
+            306,
+            121,
+            324,
+            143
+          ]
+        }
+      ],
+      "annotation_method": "Used reviewed first-frame coordinates as proposals, then visually checked on this different last frame. No automatic human approval propagation."
+    },
+    {
+      "image_id": "single_blue/single_blue_0003.jpg",
+      "sha256": "5fa20776d0413b5dc8531eea088b3b79ba832474e883aa880302c338f61aa9af",
+      "width": 640,
+      "height": 360,
+      "session_id": "jetrover_positives_2026-07-08",
+      "scene_id": "single_blue",
+      "timestamp": "2026-07-08T18:16:23.004867072Z",
+      "annotation_status": "provisional",
+      "reviewer": "Codex visual inspection of full frame and enlarged target regions, 2026-09-09; human review pending",
+      "distance_cm": null,
+      "distance_bucket_claim": null,
+      "objects": [
+        {
+          "class_name": "blue_cube",
+          "bbox_xyxy": [
+            332,
+            105,
+            352,
+            128
+          ]
+        }
+      ],
+      "annotation_method": "Used reviewed first-frame coordinates as proposals, then visually checked on this different last frame. No automatic human approval propagation."
+    },
+    {
+      "image_id": "single_green/single_green_0003.jpg",
+      "sha256": "f3d0050228c086d0c9098b43a7c0e4b55e073810e2ef6d3601a1dc824db167ca",
+      "width": 640,
+      "height": 360,
+      "session_id": "jetrover_positives_2026-07-08",
+      "scene_id": "single_green",
+      "timestamp": "2026-07-08T18:15:59.607896064Z",
+      "annotation_status": "provisional",
+      "reviewer": "Codex visual inspection of full frame and enlarged target regions, 2026-09-09; human review pending",
+      "distance_cm": null,
+      "distance_bucket_claim": null,
+      "objects": [
+        {
+          "class_name": "green_cube",
+          "bbox_xyxy": [
+            335,
+            106,
+            351,
+            126
+          ]
+        }
+      ],
+      "annotation_method": "Used reviewed first-frame coordinates as proposals, then visually checked on this different last frame. No automatic human approval propagation."
+    },
+    {
+      "image_id": "single_red/single_red_0012.jpg",
+      "sha256": "1eff6c48a01a6e1dbe88bfb14c8df36fde6dece54e90297a00e31ad367ea1360",
+      "width": 640,
+      "height": 360,
+      "session_id": "jetrover_positives_2026-07-08",
+      "scene_id": "single_red",
+      "timestamp": "2026-07-08T18:15:05.285474048Z",
+      "annotation_status": "provisional",
+      "reviewer": "Codex visual inspection of full frame and enlarged target regions, 2026-09-09; human review pending",
+      "distance_cm": null,
+      "distance_bucket_claim": null,
+      "objects": [
+        {
+          "class_name": "red_cube",
+          "bbox_xyxy": [
+            337,
+            105,
+            355,
+            127
+          ]
+        }
+      ],
+      "annotation_method": "Used reviewed first-frame coordinates as proposals, then visually checked on this different last frame. No automatic human approval propagation."
+    },
+    {
+      "image_id": "spread_out/spread_out_0004.jpg",
+      "sha256": "1a66cb6f0beb4e455c8fb539e8940cb07f6151317bc3e61bd974b3c62f76fe61",
+      "width": 640,
+      "height": 360,
+      "session_id": "jetrover_positives_2026-07-08",
+      "scene_id": "spread_out",
+      "timestamp": "2026-07-08T18:21:28.761359872Z",
+      "annotation_status": "provisional",
+      "reviewer": "Codex visual inspection of full frame and enlarged target regions, 2026-09-09; human review pending",
+      "distance_cm": null,
+      "distance_bucket_claim": null,
+      "objects": [
+        {
+          "class_name": "red_cube",
+          "bbox_xyxy": [
+            187,
+            57,
+            203,
+            73
+          ]
+        },
+        {
+          "class_name": "green_cube",
+          "bbox_xyxy": [
+            414,
+            60,
+            428,
+            75
+          ]
+        },
+        {
+          "class_name": "blue_cube",
+          "bbox_xyxy": [
+            501,
+            147,
+            531,
+            172
+          ]
+        }
+      ],
+      "annotation_method": "Used reviewed first-frame coordinates as proposals, then visually checked on this different last frame. No automatic human approval propagation."
+    }
+  ]
+}

@@ -19,7 +19,7 @@ Maher explained that his instructor requested a self-collected dataset, promptin
 
 ## First action next session
 
-Confirm the remaining session time and inspect the 98-image inventory and existing annotation gallery. Review and integrate useful evaluation work, then prioritize annotation and session-separated training/validation data. Keep the pipeline check brief. Confirm the proposed measurement targets before using them as acceptance criteria.
+Image review and the initial training export are complete. Verify the compatible general pretrained checkpoint and the training/export contract next; do not silently substitute a different model family. Then perform a bounded training smoke run. Read the latest daily entries for the limited same-session validation split. The latest completed step is the three-epoch smoke run; see the final entry.
 
 ## Daily entries
 
@@ -73,3 +73,47 @@ Maher confirmed all 13 images in the existing gallery: 27 cube boxes/color label
 ## Wednesday capture provenance confirmed
 
 Maher confirmed all 98 images came from one continuous capture session. Keep this collection together as development/training data; do not randomly split neighboring frames and claim independent validation. A distinct self-captured validation session is needed before selecting the new model. The later final test stays separate. Existing image assessment/annotation can continue without robot access.
+
+## Wednesday variety inspection — clarification of split recommendation
+
+Inspected contact sheets of all 98 images: useful distance, color-combination, and arrangement variation across 13 named groups, but substantial repetition within groups and broadly shared room/lighting. One session alone does not invalidate a dataset. No final split has been assigned. Whole arrangement groups could support a limited same-session validation check; separate rearranged validation captures remain recommended because the existing groups are few and repetitive. See `evaluation/robot_dataset_2026-09-09/variety-review.md`. No additional annotations were human-approved by this inspection.
+
+## Wednesday second annotation batch prepared
+
+Selected and visually inspected the last frame of each of the 13 capture groups: 13 additional images, 27 provisional cube annotations plus one background. Coordinates seeded from first-frame proposals and checked against full new frames and enlarged target regions; user approvals were not propagated. Gallery: `evaluation/results/wednesday-review/batch2.html`; proposed annotations: `evaluation/robot_dataset_2026-09-09/batch2-provisional.json`. Names now appear separately from numbered boxes to avoid overlapping label text. This is a compact 26-image candidate subset after approval, representing the same 13 setups, not 26 independent scenes; 72 images remain unselected. New batch human review is pending. No final data split or training yet.
+
+## Wednesday second gallery confirmed
+
+Maher confirmed all boxes and color labels in the second gallery. The review record now contains 26 confirmed images, 54 cube annotations, and two background frames across the same 13 capture setups. Original images are unchanged. Remaining 72 images are unselected, not implicitly annotated or approved. Second gallery status updated. Next: define a whole-setup development split, export checked training labels, verify the general pretrained checkpoint and training/export compatibility. No training run started yet.
+
+## Wednesday training export complete
+
+Prepared 22 training images (14 cubes per color, two empty backgrounds) and four validation images (four cubes per color). Validation holds out both reviewed frames of the 40 cm and spread-out arrangements, with all sibling frames excluded from training. This is same-session development validation only: two distinct arrangements, no empty validation scenes, no independent final-test claim. Dataset config: `evaluation/results/robot_training_2026-09-09/data.yaml`; tracked manifest: `evaluation/robot_dataset_2026-09-09/development_split.json`. Verified hash/label coverage, coordinate round trips, class mapping, and group separation. Next: verify compatible general pretrained initialization and export contract, then training smoke run. No training started.
+
+## Development learning journal created
+
+Added `docs/development-learning-journal.md` at Maher’s request. First entry explains actual data preparation, annotation review, one exported box, scene-group splitting, limitations, and corrected assumptions. Training and mastery are explicitly unmeasured. Add a short entry after meaningful completed steps. This documents the process without treating activity logs as demonstrated learning.
+
+## Technical documentation purpose clarified
+
+Maher wants an engineering walkthrough sufficient to explain implementation and decisions to his tutor, including exact executed commands, code/library roles, settings, inputs/outputs, and verification. Expanded the learning journal accordingly and recorded the partial training preflight: PyTorch 2.6.0+cu124 and Ultralytics 8.4.75 import; the first restricted-process CUDA check returned false. Cause not diagnosed. Compatible YOLOv5u-small checkpoint verification and training remain pending.
+
+## Learning journal organized by day
+
+Kept `docs/development-learning-journal.md` as the stable index and moved the complete existing Wednesday material into `docs/development-learning-journal/2026-09-09-wednesday.md`. Relative evidence links were adjusted and checked. Future dated documents will be added when those days’ work occurs. No existing Wednesday explanation was discarded and no future work is marked complete.
+
+## Wednesday GPU preflight and smoke training complete
+
+Host GPU access and a PyTorch CUDA calculation succeeded; restricted-process GPU visibility was the initial obstacle, with no driver changes required. Official YOLOv5u-small checkpoint downloaded and verified. A metadata assertion was corrected after inspecting actual depth/width multipliers. Three epochs completed on the 22/4 image split, with correct three-class saved model and output shape. Evidence: `evaluation/robot_dataset_2026-09-09/training_preflight.json`, `smoke_summary.json`, and `runs/robot_2026-09-09/smoke_3ep/`. Very poor library-reported precision (~1.42%) despite high recall (~91.67%); no fixed-threshold acceptance or live robot claim. All 18 training batches remained under the library minimum 100-iteration warm-up, so the next substantive experiment must address the schedule. Full commands/settings/results and the initial assertion failure are documented in Wednesday’s technical walkthrough. No training job remains running; no deployment. Next: controlled training configuration and fixed-confidence validation.
+
+## Wednesday visible prediction review
+
+Saved explicit CPU square-input predictions and threshold counts in `evaluation/robot_dataset_2026-09-09/smoke_prediction_review.json`. At 0.01: 2 correct, 20 false, 10 missed; at 0.25/0.50: none reported, all 12 missed. Saved visualization/gallery in `evaluation/results/wednesday-review/smoke-results.html`. Explained why the original library montage hides all boxes (display cutoff 0.25). Updated technical walkthrough. No retraining or deployment during this review.
+
+## Wednesday controlled experiment completed
+
+Fresh general YOLOv5u-small initialization, same 22/4 split, 60 epochs with AdamW lr0=0.001, warmup disabled and nbs=4 (one update per batch). Script: `scripts/run_robot_training_experiment.py`. Saved candidate: `runs/robot_2026-09-09/experiment_60ep/weights/best.pt`, SHA-256 `296663e9bdea5f7b9b7ef138654362716450947b2851078dfae464ae3bfe7984`. Reloaded classes and finite `[1,7,8400]` output passed. At predeclared confidence 0.50 using square CPU inference and same-class IoU>=0.50: TP9, FP0, FN3; blue recall50%, green75%, red100%. This remains limited same-session development evidence, below per-color recall target; no final acceptance or deployment. Commands, configuration rationale and outputs added to Wednesday walkthrough. No training job running. Next: review the missed blue/green predictions together before further experiments; independent test and robot verification remain pending.
+
+## Wednesday missed-cube diagnosis complete
+
+Ran `scripts/inspect_robot_experiment_misses.py` on unchanged best weights and verified reproduction of the fixed 0.50 counts. All three misses are in spread-out validation frames. Correct blue boxes have confidence0.0092/0.0310; missed green has0.4630. At0.25: TP10 FP0 FN2; at0.001: TP12 FP7 FN0. Threshold remains0.50; no acceptance claim. Original spread-out frame visually inspected. Training source blue positions are concentrated toward the center; this is a coverage observation, not a proven cause. Technical walkthrough updated with commands, evidence, interpretation and a proposed targeted capture batch. Next: obtain robot-camera access and capture deliberately varied blue/green scenes, then approve labels and allocate whole setups before another training run. No job running or deployment change.

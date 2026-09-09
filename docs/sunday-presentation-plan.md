@@ -186,6 +186,6 @@ Practise: Why YOLO? Why not color alone? Why did source-image performance fail t
 - Saturday: preserve evaluation integrity and presentation time even if targets fail.
 - Sunday: use the frozen package and fallback media.
 
-Record progress in [sunday-progress.md](sunday-progress.md). Use exact artifact paths and separate observed results from pending work. This plan creates no scheduled automation and makes no claim that the robot has been retested today.
+Record progress in [sunday-progress.md](sunday-progress.md). Record the reasoning and worked examples after meaningful completed steps in [the development learning journal](development-learning-journal.md). Use exact artifact paths and separate observed results from pending work. This plan creates no scheduled automation and makes no claim that the robot has been retested today.
 
 Background reading on separate checkouts: [official OpenAI worktree documentation](https://learn.chatgpt.com/docs/environments/git-worktrees). The single-main-task workflow above is our project recommendation.

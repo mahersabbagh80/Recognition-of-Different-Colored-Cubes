@@ -1,6 +1,6 @@
 # models/ — YOLOv5s weights for the cube-detection pipeline
 
-> **Current status — 9 September 2026:** At Maher’s explicit request, the old cube-trained weights, ONNX export, TensorRT engine, and related local training checkpoints were removed. No replacement is trained yet. The artifact descriptions below are historical records, not a current inventory. The new run will use reviewed self-captured images and a verified general pretrained checkpoint. See `docs/sunday-progress.md` for the deletion record. Robot-side copies were not changed.
+> **Current status — 9 September 2026:** At Maher’s explicit request, the old cube-trained weights, ONNX export, TensorRT engine, and related local training checkpoints were removed. An initial replacement smoke checkpoint has now been trained under `runs/robot_2026-09-09/smoke_3ep/weights/`; it is not an accepted or deployed detector. The artifact descriptions below are historical records, not a current inventory. That smoke run used reviewed self-captured images and a verified general pretrained YOLOv5u-small checkpoint. See `docs/sunday-progress.md` for the deletion record. Robot-side copies were not changed.
 
 This directory holds the trained detection artifacts. Both files are git-ignored
 along with everything else under `models/` except this `README.md` and `.gitkeep`.

@@ -1,0 +1,17 @@
+{
+    "ROS2.distro": "humble",
+    "python.autoComplete.extraPaths": [
+        "/home/maher/maher_ws/build/recognition_of_different_colored_cubes",
+        "/home/maher/maher_ws/install/recognition_of_different_colored_cubes/lib/python3.10/site-packages",
+        "/home/maher/maher_ws/install/interfaces/local/lib/python3.10/dist-packages",
+        "/opt/ros/humble/lib/python3.10/site-packages",
+        "/opt/ros/humble/local/lib/python3.10/dist-packages"
+    ],
+    "python.analysis.extraPaths": [
+        "/home/maher/maher_ws/build/recognition_of_different_colored_cubes",
+        "/home/maher/maher_ws/install/recognition_of_different_colored_cubes/lib/python3.10/site-packages",
+        "/home/maher/maher_ws/install/interfaces/local/lib/python3.10/dist-packages",
+        "/opt/ros/humble/lib/python3.10/site-packages",
+        "/opt/ros/humble/local/lib/python3.10/dist-packages"
+    ]
+}

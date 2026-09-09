@@ -1,0 +1,26 @@
+{
+  "status": "completed",
+  "epochs_completed": 60,
+  "run": "/home/maher/maher_ws/src/Recognition-of-Different-Colored-Cubes/runs/robot_2026-09-09/experiment_60ep",
+  "checkpoint": "/home/maher/maher_ws/src/Recognition-of-Different-Colored-Cubes/runs/robot_2026-09-09/experiment_60ep/weights/best.pt",
+  "checkpoint_sha256": "296663e9bdea5f7b9b7ef138654362716450947b2851078dfae464ae3bfe7984",
+  "validation_metrics": {
+    "metrics/precision(B)": 0.939166571920866,
+    "metrics/recall(B)": 0.9162825520419863,
+    "metrics/mAP50(B)": 0.995,
+    "metrics/mAP50-95(B)": 0.7570555555555557,
+    "fitness": 0.7570555555555557
+  },
+  "manifest_sha256": "6ab0461c415e2689a24b77300e5dd1f747524a5d93e8634c0d49f21402cce688",
+  "output_shape": [
+    1,
+    7,
+    8400
+  ],
+  "class_names": {
+    "0": "blue_cube",
+    "1": "green_cube",
+    "2": "red_cube"
+  },
+  "limitation": "Four same-session validation images; no independent test or robot acceptance."
+}
