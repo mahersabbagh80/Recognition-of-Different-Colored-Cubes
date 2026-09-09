@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Lesson 0011 — Depth and camera geometry</title>
+<link rel="stylesheet" href="../assets/lesson.css">
+<link rel="icon" href="data:,">
+
+<link rel="stylesheet" href="../assets/lesson-interactions.css"><link rel="stylesheet" href="../assets/visual-learning.css"></head>
+<body class="lesson-0011">
+<main>
+<header>
+  <p class="eyebrow">Computer vision foundations · Lesson 11 · Geometry</p>
+  <h1>Depth and camera geometry</h1>
+  <p class="lede">A pixel gives a viewing direction. To estimate a physical point, the camera model, depth convention, alignment, and coordinate frame must agree.</p>
+  <div class="lesson-meta"><span>15–20 minutes</span><span class="tag">Browser required</span><span>Light mathematics</span></div>
+</header>
+
+<p><strong>Your goal:</strong> turn one RGB pixel and a valid depth sample into a carefully named 3-D point, then explain why a depth filter needs more evidence than a single comparison. <strong>RGB</strong> means the red, green, and blue colour channels. A <strong>depth image</strong> stores a distance-like value at each pixel.</p>
+
+<section class="concept-map">
+  <div><strong>1 · Pixel</strong><span>A 2-D image coordinate.</span></div>
+  <div><strong>2 · Ray</strong><span>A direction from the camera through that pixel.</span></div>
+  <div><strong>3 · Z-depth</strong><span>Distance along the optical Z axis.</span></div>
+  <div><strong>4 · Point</strong><span>Back-project with calibration.</span></div>
+</section>
+
+<h2>1. A pixel is a direction</h2>
+<p>A <strong>pixel</strong> is one sampled location in an image. <strong>2-D</strong> means two dimensions, here horizontal and vertical image position. <strong>3-D</strong> means three spatial coordinates. A <strong>viewing ray</strong> is the half-line that starts at the camera's <strong>optical centre</strong>, the ideal projection centre of the lens, and passes through one pixel. The <strong>optical axis</strong> is the camera's central forward reference direction. Without depth, every possible object on that ray looks like a candidate point.</p>
+<p><strong>Perspective projection</strong> is the camera operation that maps a 3-D point to a 2-D pixel. It loses scale: a small nearby cube and a large distant cube can occupy similar image areas. A bounding box, which is a rectangle around an image object, therefore does not by itself give physical size or distance.</p>
+
+<div class="mental-model"><strong>Central mental model</strong>Pixel + camera calibration = a ray. Pixel + valid depth + calibration = a 3-D point in a named camera frame. A camera frame is a coordinate system attached to the camera; it is not automatically the robot's coordinate system.</div>
+
+<figure class="geometry-grid">
+  <svg viewBox="0 0 620 235" role="img" aria-labelledby="ray-title ray-desc">
+    <title id="ray-title">A pixel selects a viewing ray</title>
+    <desc id="ray-desc">A camera centre at the left sends a ray through one pixel on an image plane to a point in space. The optical Z axis points forward. A second point farther along the same ray would have the same pixel but a different depth.</desc>
+    <rect x="0" y="0" width="620" height="235" fill="var(--code-bg)"/>
+    <line x1="75" y1="117" x2="175" y2="117" stroke="var(--ink)" stroke-width="4"/>
+    <circle cx="75" cy="117" r="9" fill="var(--accent)"/>
+    <text x="30" y="98" fill="var(--ink)" font-size="15">camera</text>
+    <line x1="205" y1="35" x2="205" y2="200" stroke="var(--ink)" stroke-width="4"/>
+    <circle cx="205" cy="103" r="6" fill="#e85d04"/>
+    <text x="181" y="222" fill="var(--ink)" font-size="14">image plane</text>
+    <line x1="75" y1="117" x2="500" y2="72" stroke="#e85d04" stroke-width="3"/>
+    <circle cx="500" cy="72" r="10" fill="#e85d04"/>
+    <circle cx="370" cy="86" r="7" fill="#8b5cf6"/>
+    <line x1="75" y1="117" x2="560" y2="117" stroke="#2a9d8f" stroke-width="2" stroke-dasharray="7 6"/>
+    <text x="512" y="63" fill="var(--ink)" font-size="14">point</text>
+    <text x="294" y="53" fill="var(--ink)" font-size="14">same ray</text>
+    <text x="410" y="137" fill="var(--ink)" font-size="14">optical Z →</text>
+    <text x="227" y="99" fill="var(--ink)" font-size="13">pixel</text>
+  </svg>
+  <figcaption><strong>Text alternative:</strong> the camera centre, one image-plane pixel, and a 3-D point form one ray. Moving the point along that ray changes depth but does not change the pixel.</figcaption>
+</figure>
+
+<h2>2. Calibration, registration, and the pinhole equations</h2>
+<p><strong>Camera calibration</strong> estimates parameters that describe a camera. <strong>Intrinsics</strong> are internal image parameters: <code>fx</code> and <code>fy</code> are focal lengths measured in pixels. A focal length is an image-scale factor: larger focal length makes the same off-axis point appear farther from the principal point. <code>cx</code> and <code>cy</code> are the principal point, the pixel where the optical axis meets the image. <strong>Extrinsics</strong> describe the rigid relationship between two coordinate frames: a rotation changes orientation and a translation changes origin. Intuitively, extrinsics tell us how the camera is mounted relative to the robot.</p>
+<p>The common <strong>pinhole model</strong> approximates the camera as one projection centre with straight rays. <strong>Lens distortion</strong> is the real lens's bending or warping of ideal straight-ray positions. A <strong>rectified</strong> image has that distortion corrected so corresponding pixels follow the pinhole model. The equations below are useful under that rectified pinhole assumption, with a depth value that really is optical Z.</p>
+<div class="equation" aria-label="Back projection equations">
+  X = (u − cx) × Z / fx<br>
+  Y = (v − cy) × Z / fy<br>
+  Z = optical-axis depth
+</div>
+<p><strong>Back-projection</strong> means reversing the image projection to recover a 3-D point from a pixel and depth. Here <code>u</code> and <code>v</code> are the horizontal and vertical pixel coordinates. <code>X</code>, <code>Y</code>, and <code>Z</code> are the point's coordinates in the camera frame. The symbol <code>=</code> means “is equal to”; <code>−</code> means subtraction; <code>×</code> means multiplication; and <code>/</code> means division. A <strong>resolution</strong> is an image's width and height in pixels. The abbreviation <code>px</code> means pixel. Calibration parameters belong to a particular camera stream and resolution, so a crop or resize needs matching coordinate handling.</p>
+<ul class="symbol-list">
+  <li><strong>Worked example:</strong> <code>u=420</code>, <code>cx=320</code>, <code>fx=500 px</code>, <code>Z=1 m</code>.</li>
+  <li><strong>Substitute:</strong> <code>X=(420−320)×1/500=0.2 m</code>.</li>
+  <li><strong>Interpret:</strong> the point is 0.2 m to the camera-frame right of the optical axis.</li>
+</ul>
+
+<section class="browser-lab" id="backproject-lab">
+  <h3>Explore: back-project one pixel</h3>
+  <p>Move either control and watch the calculated <code>X</code> change with the selected pixel and depth. This is a calculation exercise, not a camera measurement. The fixed calibration values are illustrative.</p>
+  <div class="lab-controls">
+    <label for="pixel-u">Pixel <code>u</code>: <output id="u-value">420</output><input id="pixel-u" type="range" min="280" max="560" value="420" step="1"></label>
+    <label for="point-z">Optical Z in metres: <output id="z-value">1.0</output><input id="point-z" type="range" min="0.5" max="2" value="1" step="0.1"></label>
+  </div>
+<figure class="visual-learning"><svg id="v11-ray-svg" viewBox="0 0 420 320" role="img" aria-label="Camera viewing ray through a fixed image plane to a point"></svg><figcaption>A schematic view of the camera’s X/Z plane: X goes right; forward Z goes down this page. The orange mark is the image-plane location; the green mark is the point. This illustrative plane is drawn 0.25 m in front of the camera. Change depth alone: the point moves on the same ray and the orange mark stays put.</figcaption></figure>  <p class="lab-output" id="backproject-output" role="status" aria-live="polite">Worked default: X = (420 − 320) × 1 / 500 = 0.200 m.</p>
+  <p class="answer-line">Static worked answer: with <code>u=420</code> and <code>Z=1 m</code>, the result is <code>X=0.2 m</code>.</p>
+</section>
+
+<p><strong>Registration</strong> is a separate job. It transforms or resamples one sensor's image so a pixel in the RGB grid refers to the same physical ray as the depth sample. Calibration can be correct while registration is wrong. Equal width and height also do not prove physical alignment: two 640×480 images can still come from different viewpoints or crops.</p>
+
+<h2>3. Depth conventions, units, and robust samples</h2>
+<p><strong>Optical Z-depth</strong> is the distance measured along the camera's optical Z axis. It is not the <strong>ray range</strong>, the straight-line distance from the camera centre to the point. The distinction matters away from the image centre. <strong>ROS</strong> means Robot Operating System; <strong>REP</strong> means ROS Enhancement Proposal. REP 118's canonical ROS representation uses a 32-bit floating-point image whose depth is in metres. The SI (International System of Units) length unit is the metre. A common raw representation uses <code>uint16</code>, an unsigned 16-bit integer, in millimetres; in that convention <code>0</code> means invalid. A floating-point <code>NaN</code> (“not a number”) is another invalid marker. Always read the message encoding and sensor documentation before converting units.</p>
+<p>A box contains <strong>foreground</strong>, the visible target surface, as well as floor, edges, and missing samples. A <strong>valid sample</strong> passes the sensor's validity rules. A <strong>median</strong> is the middle value after sorting valid samples. With an even count, average the two middle values: for <code>[1048, 1050, 1051, 1052]</code>, the median is <code>(1050+1051)/2 = 1050.5</code>. A <strong>percentile</strong> is a chosen point in that sorted distribution; <strong>p90</strong> means the 90th percentile. In this lesson, the nearest-rank p90 is the value at rank <code>ceil(0.90 × n)</code>: <code>ceil</code> means round upward, and <code>n</code> is the count of valid samples. A <strong>rank</strong> counts positions starting at 1, so rank 1 selects the smallest valid reading. For five readings, <code>ceil(0.90×5) = ceil(4.5) = 5</code>: select the fifth value. With no valid readings, neither statistic can be calculated. For the illustrative millimetre values <code>[1048, 1050, 1051, 1052, 1062, 0]</code>, discard the invalid zero: the median is <code>1051 mm</code>, while the nearest-rank p90 is <code>1062 mm</code>. The median describes a typical sample; p90 exposes a high-depth tail. If too few values are valid, report low evidence instead of pretending the statistic is trustworthy.</p>
+
+<section class="browser-lab" id="stats-lab">
+  <h3>Explore: invalid samples change the evidence</h3>
+  <p>The list starts with six illustrative readings in millimetres. Move the slider to mark readings as invalid; the script removes them before calculating. The list is synthetic and has not been measured on the robot. This control removes values from the end of the list; actual missing samples can occur anywhere and can change the statistic in either direction.</p>
+  <div class="lab-controls">
+    <label for="invalid-count">Additional invalid readings: <output id="invalid-value">0</output><input id="invalid-count" type="range" min="0" max="5" value="0" step="1"></label>
+    <label for="statistic-choice">Summary statistic<select id="statistic-choice"><option value="median">Median</option><option value="p90">Nearest-rank p90</option></select></label>
+  </div>
+  <p class="lab-output" id="stats-output" role="status" aria-live="polite">Static default: after removing the invalid zero, median = 1051 mm from 5 valid samples.</p>
+  <p class="answer-line">Static worked answer: invalid values are excluded; a real implementation must also set a minimum valid-count rule.</p>
+</section>
+
+<h2>4. Camera axes are not robot axes</h2>
+<p>REP 103 uses an optical camera frame with <code>x</code> right, <code>y</code> down, and <code>z</code> forward. A typical robot body frame uses <code>x</code> forward, <code>y</code> left, and <code>z</code> up. A frame is only a naming convention until its axes and origin are declared. To use a camera point for a robot, apply the calibrated extrinsic rotation and translation; this is a coordinate conversion, not a new detection.</p>
+<p>“Nearer than the floor” is not universally the same as “taller than the floor.” With a level, overhead-like view, a raised cube often has lower optical Z than the floor behind it. With an <strong>oblique</strong> (slanted) camera, the floor itself has changing Z across the image. A sound height test first models the <strong>floor plane</strong>, an ideal flat surface in 3-D, then measures a point's distance from that plane. A single global floor depth is only an assumption that must be checked against the mounting geometry.</p>
+
+<p>A <strong>predicate</strong> is a true-or-false comparison. A <strong>margin</strong> is a required gap beyond a reference value. For example, with floor depth 1500 mm and margin 20 mm, “nearer by more than the margin” means <code>surface depth &lt; 1500−20</code>. The symbol <code>&lt;</code> means less than. A surface at 1400 mm passes because <code>1400 &lt; 1480</code>. This compares optical depths; it does not measure height above a slanted floor.</p>
+<section class="browser-lab">
+  <h3>Check the direction before writing the predicate</h3>
+  <p>Under ordinary optical Z, a floor sample is <code>1200 mm</code>, a nearer cube surface is <code>1050 mm</code>, and the illustrative positive <strong>margin</strong> is <code>30 mm</code>. Which comparison describes “nearer than the floor” for this simple setup?</p>
+  <form id="geometry-practice">
+    <fieldset>
+      <legend>Choose the comparison</legend>
+      <label><input type="radio" name="geometry-choice" value="closer"> Select smaller optical depth values</label>
+      <label><input type="radio" name="geometry-choice" value="farther"> Select larger optical depth values</label>
+      <label><input type="radio" name="geometry-choice" value="height"> Either sign always measures height</label>
+    </fieldset>
+    <button class="check-btn" type="submit">Check choice</button>
+    <p id="geometry-feedback" class="lab-output" role="status" aria-live="polite"></p>
+  </form>
+  <p class="answer-line">Worked answer: <code>1050 &lt; 1200 − 30</code>, so the first comparison is correct only for this declared optical-Z setup. A slanted floor requires a plane model.</p>
+</section>
+
+<section class="project-application">
+  <h2>Applied to our cubes</h2>
+  <p><span class="evidence-label">Repository observation</span>The current node uses an approximate RGB/depth <strong>timestamp synchronizer</strong>, a component that pairs messages by nearby timestamps. It converts RGB with <code>cv_bridge</code>, a ROS image-message conversion package; requests depth with <strong>passthrough encoding</strong>, which preserves the source array's numeric representation; and returns early unless depth is a 2-D <code>uint16</code> array. It reads intrinsics from the RGB <code>CameraInfo</code> message, the ROS message carrying camera calibration metadata, when available, with configured fallbacks.</p>
+  <p><span class="evidence-label">Confirmed code behavior</span><code>geometry_filter.py</code> collects valid millimetre samples, estimates an <strong>annulus</strong>, meaning a ring around the box, for a floor median, and computes a raised <strong>mask</strong>, a boolean selection grid, with <code>depth &gt; floor_mm + raised_mm</code>. Under ordinary optical Z, that sign selects farther points, not nearer raised surfaces. It is a code fact and a teaching example; it does not validate the hardware mounting, registration, or floor interpretation. When statistics are invalid or below the minimum count, <code>decide</code> returns <code>KEEP</code>, meaning allow this candidate to pass, with a low-quality reason, so sparse depth is visible rather than silently filtered.</p>
+  <p>Read the <a href="../../../recognition_of_different_colored_cubes/cube_detection_node.py">current detection node</a> and <a href="../../../recognition_of_different_colored_cubes/geometry_filter.py">geometry filter</a> alongside the <a href="../../architecture.md">architecture</a>. The code is evidence about this checkout; it is not proof that the physical depth stream is registered.</p>
+<div class="code-connection" id="code-connection"><h3>Read the project code</h3><p><strong>Implemented in data collection:</strong> the paired-image capture callback creates separate RGB and depth filenames:</p><p><a href="../../../scripts/capture_rgb_depth_sync.py">Paired capture · SyncSaver callback (see _cb)</a> · selected source lines:</p><pre><code>rgb_name = f&quot;{self.prefix}_{idx:04d}_rgb.jpg&quot;
+depth_name = f&quot;{self.prefix}_{idx:04d}_depth.png&quot;</code></pre><p>Matching identifiers help relate a color frame to a depth frame. This pairing does not prove that their pixels are spatially registered. In the current <a href="../../../scripts/build_hardneg_dataset.py">training dataset builder</a>, image loading selects <code>*.jpg</code> files and creates class-and-box labels. The fine-tuning call does not add depth as an input channel or a 3-D target: this is a 2-D color-image detector.</p><p><strong>Possible next step:</strong> use verified paired depth for a separate geometry evaluation, checking units and registration. Training a model to use depth would require a deliberate change to its inputs, labels, and training preparation; merely saving a depth file does not make that happen.</p><details><summary>Trace this code: does a saved depth image mean training uses depth?</summary><p>No. Follow what the dataset builder and training loader actually read. The current builder selects color JPEG images; the robot combines detections with depth later.</p></details></div></section>
+
+<h2>Explain it back · 3 minutes</h2>
+<p>In your own words, explain: (1) why one pixel gives a ray, (2) what each of <code>fx</code>, <code>fy</code>, <code>cx</code>, <code>cy</code>, and optical <code>Z</code> means, (3) why the worked example gives <code>X=0.2 m</code>, (4) calibration versus registration, and (5) why the current greater-than predicate needs hardware and floor-plane evidence.</p>
+<label for="geometry-explain">Your explanation (it stays on this page and is not saved)</label>
+<textarea id="geometry-explain" placeholder="Use the symbols and units explicitly."></textarea>
+
+<h2>Primary sources</h2>
+<ul class="source-list">
+  <li><a href="https://raw.githubusercontent.com/ros-infrastructure/rep/master/rep-0118.rst">ROS REP 118 — Depth Images (official raw source)</a>: optical Z, metres, millimetres, and invalid values.</li>
+  <li><a href="https://raw.githubusercontent.com/ros-infrastructure/rep/master/rep-0103.rst">ROS REP 103 — Standard Units and Coordinate Conventions (official raw source)</a>: SI units and camera versus body axes.</li>
+  <li><a href="https://szeliski.org/Book/">Szeliski, Computer Vision: Algorithms and Applications</a>: image formation and geometric reasoning.</li>
+</ul>
+
+
+</main>
+<script>
+(() => {
+  'use strict';
+  const u = document.getElementById('pixel-u');
+  const z = document.getElementById('point-z');
+  const uValue = document.getElementById('u-value');
+  const zValue = document.getElementById('z-value');
+  const backproject = document.getElementById('backproject-output');
+  function updateBackprojection() {
+    const x = (Number(u.value) - 320) * Number(z.value) / 500;
+    uValue.textContent = u.value;
+    zValue.textContent = Number(z.value).toFixed(1);
+    backproject.textContent = 'X = (' + u.value + ' − 320) × ' + Number(z.value).toFixed(1) + ' / 500 = ' + x.toFixed(3) + ' m. This is camera-frame X under the stated pinhole assumptions.';
+  }
+  u.addEventListener('input', updateBackprojection);
+  z.addEventListener('input', updateBackprojection);
+  updateBackprojection();
+
+  const invalid = document.getElementById('invalid-count');
+  const invalidValue = document.getElementById('invalid-value');
+  const statistic = document.getElementById('statistic-choice');
+  const statsOutput = document.getElementById('stats-output');
+  const readings = [1048, 1050, 1051, 1052, 1062, 0];
+  function updateStats() {
+    const invalidCount = Number(invalid.value);
+    const valid = readings.slice(0, 5 - invalidCount).filter((value) => value > 0).sort((a, b) => a - b);
+    invalidValue.textContent = invalidCount;
+    if (!valid.length) {
+      statsOutput.textContent = 'No valid samples remain. A geometry decision needs an explicit low-evidence policy.';
+      return;
+    }
+    const median = valid.length % 2 ? valid[(valid.length - 1) / 2] : (valid[valid.length / 2 - 1] + valid[valid.length / 2]) / 2;
+    const rank = Math.max(1, Math.ceil(0.9 * valid.length));
+    const p90 = valid[rank - 1];
+    const chosen = statistic.value === 'median' ? median : p90;
+    statsOutput.textContent = 'Valid values: [' + valid.join(', ') + '] mm. ' + (statistic.value === 'median' ? 'Median' : 'Nearest-rank p90') + ' = ' + chosen + ' mm from ' + valid.length + ' valid sample(s).';
+  }
+  invalid.addEventListener('input', updateStats);
+  statistic.addEventListener('change', updateStats);
+  updateStats();
+
+  document.getElementById('geometry-practice').addEventListener('submit', (event) => {
+    event.preventDefault();
+    const selected = document.querySelector('input[name="geometry-choice"]:checked');
+    const feedback = document.getElementById('geometry-feedback');
+    if (!selected) {
+      feedback.textContent = 'Choose a comparison first.';
+      return;
+    }
+    if (selected.value === 'closer') {
+      feedback.textContent = 'Correct for the stated optical-Z example: 1050 mm < 1200 − 30 mm, so it is meaningfully nearer along Z. For an oblique camera, model the floor plane.';
+    } else if (selected.value === 'farther') {
+      feedback.textContent = 'Reconsider: under optical Z, a larger value is farther in this example. The greater-than predicate selects the opposite direction.';
+    } else {
+      feedback.textContent = 'Reconsider: neither sign is a universal height test. The sensor convention and the floor plane must be declared.';
+    }
+  });
+})();
+</script>
+<script src="../assets/quiz.js"></script><script src="../assets/visual-learning-foundations.js"></script></body>
+</html>

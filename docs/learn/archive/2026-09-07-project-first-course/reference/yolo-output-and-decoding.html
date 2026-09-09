@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>YOLO output and decoding</title><link rel="stylesheet" href="../assets/lesson.css"></head>
+<body><main class="reference-page">
+<header class="reference-header"><p class="brand-kicker">Quick reference 02</p><h1>YOLO output and decoding</h1><p class="lede">The exact contract for this exported artifact—not a universal YOLO layout.</p></header>
+<nav class="course-nav" aria-label="Reference navigation"><a href="index.html">All references</a><a href="../index.html">Course home</a><a href="../lessons/0002-how-yolo-produces-predictions.html">Full lesson</a></nav>
+
+<div class="status-strip"><div><strong>[1,3,640,640]</strong><span>input</span></div><div><strong>[1,7,8400]</strong><span>output</span></div><div><strong>3 classes</strong><span>blue, green, red</span></div></div>
+
+<h2>Read the output</h2>
+<pre><code>output0: [batch, fields, candidates] = [1, 7, 8400]
+out[0]: [7, 8400]
+transpose: [8400, 7]
+row: [cx, cy, width, height, blue_score, green_score, red_score]</code></pre>
+<p><code>8400 = 80×80 + 40×40 + 20×20</code>. These are candidate positions, not final detections. This fused output has no separate objectness field.</p>
+
+<h2>Decoder order</h2>
+<ol class="reference-steps">
+  <li>Transpose to one candidate per row.</li>
+  <li>Choose the largest of the three class scores and its class ID.</li>
+  <li>Discard rows below the confidence threshold.</li>
+  <li>Convert <code>xywh</code> to <code>xyxy</code>.</li>
+  <li>Undo letterbox padding and scale.</li>
+  <li>Clip to the original camera-frame bounds.</li>
+  <li>Run NMS separately for each predicted class.</li>
+  <li>Return class name, score, and camera-frame box.</li>
+</ol>
+
+<div class="callout"><p class="callout-title">Do not transfer blindly</p><p>Traditional YOLOv5 examples such as `(1,25200,85)` do not describe this artifact. Re-check shape, field order, score semantics, and decoder behavior whenever the export changes.</p></div>
+<footer><p>Project anchors: <a href="../../../recognition_of_different_colored_cubes/cube_detection_node.py">decoder implementation</a> · <a href="../../../models/README.md">artifact contract</a> · <a href="../RESOURCES.md">sources</a></p></footer>
+</main><script src="../assets/quiz.js"></script></body></html>

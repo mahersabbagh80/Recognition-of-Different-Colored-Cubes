@@ -1,0 +1,205 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Lesson 0006 — ROS 2 perception wiring</title>
+  <link rel="stylesheet" href="../assets/lesson.css">
+  <link rel="icon" href="data:,">
+  <style>
+    .figure { margin: 1.2rem 0 1.4rem; border: 1px solid var(--rule); background: var(--quiz-bg); padding: 0.85rem; }
+    .figure svg, .concept-art img, .real-pair img { display: block; width: 100%; height: auto; border-radius: 0; }
+    .concept-art { width: min(1160px, calc(100vw - 3rem)); max-width: none; margin-left: 50%; margin-right: 0; transform: translateX(-50%); }
+    .concept-art a { border-bottom: 0; }
+    .brand-header { position: relative; overflow: hidden; margin: 0 -0.5rem 2rem; padding: 2rem; background: #000916; border-top: 6px solid #02adf8; color: #cadaeb; }
+    .brand-header::before { position: absolute; inset: 0; background-image: linear-gradient(#09325d55 1px, transparent 1px), linear-gradient(90deg, #09325d55 1px, transparent 1px); background-size: 2.5rem 2.5rem; content: ""; mask-image: linear-gradient(to right, black, transparent 74%); }
+    .brand-header > * { position: relative; }
+    .brand-kicker { margin: 0 0 0.55rem; color: #02adf8; font-family: "Poppins", "Inter", sans-serif; font-size: 0.75rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; }
+    .brand-header h1 { color: #cadaeb; }
+    .brand-header .lesson-meta { color: #b8efff; margin: 0.8rem 0 1rem; }
+    .brand-header .lesson-meta .tag { background: #02adf8; color: #000916; }
+    .brand-header .lede { color: #dfe9f3; max-width: 62ch; margin-bottom: 0; }
+    .figure-caption { margin: 0.65rem 0 0.1rem; color: var(--ink-soft); font-size: 0.9rem; }
+    .diagram text { font-family: "Poppins", "Inter", sans-serif; fill: #041d39; }
+    .diagram .muted { fill: #09325d; }
+    .diagram .tiny { font-size: 10px; }
+    .diagram .label { font-size: 13px; font-weight: 600; }
+    .interaction { margin: 1rem 0 1.4rem; padding: 0.9rem 1rem; border: 1px solid var(--rule); background: var(--accent-soft); }
+    .interaction-title { margin: 0 0 0.45rem; font-family: "Poppins", "Inter", sans-serif; font-size: 0.9rem; font-weight: 700; color: var(--ink-soft); }
+    .step-buttons { display: flex; flex-wrap: wrap; gap: 0.4rem; margin: 0.7rem 0; }
+    .step-btn, .action-btn { border: 1px solid var(--rule); border-radius: 0; background: var(--quiz-bg); color: var(--ink); padding: 0.35rem 0.6rem; font-family: "Poppins", "Inter", sans-serif; font-size: 0.82rem; cursor: pointer; }
+    .step-btn:hover, .step-btn.active, .action-btn:hover { border-color: var(--accent); color: var(--ink-soft); }
+    .step-btn:focus, .action-btn:focus { outline: 2px solid var(--accent); outline-offset: 2px; }
+    .stage-detail { margin: 0.7rem 0 0; color: var(--ink-soft); }
+    .stage-detail strong { color: var(--ink); }
+    .hidden { display: none; }
+    .metric-table { width: 100%; border-collapse: collapse; margin: 1rem 0; font-size: 0.9rem; }
+    .metric-table th, .metric-table td { border: 1px solid var(--rule); padding: 0.45rem 0.5rem; text-align: left; vertical-align: top; }
+    .metric-table th { background: var(--accent-soft); color: var(--ink-soft); font-weight: 700; }
+    .record-grid, .two-col, .real-pair { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.8rem; margin: 1rem 0; }
+    .record-grid.three { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .record-card { border: 1px solid var(--rule); padding: 0.75rem; background: var(--quiz-bg); }
+    .record-card h3 { margin: 0 0 0.3rem; font-size: 0.95rem; }
+    .record-card p { margin: 0; color: var(--ink-soft); font-size: 0.9rem; }
+    .status-strip { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.55rem; margin: 1rem 0; }
+    .status-strip div { border-left: 4px solid var(--accent); padding: 0.55rem 0.65rem; background: var(--accent-soft); }
+    .status-strip strong { display: block; font-size: 1.05rem; }
+    .status-strip span { color: var(--ink-soft); font-size: 0.8rem; }
+    .real-pair figure { margin: 0; }
+    .real-pair figcaption { margin-top: 0.35rem; color: var(--ink-soft); font-size: 0.82rem; }
+    .prompt { border: 1px solid var(--accent); padding: 0.9rem 1rem; background: var(--accent-soft); }
+    main > ol code { overflow-wrap: anywhere; word-break: break-word; }
+    @media (max-width: 720px) { .concept-art { width: 100%; max-width: 100%; margin-left: 0; margin-right: 0; transform: none; } .brand-header { margin: 0 0 1.5rem; padding: 1.5rem; } }
+    @media (max-width: 34rem) { .real-pair, .record-grid, .record-grid.three, .two-col, .status-strip { grid-template-columns: 1fr; } .metric-table { font-size: 0.78rem; } }
+    @media print {
+      html { background: #fff; } body { background: #fff; }
+      .concept-art { width: 100%; max-width: none; margin: 0; transform: none; break-inside: avoid; }
+      .concept-art img { max-height: 25cm; object-fit: contain; }
+      .interaction, .figure, .record-card, .callout, .quiz { break-inside: avoid; }
+      .step-buttons, .action-btn, .slider-row input, .check-btn, .theme-toggle { display: none !important; }
+      .hidden { display: none !important; }
+      a { color: #041d39; border-bottom: none; }
+    }
+</style>
+</head>
+<body>
+<main>
+<header class="brand-header">
+  <p class="brand-kicker">Software · AI · Robotics / Learning system</p>
+  <h1>Lesson 0006 — ROS 2 perception wiring</h1>
+  <div class="lesson-meta"><span>~80–105 min</span><span class="tag">ROS 2</span><span>Anchored to: <code>cube_detection_node.py · package.xml · config/params.yaml</code></span></div>
+  <p class="lede">A perception system is an integration contract as much as a model. Learn how topics, synchronization, conversions, parameters, and message types make the detector usable.</p>
+</header>
+<div class="callout"><p class="callout-title">How to use this lesson</p><p>Read the explanation, inspect the visual, make a prediction, and then compare it with the repository evidence. The goal is a model of this project that you can explain—not a list of framework slogans.</p></div>
+<div class="callout"><p class="callout-title">Prerequisites and scope</p><p>This lesson assumes ordinary event-driven programming and the inference pipeline from Lessons 0002 and 0005, but no ROS experience. Treat ROS 2 as the typed, asynchronous boundary around the computer-vision code.</p></div>
+
+<figure class="figure concept-art">
+  <a href="../assets/lesson-0006-concept-art-handdrawn-portrait.png" target="_blank" rel="noopener">
+    <img src="../assets/lesson-0006-concept-art-handdrawn-portrait.png" alt="Tall hand-drawn overview sheet with twelve stations explaining the ROS graph, input topics, synchronization, cv_bridge, depth guards, parameters, output contracts, launch, and read-only verification.">
+  </a>
+  <figcaption class="figure-caption">Orientation map of the ROS message path. The detailed sections add asynchronous-stream semantics, contracts, and failure boundaries. Click the PNG to open it at full resolution; the <a href="../assets/lesson-0006-concept-art-handdrawn-portrait.svg" target="_blank" rel="noopener">source SVG</a> remains available for inspection.</figcaption>
+</figure>
+
+
+<h2>The question this lesson answers</h2>
+<p>How do ROS 2 messages travel from the vendor camera into the detector and back out as useful results? The answer is a typed graph: named topics connect publishers and subscribers, the node pairs RGB with depth, the callback converts and processes the messages, and output converters preserve the contract expected by downstream tools.</p>
+<div class="callout"><p class="callout-title">By the end, you should be able to</p><ul><li>distinguish a node, topic, message type, publisher, subscription, callback, and executor;</li><li>trace one RGB/depth pair through every early-return and publication boundary;</li><li>explain timestamp synchronization, queue pressure, QoS compatibility, encodings, and frame IDs;</li><li>separate launch-time configuration from parameters that truly update live behavior;</li><li>distinguish an empty detection message from a missing output message and from healthy inference.</li></ul></div>
+<div class="status-strip"><div><strong>2</strong><span>synchronized image streams</span></div><div><strong>3</strong><span>public detector outputs</span></div><div><strong>29</strong><span>declared runtime parameters</span></div></div>
+<div class="callout"><p class="callout-title">ROS vocabulary in one paragraph</p><p>A <strong>node</strong> is a running computation component. A <strong>topic</strong> is a named asynchronous stream. A <strong>publisher</strong> writes typed messages and a <strong>subscriber</strong> receives them through callbacks. The message type is the interface contract. A message <strong>header</strong> carries a timestamp and coordinate-frame name so consumers can reason about when and where the data applies.</p></div>
+<p>ROS 2 uses middleware—normally a DDS implementation—to discover participants and transport messages. The graph is dynamic and many-to-many: a topic is not a function call and does not imply exactly one producer or consumer. Delivery also depends on compatible QoS policies and a running executor that services callbacks.</p>
+
+<h2>1. A node is one computation unit</h2>
+<p>ROS 2 nodes communicate through typed interfaces. The project node is named <code>cube_detection_node</code> in the <code>recognition_of_different_colored_cubes</code> package. It does not own the vendor camera; it consumes the camera's topics and publishes cube-recognition results.</p>
+<div class="figure"><svg class="diagram" viewBox="0 0 640 230" role="img" aria-labelledby="d6a-title d6a-desc"><title id="d6a-title">ROS 2 topic graph for the detector</title><desc id="d6a-desc">RGB, depth, and camera info topics feed the cube detection node, which publishes standard detections, vendor objects, and a debug image.</desc><rect x="0" y="0" width="640" height="230" fill="#dfe9f3"/><rect x="225" y="78" width="190" height="72" fill="#041d39" stroke="#02adf8" stroke-width="3"/><text x="320" y="111" font-size="16" fill="#b8efff" text-anchor="middle" font-weight="700">cube_detection_node</text><text x="320" y="132" font-size="11" fill="#cadaeb" text-anchor="middle">sync · infer · filter · publish</text><g fill="#ffffff" stroke="#09325d" stroke-width="2"><rect x="25" y="25" width="155" height="34"/><rect x="25" y="79" width="155" height="34"/><rect x="25" y="133" width="155" height="34"/></g><text x="102" y="47" font-size="11" fill="#041d39" text-anchor="middle">RGB Image</text><text x="102" y="101" font-size="11" fill="#041d39" text-anchor="middle">Depth Image</text><text x="102" y="155" font-size="11" fill="#041d39" text-anchor="middle">CameraInfo</text><g fill="#ffffff" stroke="#0f766e" stroke-width="2"><rect x="460" y="25" width="155" height="34"/><rect x="460" y="79" width="155" height="34"/><rect x="460" y="133" width="155" height="34"/></g><text x="537" y="47" font-size="10" fill="#041d39" text-anchor="middle">Detection2DArray</text><text x="537" y="101" font-size="10" fill="#041d39" text-anchor="middle">ObjectsInfo</text><text x="537" y="155" font-size="10" fill="#041d39" text-anchor="middle">debug Image</text><path d="M180 42 H215 M180 96 H215 M180 150 H215 M425 42 H460 M425 96 H460 M425 150 H460" stroke="#02adf8" stroke-width="3"/><path d="M207 35 L215 42 L207 49 M207 89 L215 96 L207 103 M207 143 L215 150 L207 157 M453 35 L460 42 L453 49 M453 89 L460 96 L453 103 M453 143 L460 150 L453 157" fill="none" stroke="#02adf8" stroke-width="3"/></svg><p class="figure-caption">The topic names are part of the integration contract. A correct Python function is not enough if the graph names or message types do not match.</p></div>
+<p>The node runs under an <strong>executor</strong>, which waits for subscriptions and invokes ready callbacks. The current <code>main()</code> uses ordinary <code>rclpy.spin(node)</code>. A long synchronous inference callback occupies its execution path; if camera messages arrive faster than callbacks complete, queueing and dropping policy determine which data survives.</p>
+
+<h2>2. The current input topics</h2>
+<p>The node declares these inputs:</p>
+<ul><li><code>/depth_cam/rgb/image_raw</code> — RGB <code>sensor_msgs/Image</code>.</li><li><code>/depth_cam/depth/image_raw</code> — depth <code>sensor_msgs/Image</code>.</li><li><code>/depth_cam/rgb/camera_info</code> — <code>sensor_msgs/CameraInfo</code> used to update intrinsics once.</li></ul>
+<p>The first two are paired by <code>message_filters.ApproximateTimeSynchronizer</code>. The vendor bring-up must be running separately; <a href="../../../launch/detection.launch.py">detection.launch.py</a> starts only this project node.</p>
+<p>The RGB <code>header.stamp</code> becomes the timestamp of all three outputs, and its <code>frame_id</code> names the optical coordinate frame associated with the 2-D boxes. Copying a header preserves provenance; it does not transform coordinates into another frame.</p>
+
+<h2>3. Approximate synchronization is a policy</h2>
+<p>The current configuration uses a queue size of <code>10</code> and <code>sync_slop_sec=0.05</code>. That allows a nearby RGB/depth timestamp pair rather than requiring byte-for-byte identical timestamps. A larger slop may pair older or less-related frames; a smaller slop may drop pairs when streams do not line up. The value is a systems trade-off, not a model hyperparameter.</p>
+<p>RGB and depth are produced independently, so exact timestamp equality is uncommon. If the robot or object moves, too much time separation means an RGB box can be paired with depth from a different physical pose. The queue keeps recent messages while the synchronizer searches for pairs; it does not guarantee that every camera frame reaches inference when callbacks fall behind.</p>
+<div class="callout"><p class="callout-title">Three distinct reasons a frame may not become an output</p><p>It may never form a synchronized pair; the callback may return early after conversion/depth validation; or the process may be delayed or stopped before publishing. An empty <code>Detection2DArray</code> means publication occurred with zero kept objects. No message means a different systems symptom.</p></div>
+<p><strong>QoS detail:</strong> <code>qos_profile_sensor_data</code> is explicit for the separate CameraInfo subscription, but the current <code>message_filters.Subscriber</code> calls for RGB and depth do not pass an explicit QoS profile. The vendor launch exposes QoS choices, so actual compatibility must be checked with <code>ros2 topic info -v</code>; do not infer image QoS from the imported symbol. <span class="source-note">[<a href="../../../recognition_of_different_colored_cubes/cube_detection_node.py">node</a> · <a href="https://raw.githubusercontent.com/ros2/ros2_documentation/humble/source/Concepts/Intermediate/About-Quality-of-Service-Settings.rst">ROS 2 Humble QoS</a>]</span></p>
+<div class="interaction"><p class="interaction-title">Interactive: inspect a timestamp decision</p><div class="step-buttons" data-switch-group data-target="sync-detail"><button type="button" class="step-btn active" data-detail="RGB at t=10.000 s and depth at t=10.018 s differ by 18 ms, so they are within the 50 ms slop.">18 ms apart</button><button type="button" class="step-btn" data-detail="RGB at t=10.000 s and depth at t=10.072 s differ by 72 ms, so this pair exceeds the configured slop.">72 ms apart</button><button type="button" class="step-btn" data-detail="The queue stores recent messages while the synchronizer searches for a compatible timestamp pair; it is not a FIFO guarantee that every image is processed.">queue of 10</button></div><p id="sync-detail" class="stage-detail">RGB at t=10.000 s and depth at t=10.018 s differ by 18 ms, so they are within the 50 ms slop.</p></div>
+
+<h2>4. cv_bridge turns messages into arrays</h2>
+<p>In <code>_sync_cb()</code>, <code>CvBridge.imgmsg_to_cv2()</code> converts the RGB message with desired encoding <code>bgr8</code>. The node then reverses BGR to RGB inside <code>_infer()</code> before model preprocessing. Depth uses <code>desired_encoding="passthrough"</code> so the numeric depth representation is not silently converted.</p>
+<p>An image message also declares an <strong>encoding</strong>. Encoding determines channel meaning and numeric type; width and height determine shape; row step describes storage spacing. Equal dimensions do not prove RGB/depth registration, and a three-channel color array is not interchangeable with a one-channel millimetre depth array.</p>
+<p><code>bgr8</code> means three unsigned 8-bit channels ordered blue, green, red. <code>passthrough</code> asks <code>cv_bridge</code> to preserve the depth message's underlying representation. It does not prove that the units are millimetres; that unit contract must come from the camera driver and be checked against observed metadata.</p>
+
+<h2>5. A depth-format guard protects the geometry branch</h2>
+<p>Before inference, the node requires a two-dimensional <code>numpy.uint16</code> depth array. The M4c1 contract interprets those values as millimetres, with zero as invalid. If the depth image is missing, has the wrong dtype, or has the wrong rank, the current callback returns early and skips that frame. This is deliberately different from the geometry helper's per-box low-quality policy.</p>
+<p>This guard checks representation, not registration. Geometry also assumes the depth pixel at <code>(u,v)</code> describes the same camera ray as RGB pixel <code>(u,v)</code>. Matching width and height cannot establish that calibration relationship.</p>
+
+<h2>6. The callback is a pipeline, not one magic function</h2>
+<ol><li>Increment synchronization counters and convert RGB/depth.</li><li>Validate the depth shape/type.</li><li>Run TensorRT inference when the engine is loaded; otherwise use the empty no-inference path.</li><li>Apply geometry decisions to decoded candidates.</li><li>Publish the standard, vendor, and optional debug outputs.</li><li>Record total, YOLO, and filter timing and periodically log p50/p95 summaries.</li></ol>
+<p>Exceptions and early returns are observable behavior too. A one-time bridge warning avoids log flooding, but later conversion failures can then be easy to miss. Likewise, the no-engine path publishes empty arrays rather than stopping startup. Operational monitoring must combine topic output with logs and engine state.</p>
+
+<h2>7. Parameters make the boundary inspectable</h2>
+<p><a href="../../../config/params.yaml">config/params.yaml</a> supplies the same groups visible in <code>__init__()</code>: topic names, publish toggles, model path, thresholds, image size, synchronization settings, geometry settings, camera intrinsics, and diagnostics. The node declares 29 parameters rather than hiding deployment choices in constants.</p>
+<p><strong>QoS</strong> (Quality of Service) controls delivery behavior: reliability, how much history is retained, and whether late subscribers receive old values. Camera streams often prioritize fresh data over perfect delivery. Publisher and subscriber policies must be compatible, which is why “the topic exists” does not by itself prove the callback can receive it.</p>
+<p>The declared <code>fallback_model_path</code> is not consumed by the current implementation; <code>model_path</code> controls actual engine lookup. A parameter being present in YAML is not proof that the runtime uses it.</p>
+<div class="callout"><p class="callout-title">Startup value versus live update</p><p>The constructor reads declared parameters into ordinary Python attributes once. The current node does not register an on-set-parameters callback and does not reread those values during inference. Therefore <code>ros2 param set</code> may change the parameter service's stored value without changing current detection behavior; restart with the desired configuration unless a future implementation adds and verifies live-update handling.</p></div>
+<p>A parameter file is configuration input, not proof of runtime state. The effective value can also be affected by launch overrides or defaults. Use <code>ros2 param get</code> and startup logs to inspect what the process received, while remembering that the current cached Python attributes do not follow later service changes.</p>
+
+<h2>8. The standard ROS output</h2>
+<p><code>_to_detection_array_msg()</code> creates a <code>vision_msgs/Detection2DArray</code> and copies the RGB header. Each <code>Detection2D</code> contains a hypothesis with <code>class_id</code> and <code>score</code>, plus a bounding box represented by center <code>x/y</code> and <code>size_x/size_y</code>. Downstream ROS tools can consume this standard shape without knowing the internal <code>CubeDetection</code> dataclass. <span class="source-note">[<a href="https://github.com/ros-perception/vision_msgs/blob/ros2/README.md">vision_msgs</a>]</span></p>
+<p>The score is the model's retained class score, not a calibrated probability that the physical object is truly a cube. The bounding box remains in image pixels in the copied RGB frame. It is not a 3-D pose, distance, or world coordinate.</p>
+
+<h2>9. The vendor compatibility output</h2>
+<p>When enabled, <code>_to_vendor_objects_msg()</code> creates <code>interfaces/ObjectsInfo</code>. Each <code>ObjectInfo</code> receives <code>class_name</code>, integer <code>box</code>, <code>score</code>, and the image <code>width</code>/<code>height</code>. This is why <code>interfaces</code> is an execution dependency even though the package does not define that vendor message.</p>
+<p>This is an <strong>adapter</strong>: it expresses the same kept detections in a vendor-specific schema. Maintaining both outputs creates a consistency obligation—class, score, box, header, and dimensions must continue to describe the same result after future changes.</p>
+
+<h2>10. The debug image is an operator view</h2>
+<p><code>_to_debug_image_msg()</code> draws kept boxes and an M5 HUD such as confidence threshold, filter state, and keep count, then converts the image back to <code>sensor_msgs/Image</code>. A debug image can show that the node is alive, but a HUD saying <code>keep=0</code> is not evidence that the camera saw no objects; it is only the output of the current pipeline.</p>
+
+<h2>11. Package and launch wiring</h2>
+<p><a href="../../../package.xml">package.xml</a> declares <code>rclpy</code>, image/message packages, <code>message_filters</code>, NumPy, PIL, PyTorch, torchvision, and the vendor <code>interfaces</code> dependency. <a href="../../../setup.py">setup.py</a> installs the package, config, launch file, and console entry point. The launch file resolves the installed package share directory and passes the installed <code>config/params.yaml</code>.</p>
+<p>These files answer different questions: <code>package.xml</code> declares ROS package metadata and dependencies; <code>setup.py</code> installs Python modules, data files, and the console entry point; the launch file instantiates the executable with configuration. None starts the vendor camera stack.</p>
+<div class="callout"><p class="callout-title">Boundary to respect</p><p>Vendor packages are infrastructure/reference material. The project consumes their topics and message contract but must not modify their source files or the Jetson vendor service.</p></div>
+
+<h2>12. Check your understanding</h2>
+<div class="quiz" data-correct="2" data-correct-text="The synchronizer pairs nearby timestamps under the configured slop; it does not require identical timestamps."><p class="quiz-q">What does the 0.05 s synchronization slop mean?</p><ol><li><label><input type="radio" name="q6a" value="0">Every synchronized pair waits exactly fifty milliseconds before processing.</label></li><li><label><input type="radio" name="q6a" value="1">Every camera frame remains valid for exactly fifty milliseconds.</label></li><li><label><input type="radio" name="q6a" value="2">RGB and depth timestamps may differ by fifty milliseconds.</label></li></ol><button type="button" class="check-btn">Check answer</button><p class="answer"></p></div>
+<div class="quiz" data-correct="0" data-correct-text="The standard output carries a header, hypothesis class and score, and bbox center/size fields."><p class="quiz-q">Which data belongs in Detection2DArray?</p><ol><li><label><input type="radio" name="q6b" value="0">Class hypotheses, confidence scores, and two-dimensional bounding-box geometry fields.</label></li><li><label><input type="radio" name="q6b" value="1">Raw TensorRT bindings, engine bytes, and device memory addresses.</label></li><li><label><input type="radio" name="q6b" value="2">Camera intrinsics, distortion coefficients, and registered-depth calibration matrices.</label></li></ol><button type="button" class="check-btn">Check answer</button><p class="answer"></p></div>
+<div class="quiz" data-correct="1" data-correct-text="A wrong depth dtype or shape causes the current callback to skip that frame before inference/publishing."><p class="quiz-q">Why is the depth guard important?</p><ol><li><label><input type="radio" name="q6c" value="0">It prevents the synchronizer from pairing images with nearby timestamps.</label></li><li><label><input type="radio" name="q6c" value="1">It prevents geometry code from interpreting an invalid depth array.</label></li><li><label><input type="radio" name="q6c" value="2">It prevents TensorRT from returning candidates below the confidence threshold.</label></li></ol><button type="button" class="check-btn">Check answer</button><p class="answer"></p></div>
+<div class="quiz" data-correct="0" data-correct-text="No output message points to synchronization, early return, execution, or publication health; an empty array proves publication happened."><p class="quiz-q">How is “no message” different from an empty Detection2DArray?</p><ol><li><label><input type="radio" name="q6d" value="0">No message indicates a graph/callback/publication issue; an empty array is a published result with zero keeps.</label></li><li><label><input type="radio" name="q6d" value="1">They are guaranteed to mean exactly the same thing.</label></li><li><label><input type="radio" name="q6d" value="2">An empty array proves the TensorRT engine was loaded successfully.</label></li></ol><button type="button" class="check-btn">Check answer</button><p class="answer"></p></div>
+
+<h2>13. Read-only graph and source exercise</h2>
+<p>First, run a genuinely read-only syntax check from the repository root. Unlike <code>py_compile</code>, this does not create <code>__pycache__</code> files:</p>
+<pre><code>python3 -c "import ast, pathlib; files=['recognition_of_different_colored_cubes/cube_detection_node.py','recognition_of_different_colored_cubes/geometry_filter.py']; [ast.parse(pathlib.Path(f).read_text(), filename=f) for f in files]; print('syntax OK')"</code></pre>
+<p>Then, on a Jetson with the vendor stack already running, use only read-only graph inspection:</p>
+<pre><code>ros2 topic info /depth_cam/rgb/image_raw -v
+ros2 topic info /cube_detections -v
+ros2 topic echo /cube_detections/vendor_objects --once
+ros2 topic hz /cube_detections</code></pre>
+<p>The first command is environment-independent and should exit successfully on this checkout. The ROS commands require the live ROS graph; do not start or stop vendor services as part of this lesson.</p>
+<p>Add <code>ros2 param get /cube_detection_node confidence_threshold</code> and compare it with the startup log. Do not infer that changing it live changes cached inference behavior; Section 7 explains why.</p>
+
+<h2>14. Explain it back</h2>
+<div class="prompt"><p><strong>Explain this without reading:</strong> “How does one RGB/depth pair become three different ROS 2 outputs, and where can a frame be dropped before publication?”</p><p>Point to <code>_sync_cb()</code>, <code>cv_bridge</code>, the depth guard, and the three output converters.</p></div>
+
+<h2>What this lesson intentionally postpones</h2>
+<p>This lesson intentionally postpones multi-machine DDS discovery, detailed QoS tuning, callback groups/executor concurrency, lifecycle nodes, and vendor camera internals. The official ROS references below own those topics. <a href="0007-depth-and-geometry-filtering.html">Lesson 0007</a> examines the aligned-depth assumption and geometry computations used after ROS delivers a pair.</p>
+<h2>Primary references and next lesson</h2>
+<ul>
+  <li><a href="https://github.com/ros2/ros2_documentation/blob/rolling/source/ROS-Framework/interfaces/topics/About-Quality-of-Service-Settings.rst">ROS 2 QoS concepts</a> — compatibility rules for publishers and subscriptions, from the official documentation source.</li>
+  <li><a href="https://github.com/ros2/ros2_documentation/blob/rolling/source/Concepts/Basic/About-Parameters.rst">ROS 2 parameters</a> — declared values, parameter services, and runtime parameter behavior, from the official documentation source.</li>
+  <li><a href="https://docs.ros.org/en/rolling/p/vision_msgs/msg/Detection2DArray.html">vision_msgs Detection2DArray definition</a> — the standard output message contract.</li>
+  <li><a href="../../../README.md">Project README</a> and the linked canonical documentation.</li>
+  <li><a href="../../../docs/learn/LESSON-PLAN.md">Curriculum plan</a> — scope, teaching contract, and project truth.</li>
+  <li><a href="0007-depth-and-geometry-filtering.html">Lesson 0007 — Depth and Geometry Filtering</a>: inspect the second evidence check after YOLO.</li>
+</ul>
+<footer><p>Learning system · Recognition of Different Colored Cubes · Technical teaching artifact. Current engineering status: M5 PARTIAL; learner review remains separate from artifact validation.</p></footer>
+
+<script src="../assets/quiz.js"></script>
+<script>
+(function () {
+  document.querySelectorAll('[data-switch-group]').forEach(function (group) {
+    var out = document.getElementById(group.dataset.target);
+    group.querySelectorAll('button').forEach(function (button) {
+      button.addEventListener('click', function () {
+        group.querySelectorAll('button').forEach(function (item) { item.classList.remove('active'); });
+        button.classList.add('active');
+        if (out) out.textContent = button.dataset.detail || '';
+      });
+    });
+  });
+  document.querySelectorAll('[data-toggle-target]').forEach(function (button) {
+    button.addEventListener('click', function () {
+      var target = document.getElementById(button.dataset.toggleTarget);
+      if (!target) return;
+      var hidden = target.classList.toggle('hidden');
+      button.textContent = hidden ? button.dataset.show : button.dataset.hide;
+      button.setAttribute('aria-expanded', String(!hidden));
+    });
+  });
+})();
+</script>
+
+</main>
+</body>
+</html>

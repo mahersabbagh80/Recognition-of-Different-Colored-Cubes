@@ -1,0 +1,246 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Lesson 0003 — PyTorch and model training</title>
+  <link rel="stylesheet" href="../assets/lesson.css">
+  <link rel="icon" href="data:,">
+  <style>
+    .figure { margin: 1.2rem 0 1.4rem; border: 1px solid var(--rule); background: var(--quiz-bg); padding: 0.85rem; }
+    .figure svg, .concept-art img, .real-pair img { display: block; width: 100%; height: auto; border-radius: 0; }
+    .concept-art { width: min(1160px, calc(100vw - 3rem)); max-width: none; margin-left: 50%; margin-right: 0; transform: translateX(-50%); }
+    .concept-art a { border-bottom: 0; }
+    .brand-header { position: relative; overflow: hidden; margin: 0 -0.5rem 2rem; padding: 2rem; background: #000916; border-top: 6px solid #02adf8; color: #cadaeb; }
+    .brand-header::before { position: absolute; inset: 0; background-image: linear-gradient(#09325d55 1px, transparent 1px), linear-gradient(90deg, #09325d55 1px, transparent 1px); background-size: 2.5rem 2.5rem; content: ""; mask-image: linear-gradient(to right, black, transparent 74%); }
+    .brand-header > * { position: relative; }
+    .brand-kicker { margin: 0 0 0.55rem; color: #02adf8; font-family: "Poppins", "Inter", sans-serif; font-size: 0.75rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; }
+    .brand-header h1 { color: #cadaeb; }
+    .brand-header .lesson-meta { color: #b8efff; margin: 0.8rem 0 1rem; }
+    .brand-header .lesson-meta .tag { background: #02adf8; color: #000916; }
+    .brand-header .lede { color: #dfe9f3; max-width: 62ch; margin-bottom: 0; }
+    .figure-caption { margin: 0.65rem 0 0.1rem; color: var(--ink-soft); font-size: 0.9rem; }
+    .diagram text { font-family: "Poppins", "Inter", sans-serif; fill: #041d39; }
+    .diagram .muted { fill: #09325d; }
+    .diagram .tiny { font-size: 10px; }
+    .diagram .label { font-size: 13px; font-weight: 600; }
+    .interaction { margin: 1rem 0 1.4rem; padding: 0.9rem 1rem; border: 1px solid var(--rule); background: var(--accent-soft); }
+    .interaction-title { margin: 0 0 0.45rem; font-family: "Poppins", "Inter", sans-serif; font-size: 0.9rem; font-weight: 700; color: var(--ink-soft); }
+    .step-buttons { display: flex; flex-wrap: wrap; gap: 0.4rem; margin: 0.7rem 0; }
+    .step-btn, .action-btn { border: 1px solid var(--rule); border-radius: 0; background: var(--quiz-bg); color: var(--ink); padding: 0.35rem 0.6rem; font-family: "Poppins", "Inter", sans-serif; font-size: 0.82rem; cursor: pointer; }
+    .step-btn:hover, .step-btn.active, .action-btn:hover { border-color: var(--accent); color: var(--ink-soft); }
+    .step-btn:focus, .action-btn:focus { outline: 2px solid var(--accent); outline-offset: 2px; }
+    .stage-detail { margin: 0.7rem 0 0; color: var(--ink-soft); }
+    .stage-detail strong { color: var(--ink); }
+    .hidden { display: none; }
+    .metric-table { width: 100%; border-collapse: collapse; margin: 1rem 0; font-size: 0.9rem; }
+    .metric-table th, .metric-table td { border: 1px solid var(--rule); padding: 0.45rem 0.5rem; text-align: left; vertical-align: top; }
+    .metric-table th { background: var(--accent-soft); color: var(--ink-soft); font-weight: 700; }
+    .record-grid, .two-col, .real-pair { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.8rem; margin: 1rem 0; }
+    .record-grid.three { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .record-card { border: 1px solid var(--rule); padding: 0.75rem; background: var(--quiz-bg); }
+    .record-card h3 { margin: 0 0 0.3rem; font-size: 0.95rem; }
+    .record-card p { margin: 0; color: var(--ink-soft); font-size: 0.9rem; }
+    .status-strip { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.55rem; margin: 1rem 0; }
+    .status-strip div { border-left: 4px solid var(--accent); padding: 0.55rem 0.65rem; background: var(--accent-soft); }
+    .status-strip strong { display: block; font-size: 1.05rem; }
+    .status-strip span { color: var(--ink-soft); font-size: 0.8rem; }
+    .real-pair figure { margin: 0; }
+    .real-pair figcaption { margin-top: 0.35rem; color: var(--ink-soft); font-size: 0.82rem; }
+    .prompt { border: 1px solid var(--accent); padding: 0.9rem 1rem; background: var(--accent-soft); }
+    main > ol code { overflow-wrap: anywhere; word-break: break-word; }
+    @media (max-width: 720px) { .concept-art { width: 100%; max-width: 100%; margin-left: 0; margin-right: 0; transform: none; } .brand-header { margin: 0 0 1.5rem; padding: 1.5rem; } }
+    @media (max-width: 34rem) { .real-pair, .record-grid, .record-grid.three, .two-col, .status-strip { grid-template-columns: 1fr; } .metric-table { font-size: 0.78rem; } }
+    @media print {
+      html { background: #fff; } body { background: #fff; }
+      .concept-art { width: 100%; max-width: none; margin: 0; transform: none; break-inside: avoid; }
+      .concept-art img { max-height: 25cm; object-fit: contain; }
+      .interaction, .figure, .record-card, .callout, .quiz { break-inside: avoid; }
+      .step-buttons, .action-btn, .slider-row input, .check-btn, .theme-toggle { display: none !important; }
+      .hidden { display: none !important; }
+      a { color: #041d39; border-bottom: none; }
+    }
+</style>
+</head>
+<body>
+<main>
+<header class="brand-header">
+  <p class="brand-kicker">Software · AI · Robotics / Learning system</p>
+  <h1>Lesson 0003 — PyTorch and model training</h1>
+  <div class="lesson-meta"><span>~90–120 min</span><span class="tag">Training</span><span>Anchored to: <code>models/best.pt · models/README.md</code></span></div>
+  <p class="lede">A detector learns from labelled examples, but the checkpoint is only as trustworthy as the data split, metric, and deployment test behind it.</p>
+</header>
+<div class="callout"><p class="callout-title">How to use this lesson</p><p>Read the explanation, inspect the visual, make a prediction, and then compare it with the repository evidence. The goal is a model of this project that you can explain—not a list of framework slogans.</p></div>
+<div class="callout"><p class="callout-title">Prerequisites and scope</p><p>Start after Lessons <a href="0001-what-yolo-outputs.html">0001</a> and <a href="0002-how-yolo-produces-predictions.html">0002</a>. You need boxes, classes, candidates, and confidence—but no calculus. This lesson gives an operational mental model of learning; detailed convolution and backpropagation mathematics remain optional background.</p></div>
+
+<figure class="figure concept-art">
+  <a href="../assets/lesson-0003-concept-art-handdrawn-portrait.png" target="_blank" rel="noopener">
+    <img src="../assets/lesson-0003-concept-art-handdrawn-portrait.png" alt="Tall hand-drawn overview sheet with twelve stations explaining datasets, YOLO labels, normalization, splits, epochs, the learning loop, metrics, checkpoints, and project decisions.">
+  </a>
+  <figcaption class="figure-caption">Orientation map of the training path. The detailed sections add prerequisite vocabulary, examples, limitations, and project evidence. Click the PNG to open it at full resolution; the <a href="../assets/lesson-0003-concept-art-handdrawn-portrait.svg" target="_blank" rel="noopener">source SVG</a> remains available for inspection.</figcaption>
+</figure>
+
+
+<h2>The question this lesson answers</h2>
+<p>What do the training words <em>dataset</em>, <em>label</em>, <em>epoch</em>, <em>validation</em>, and <em>checkpoint</em> actually mean in this project? The answer is a loop: examples with targets shape the model's parameters, held-out examples measure whether the learning transfers, and a selected checkpoint becomes the next artifact.</p>
+<div class="status-strip"><div><strong>103</strong><span>source images in the M2 Roboflow export</span></div><div><strong>30</strong><span>training epochs in the recorded recipe</span></div><div><strong>epoch 18</strong><span>best tracker point by validation mAP50(B)</span></div></div>
+
+<div class="callout"><p class="callout-title">By the end, you should be able to</p><ul><li>trace one image and its labels through a training update;</li><li>separate learned parameters from human-chosen hyperparameters;</li><li>explain why train, validation, and test data have different jobs;</li><li>distinguish training loss from precision, recall, and mAP;</li><li>say exactly what <code>best.pt</code> proves—and what it does not prove.</li></ul></div>
+
+<div class="callout"><p class="callout-title">Training vocabulary in software terms</p><p>The <strong>architecture</strong> is the executable structure. Its learned <strong>parameters</strong>, commonly called <strong>weights</strong>, are millions of adjustable numbers inside that structure. A <strong>hyperparameter</strong> is instead chosen by the trainer: examples are batch size, learning rate, and epoch count. A <strong>loss</strong> is a training objective that compares predictions with targets. An <strong>optimizer</strong> updates parameters using <strong>gradients</strong>, local sensitivity values calculated by backpropagation. A <strong>checkpoint</strong> saves learned parameters and metadata. Inference reads the weights but does not update them.</p></div>
+
+<h2>1. A dataset is more than a folder of pictures</h2>
+<p><strong>Supervised learning</strong> means learning from examples that include intended answers. In object detection, the image is the input and its labelled classes and boxes are the <strong>targets</strong>. The model produces predictions, and training adjusts its parameters so those predictions better match the targets over many examples. The labels do not insert a definition of “cube” into the model; they provide repeated examples from which useful visual patterns can be learned.</p>
+<div class="figure">
+  <svg class="diagram" viewBox="0 0 640 220" role="img" aria-labelledby="d3a-title d3a-desc">
+    <title id="d3a-title">Detection dataset as paired image and label</title>
+    <desc id="d3a-desc">An image card with three colored cube markers points to a label card containing class and bounding box rows.</desc>
+    <rect x="0" y="0" width="640" height="220" fill="#dfe9f3"/>
+    <rect x="28" y="35" width="230" height="140" fill="#041d39" stroke="#09325d" stroke-width="3"/>
+    <rect x="85" y="73" width="55" height="48" fill="#02adf8" stroke="#b8efff" stroke-width="3"/>
+    <rect x="172" y="92" width="45" height="39" fill="#0f766e" stroke="#ddf7f4" stroke-width="3"/>
+    <rect x="42" y="52" width="230" height="140" fill="none" stroke="#02adf8" stroke-width="2" stroke-dasharray="6 5" opacity="0.5"/>
+    <path d="M282 105 H354" stroke="#02adf8" stroke-width="4"/>
+    <path d="M340 95 L354 105 L340 115" fill="none" stroke="#02adf8" stroke-width="4"/>
+    <rect x="377" y="35" width="235" height="140" fill="#ffffff" stroke="#09325d" stroke-width="3"/>
+    <text x="397" y="61" class="label">TARGET LABELS</text>
+    <text x="397" y="91" font-size="15">blue_cube · box</text>
+    <text x="397" y="119" font-size="15">green_cube · box</text>
+    <text x="397" y="147" font-size="15">red_cube · box</text>
+    <text x="20" y="207" class="tiny muted">same scene</text><text x="528" y="207" class="tiny muted">known answer</text>
+  </svg>
+  <p class="figure-caption">A training example is an input image plus target boxes/classes. The model never receives the words “red” or “cube” directly from the pixels.</p>
+</div>
+<p>The dataset also needs <strong>coverage</strong>: changes in lighting, distance, viewpoint, background, cube placement, partial occlusion, and camera appearance. A large number of near-duplicate frames can contain less useful information than a smaller, more varied set. A <strong>background-only</strong> or <strong>negative</strong> image contains no target object; it teaches the detector that visually tempting background objects are not cubes.</p>
+<div class="callout"><p class="callout-title">Labels are evidence, not ground truth from nature</p><p>An annotation is a human or tool's claim about what is present. Missing boxes teach false negatives; boxes around the wrong object teach false positives; inconsistent box edges make localization harder. Training cannot discover and repair all annotation mistakes by itself.</p></div>
+
+<h2>2. What one YOLO detection label stores</h2>
+<p>The normalized YOLO detection format is <code>class cx cy w h</code>. The coordinates are fractions of image width and height, not pixels. For example, the following row means “class 1, centered near the middle, with this normalized size.”</p>
+<pre><code>1 0.52 0.48 0.18 0.20</code></pre>
+<div class="record-grid three"><div class="record-card"><h3>Class</h3><p>An integer index resolved through the dataset's class-name list.</p></div><div class="record-card"><h3>Center</h3><p><code>cx</code> and <code>cy</code> locate the box center as fractions of the image.</p></div><div class="record-card"><h3>Size</h3><p><code>w</code> and <code>h</code> describe the box width and height as fractions.</p></div></div>
+<p>For a 640×640 training image, multiply the horizontal values by 640 and the vertical values by 640. The example becomes center <code>(332.8, 307.2)</code> pixels and size <code>(115.2, 128)</code> pixels. One row describes one object. Multiple objects require multiple rows. A valid background-only image has no object rows, often represented by an empty label file.</p>
+<p>Project-specific caution: the operational model documents <code>0: blue_cube</code>, <code>1: green_cube</code>, <code>2: red_cube</code>. <a href="../../../docs/project-definition.md">docs/project-definition.md</a> still shows red/green/blue in a different order. Class IDs are arbitrary indices, so changing their order changes the meaning of every label and prediction. This conflict must be reconciled before another training run, not guessed.</p>
+
+<h2>3. Why normalization was necessary here</h2>
+<p>The Roboflow “YOLOv5 PyTorch” export mixed detection rows with segmentation polygon rows. The recorded M2 preparation found 3 files with five-field detection labels and 100 files with 7-or-more-field polygons. <a href="../../../scripts/normalize_dataset.py">normalize_dataset.py</a> collapses polygon vertices to an axis-aligned bounding box using min/max coordinates, clips values to <code>[0, 1]</code>, and writes canonical names.</p>
+<div class="callout"><p class="callout-title">Two meanings of “normalization”</p><p><strong>Coordinate normalization</strong> means expressing box coordinates as fractions from 0 to 1. This project's <strong>dataset-normalization script</strong> performs a different cleanup: it converts mixed polygon/detection records into one detection-label format and canonicalizes class names. The same word appears in both places, but the operations are not identical.</p></div>
+<p>Converting a polygon to an axis-aligned box is intentionally lossy. The smallest upright rectangle enclosing the polygon includes some background and no longer preserves the object's exact outline. That is acceptable for an axis-aligned object detector, but the original segmentation shape cannot be recovered from the box.</p>
+<div class="interaction"><p class="interaction-title">Interactive: which transformation is safe for this detector?</p><div class="step-buttons" data-switch-group data-target="label-detail"><button type="button" class="step-btn active" data-detail="Keep a five-field class cx cy w h detection row as-is.">Detection row</button><button type="button" class="step-btn" data-detail="Convert polygon vertices to an axis-aligned box before YOLOv5 detection training.">Polygon row</button><button type="button" class="step-btn" data-detail="Drop malformed input; the recorded source had zero malformed files.">Malformed row</button></div><p id="label-detail" class="stage-detail">Keep a five-field class cx cy w h detection row as-is.</p></div>
+
+<h2>4. Train, validation, and test are different jobs</h2>
+<p>The recorded M2 split is 90 training images, 9 validation images, and 4 test images. Training images are allowed to influence weights. Validation images influence decisions such as which epoch is “best.” Test images should remain a final, untouched check. Mixing these jobs makes a metric look more certain than the evidence supports.</p>
+<div class="figure"><svg class="diagram" viewBox="0 0 640 170" role="img" aria-labelledby="d3b-title d3b-desc"><title id="d3b-title">Dataset split roles</title><desc id="d3b-desc">Three segments show train, validation, and test with increasingly protected boundaries.</desc><rect x="0" y="0" width="640" height="170" fill="#dfe9f3"/><rect x="40" y="60" width="330" height="46" fill="#02adf8"/><rect x="370" y="60" width="135" height="46" fill="#0f766e"/><rect x="505" y="60" width="95" height="46" fill="#b42318"/><text x="205" y="88" font-size="16" fill="#000916" text-anchor="middle" font-weight="700">TRAIN · 90</text><text x="437" y="88" font-size="14" fill="#ffffff" text-anchor="middle" font-weight="700">VAL · 9</text><text x="552" y="88" font-size="13" fill="#ffffff" text-anchor="middle" font-weight="700">TEST · 4</text><text x="40" y="137" class="tiny muted">weights may learn</text><text x="370" y="137" class="tiny muted">selection signal</text><text x="505" y="137" class="tiny muted">hold back</text></svg><p class="figure-caption">The validation and test sets are tiny here. That does not make them useless; it makes uncertainty a required part of the interpretation.</p></div>
+<p>The validation set does not update weights directly, but it is still part of model development because humans and checkpoint-selection logic react to its scores. Repeatedly choosing settings that look best on validation data can overfit decisions to that validation set. The test set is reserved for a later, less-biased estimate.</p>
+<p><strong>Data leakage</strong> occurs when information that should be held out influences training or selection—for example, placing nearly identical frames from one capture burst across train and validation. A random image split can therefore be misleading for video-like data; splitting by capture session, scene, or physical setup is often safer.</p>
+
+<h2>5. Batch, epoch, and update</h2>
+<p>A <strong>batch</strong> is the group of examples used to calculate one optimizer update. An <strong>epoch</strong> means the training loop has offered every training example once, usually after shuffling. With 90 training images and a batch size of 16, one epoch needs six batches: five full batches and one smaller final batch. Thirty epochs therefore revisit the same finite training set; they do not create 2,700 independent images.</p>
+<p>A data loader usually shuffles the training order and applies random augmentation, so an image may look different on later epochs even though it comes from the same saved file. Batch size is a compromise: larger batches use more memory and average gradients over more examples; smaller batches produce noisier updates. Neither is automatically better.</p>
+<p>The recorded recipe used <code>batch=16</code> and <code>epochs=30</code>, with cosine learning-rate scheduling, <code>seed=42</code>, AMP enabled, and a single RTX 4070 Ti.</p>
+<pre><code>yolo detect train \\
+  data=.../data.yaml model=yolov5s.pt \\
+  epochs=30 imgsz=640 batch=16 device=0 workers=8 \\
+  project=runs/m2 name=m2_30ep seed=42 \\
+  patience=20 cos_lr=True close_mosaic=10 amp=True</code></pre>
+<div class="record-grid"><div class="record-card"><h3>Learned parameters</h3><p>Numbers inside the model that training changes: convolution filters, biases, and other weights.</p></div><div class="record-card"><h3>Hyperparameters</h3><p>Training choices such as <code>batch=16</code>, <code>epochs=30</code>, image size, optimizer, and learning-rate schedule.</p></div></div>
+<p>The command records requested settings. Because <code>optimizer=auto</code> was in effect, Ultralytics selected AdamW and an effective initial learning rate of approximately <code>0.00143</code>; the generic <code>lr0=0.01</code> default stored in arguments should not be misread as the resolved AdamW rate used by this run.</p>
+
+<h2>6. The learning loop: predict, measure, update</h2>
+<ol><li><strong>Load a batch:</strong> read images and labels, resize or augment them, and represent them as tensors.</li><li><strong>Forward pass:</strong> run pixels through the network to produce candidate boxes and class scores.</li><li><strong>Assign targets:</strong> decide which predictions are responsible for which labelled objects.</li><li><strong>Compute loss:</strong> combine localization, classification, and distributional box-regression errors into a scalar training objective.</li><li><strong>Backpropagate:</strong> PyTorch automatic differentiation calculates how sensitive the loss is to each parameter.</li><li><strong>Update:</strong> the optimizer changes the parameters, then gradients are cleared before the next step.</li></ol>
+<p>A loss is not a percentage and is not the same as mAP. Its scale depends on the chosen loss components and their weights. A lower loss usually means better fit to the optimization objective, but only held-out metrics and real deployment tests tell us whether the detector became more useful.</p>
+<p>A gradient is easier to understand with one number. If a parameter is <code>w=2.00</code>, its gradient is <code>+0.50</code>, and the learning rate is <code>0.10</code>, simple gradient descent gives <code>w_new = 2.00 − 0.10×0.50 = 1.95</code>. A negative gradient would move the parameter upward instead. Real AdamW updates also use running statistics and weight decay, but the causal idea is the same.</p>
+<p>PyTorch gradients accumulate by default, which is why a training loop clears them—normally with <code>optimizer.zero_grad()</code>—before <code>loss.backward()</code> and <code>optimizer.step()</code>. Validation switches the model to evaluation behavior and disables gradient tracking; it measures without learning.</p>
+<div class="interaction"><p class="interaction-title">Interactive: inspect the training loop</p><div class="step-buttons" data-switch-group data-target="loop-detail"><button type="button" class="step-btn active" data-detail="1 · Forward: the network turns pixels into candidate boxes and class scores.">1 · forward</button><button type="button" class="step-btn" data-detail="2 · Loss: the prediction is compared with the labelled target.">2 · loss</button><button type="button" class="step-btn" data-detail="3 · Backprop: gradients describe how parameter changes affect the loss.">3 · backprop</button><button type="button" class="step-btn" data-detail="4 · Optimizer: AdamW applies an update, then the loop repeats.">4 · update</button></div><p id="loop-detail" class="stage-detail">1 · Forward: the network turns pixels into candidate boxes and class scores.</p></div>
+
+<h2>7. Learning-rate schedules, augmentation, AMP, and seeds</h2>
+<p>The <strong>learning rate</strong> controls update size. Too high can make optimization jump past useful solutions or become unstable; too low can make progress extremely slow. A <strong>schedule</strong> changes that rate during training. This run used a cosine schedule, which gradually reduces it rather than holding it constant.</p>
+<p><strong>Augmentation</strong> creates temporary training variants—such as scale, translation, color, flip, crop, or mosaic changes—without replacing the saved source image. The same geometric transform must be applied to the boxes. Useful augmentation teaches invariance to plausible changes; unrealistic augmentation teaches the wrong distribution. <code>close_mosaic=10</code> disabled mosaic during the final ten epochs so late training used more natural single-image layouts.</p>
+<p><strong>AMP</strong> (automatic mixed precision) uses lower-precision arithmetic where safe to reduce memory and often accelerate GPU training. It is a computational technique, not an accuracy improvement guarantee. A random <strong>seed</strong> helps reproduce shuffling, initialization, and augmentation choices, but it does not guarantee bit-for-bit reproducibility across every GPU, library, or environment.</p>
+
+<h2>8. Fitting the training set is not the final goal</h2>
+<p><strong>Generalization</strong> means performing well on new examples from the intended operating conditions. <strong>Underfitting</strong> means the model has not learned the useful pattern even on training data. <strong>Overfitting</strong> means it fits the training examples increasingly well while held-out performance stops improving or degrades. The difference between training and validation behavior is often called a <strong>generalization gap</strong>.</p>
+<p>More epochs are therefore not automatically better. Early stopping and best-checkpoint selection watch validation evidence while training continues. They reduce wasted training and may limit overfitting, but they cannot make a tiny or unrepresentative validation set representative.</p>
+
+<h2>9. What the recorded metrics say—and do not say</h2>
+<p>A <strong>true positive</strong> is a prediction matched to a real labelled cube, a <strong>false positive</strong> is a prediction with no matching cube, and a <strong>false negative</strong> is a labelled cube the detector missed. <strong>Precision</strong> asks “when the detector predicts, how often is it right?”; <strong>recall</strong> asks “of the cubes present, how many did it find?” Detection mAP summarizes precision–recall behavior while also requiring sufficient box overlap. Lesson 0008 develops these definitions and threshold trade-offs carefully.</p>
+<p><strong>IoU</strong> (intersection over union) measures box overlap. At mAP@0.5, a match uses an IoU threshold of 0.5. mAP@0.5:0.95 averages AP over increasingly strict thresholds from 0.5 through 0.95, so it penalizes imprecise boxes more strongly. AP summarizes a precision–recall curve as the confidence threshold changes; mAP averages AP across classes. It is not simply “the percent of images detected correctly.”</p>
+<h3>Historical training record</h3>
+<p>The recorded best-epoch results in <a href="../../../models/README.md">models/README.md</a> report overall precision <code>0.823</code>, recall <code>0.959</code>, mAP@0.5 <code>0.954</code>, and mAP@0.5:0.95 <code>0.763</code> on 9 validation images containing 21 labelled instances.</p>
+<table class="metric-table"><thead><tr><th>Class</th><th>Precision</th><th>Recall</th><th>mAP@0.5</th><th>mAP@0.5:0.95</th></tr></thead><tbody><tr><td>blue_cube</td><td>0.875</td><td>0.877</td><td>0.982</td><td>0.703</td></tr><tr><td>green_cube</td><td>0.640</td><td>1.000</td><td>0.885</td><td>0.762</td></tr><tr><td>red_cube</td><td>0.953</td><td>1.000</td><td>0.995</td><td>0.823</td></tr></tbody></table>
+<h3>Fresh audit revalidation</h3>
+<p>A CPU revalidation run made during this lesson audit with Ultralytics 8.4.75 reproduced precision <code>0.823</code>, recall <code>0.959</code>, and mAP@0.5 <code>0.954</code>; it measured mAP@0.5:0.95 as <code>0.755</code> (blue <code>0.695</code>, green <code>0.762</code>, red <code>0.808</code>). The checkpoint's embedded <code>train_metrics</code> also records <code>0.75507</code>. The historical table and the current revalidation are separate evidence records, not values to splice into one table. The stricter metric differs slightly from the historical <code>0.763</code>, and the retained evidence does not establish a single cause for that difference.</p>
+<div class="callout"><p class="callout-title">What these numbers cannot prove</p><p>Nine validation images are useful evidence but a very small sample. High scores on them do not establish robustness to the JetRover camera, a new room, different lighting, distant cubes, or distractors. Lesson <a href="0004-why-the-model-fails-on-the-robot.html">0004</a> studies that domain gap; Lesson <a href="0008-evaluation-and-fine-tuning.html">0008</a> develops metric and experiment design.</p></div>
+
+<h2>10. Why “best checkpoint” is a selection rule</h2>
+<p>A <strong>checkpoint</strong> is a snapshot, commonly including model weights and sometimes optimizer state, epoch, and training metadata. <code>last.pt</code> usually represents the final epoch; <code>best.pt</code> represents the epoch favored by a configured validation rule. “Best” is therefore shorthand for “best among the observed checkpoints under this rule and validation set,” not “best in every future environment.”</p>
+<p>For M2, the historical run record says epoch 18 was selected using validation <code>mAP50(B)</code>. The deployed <code>models/best.pt</code> is a stripped inference artifact: a current load reports the epoch sentinel <code>-1</code> and no optimizer state, so the epoch-18 claim comes from the retained run documentation rather than being rediscovered from a resumable checkpoint field.</p>
+<p>The raw model graph contains <code>9,123,353</code> parameters. Fusing convolution and batch-normalization layers for inference produces <code>9,112,697</code>. Those counts describe two representations of the same learned detector, not contradictory model behavior. The operational class order remains <code>0: blue_cube</code>, <code>1: green_cube</code>, <code>2: red_cube</code>.</p>
+<div class="figure"><svg class="diagram" viewBox="0 0 640 190" role="img" aria-labelledby="d3c-title d3c-desc"><title id="d3c-title">Checkpoint selection over epochs</title><desc id="d3c-desc">A rising then falling validation metric curve highlights epoch 18 as the selected best checkpoint.</desc><rect x="0" y="0" width="640" height="190" fill="#dfe9f3"/><path d="M55 145 C150 135 190 86 270 72 S375 42 450 84 S525 126 590 130" fill="none" stroke="#02adf8" stroke-width="4"/><path d="M55 145 H600 M55 145 V25" fill="none" stroke="#09325d" stroke-width="2"/><circle cx="365" cy="58" r="9" fill="#b42318"/><path d="M365 58 L365 31" stroke="#b42318" stroke-width="2" stroke-dasharray="4 3"/><text x="365" y="21" font-size="13" fill="#b42318" text-anchor="middle" font-weight="700">best · epoch 18</text><text x="54" y="167" class="tiny muted">epoch 1</text><text x="570" y="167" class="tiny muted">epoch 30</text><text x="18" y="31" class="tiny muted">val mAP</text></svg><p class="figure-caption">The checkpoint is a choice made using evidence from a validation split, not a guarantee that every new camera domain will behave the same way.</p></div>
+
+<h2>11. Pretraining, transfer learning, and fine-tuning</h2>
+<p>Training from scratch starts with untrained parameters. <strong>Transfer learning</strong> reuses features learned on a larger source task; <strong>fine-tuning</strong> continues updating those pretrained parameters for this cube dataset. That usually needs less data and compute, but it can still overfit: the model may memorize the small training conditions while failing on a new camera room. “Pretrained” describes the starting point, not proof that the final detector generalizes.</p>
+<p>M2 was already transfer learning: it began from COCO-pretrained <code>yolov5s.pt</code> and updated the full model for the three cube classes. A <strong>fixed feature extractor</strong> would freeze the pretrained backbone and train only a new head; that is not the recorded M2 recipe.</p>
+<p>The repository also records <code>models/best_hardneg.pt</code> as a candidate continuation from <code>best.pt</code>: 25 epochs at <code>lr0=0.0005</code> using Roboflow examples, JetRover-room positives, and background-only distractor crops. Continuing training can reduce a known false positive, but it can also forget useful behavior or overfit a stationary scene. The candidate is therefore not the deployed engine; promotion still requires export and independent acceptance evidence.</p>
+
+<h2>12. Check your understanding</h2>
+<div class="quiz" data-correct="1" data-correct-text="Labels provide the target boxes and classes that let the loss measure the model's prediction error."><p class="quiz-q">Why does a labelled detection dataset matter?</p><ol><li><label><input type="radio" name="q3a" value="0">It supplies image sizes used to configure the camera.</label></li><li><label><input type="radio" name="q3a" value="1">It supplies target boxes and classes used for learning.</label></li><li><label><input type="radio" name="q3a" value="2">It supplies validation scores that directly update model weights.</label></li></ol><button type="button" class="check-btn">Check answer</button><p class="answer"></p></div>
+<div class="quiz" data-correct="2" data-correct-text="An epoch is one pass through the training data; a batch is the group used for one update."><p class="quiz-q">Which statement is correct?</p><ol><li><label><input type="radio" name="q3b" value="0">An epoch is one optimizer update using one batch.</label></li><li><label><input type="radio" name="q3b" value="1">A batch is one complete pass through training data.</label></li><li><label><input type="radio" name="q3b" value="2">An epoch is one complete pass through training data.</label></li></ol><button type="button" class="check-btn">Check answer</button><p class="answer"></p></div>
+<div class="quiz" data-correct="0" data-correct-text="best.pt is selected by a validation rule and still needs deployment-domain testing."><p class="quiz-q">What does a best checkpoint mean here?</p><ol><li><label><input type="radio" name="q3c" value="0">The checkpoint selected under the recorded validation scoring rule.</label></li><li><label><input type="radio" name="q3c" value="1">The checkpoint producing the lowest loss on every dataset.</label></li><li><label><input type="radio" name="q3c" value="2">The checkpoint guaranteed to perform best after TensorRT export.</label></li></ol><button type="button" class="check-btn">Check answer</button><p class="answer"></p></div>
+<div class="quiz" data-correct="1" data-correct-text="The validation split influences selection but does not supply gradients for parameter updates."><p class="quiz-q">How does validation data influence training?</p><ol><li><label><input type="radio" name="q3d" value="0">Its labels are backpropagated after every training batch.</label></li><li><label><input type="radio" name="q3d" value="1">Its metrics guide checkpoint and hyperparameter choices without directly updating weights.</label></li><li><label><input type="radio" name="q3d" value="2">It has no influence of any kind until deployment.</label></li></ol><button type="button" class="check-btn">Check answer</button><p class="answer"></p></div>
+<div class="quiz" data-correct="2" data-correct-text="Splitting near-duplicate frames across train and validation can leak scene information and overstate generalization."><p class="quiz-q">Which is a data-leakage risk for camera captures?</p><ol><li><label><input type="radio" name="q3e" value="0">Keeping the class map fixed.</label></li><li><label><input type="radio" name="q3e" value="1">Using an empty label for a genuine background-only image.</label></li><li><label><input type="radio" name="q3e" value="2">Putting adjacent, nearly identical frames in both train and validation.</label></li></ol><button type="button" class="check-btn">Check answer</button><p class="answer"></p></div>
+
+<h2>13. Read-only exercises</h2>
+<ol><li><strong>Training arithmetic:</strong> for 90 training images and <code>batch=16</code>, calculate the batches per epoch and nominal updates across 30 epochs.</li><li><strong>Label decoding:</strong> decode <code>1 0.52 0.48 0.18 0.20</code> under the operational class map, then convert its box to pixels for a 640×640 image.</li><li><strong>One update:</strong> calculate <code>w_new</code> for <code>w=2.00</code>, gradient <code>+0.50</code>, and learning rate <code>0.10</code>.</li><li><strong>Artifact inspection:</strong> run the read-only command below from the repository root.</li></ol>
+<pre><code>.venv-m2/bin/python -c "from pathlib import Path; from ultralytics import YOLO; p=Path('models/best.pt'); m=YOLO(p); print({'bytes':p.stat().st_size, 'task':m.task, 'names':m.names, 'raw_params':sum(x.numel() for x in m.model.parameters())})"</code></pre>
+<p><strong>Observable result in this prepared checkout:</strong> byte count <code>18517947</code>, task <code>detect</code>, class map blue/green/red, and raw parameter count <code>9123353</code>. This proves that the local artifact loads and exposes that metadata. It does not prove accuracy, reproduce training history, or validate deployment behavior.</p>
+<div class="callout"><p class="callout-title">Checking key</p><p><code>ceil(90÷16)=6</code> batches per epoch and 180 nominal updates over 30 epochs. Class 1 is <code>green_cube</code>; center <code>(332.8, 307.2)</code> pixels; size <code>(115.2, 128)</code> pixels. The toy update gives <code>w_new=1.95</code>.</p></div>
+
+<h2>14. Explain it back</h2>
+<div class="prompt"><p><strong>Explain this without reading:</strong> “How does one labelled image influence <code>models/best.pt</code>, and why can a high validation mAP still fail to predict room-camera performance?”</p><p>Use these words if helpful: target box, loss, gradient, optimizer, epoch, validation, checkpoint, domain.</p></div>
+
+<h2>What this lesson intentionally postpones</h2>
+<p>The exact YOLO target-assignment algorithm, DFL mathematics, convolution equations, and AdamW derivation are outside this applied lesson. The <a href="../RESOURCES.md">source guide</a> routes to deeper theory when one of those details becomes necessary.</p>
+<p>Lesson <a href="0004-why-the-model-fails-on-the-robot.html">0004</a> applies generalization and domain shift to the robot-camera failure. Lesson <a href="0008-evaluation-and-fine-tuning.html">0008</a> owns threshold selection, experimental design, data collection, leakage-safe evaluation, and fine-tuning acceptance gates. Deployment/export behavior belongs to Lessons 0005–0007.</p>
+<h2>Primary references and next lesson</h2>
+<ul>
+  <li><a href="../RESOURCES.md">Local source guide</a> — includes the authorized local Szeliski second-edition copy; Chapter 5 grounds supervised learning, loss, optimization, regularization, CNNs, and generalization.</li>
+  <li><a href="https://www.deeplearningbook.org/contents/optimization.html">Deep Learning, Chapter 8: Optimization for Training Deep Models</a> — separates empirical training objectives from expected generalization.</li>
+  <li><a href="https://classic.d2l.ai/chapter_multilayer-perceptrons/underfit-overfit.html">Dive into Deep Learning: Underfitting, Overfitting, and Model Selection</a> — train/validation/test roles and capacity.</li>
+  <li><a href="https://docs.ultralytics.com/guides/yolo-performance-metrics/">Ultralytics performance-metrics guide</a> — definitions and interpretation of precision, recall, IoU, and mAP.</li>
+  <li><a href="https://docs.pytorch.org/tutorials/beginner/basics/optimization_tutorial.html">PyTorch optimization tutorial</a> — the forward, loss, gradient, and optimizer loop.</li>
+  <li><a href="https://docs.pytorch.org/tutorials/beginner/basics/autogradqs_tutorial.html">PyTorch automatic differentiation tutorial</a> — gradients, accumulation, and disabling gradient tracking.</li>
+  <li><a href="https://docs.pytorch.org/tutorials/beginner/transfer_learning_tutorial.html">PyTorch transfer-learning tutorial</a> — full fine-tuning versus a fixed feature extractor.</li>
+  <li><a href="../../../README.md">Project README</a> and the linked canonical documentation.</li>
+  <li><a href="../../../docs/learn/LESSON-PLAN.md">Curriculum plan</a> — scope, teaching contract, and project truth.</li>
+  <li><a href="0004-why-the-model-fails-on-the-robot.html">Lesson 0004 — Why the Model Fails on the Robot</a>: compare training-domain metrics with live JetRover evidence.</li>
+</ul>
+<footer><p>Learning system · Recognition of Different Colored Cubes · Technical teaching artifact. Current engineering status: M5 PARTIAL; learner review remains separate from artifact validation.</p></footer>
+
+<script src="../assets/quiz.js"></script>
+<script>
+(function () {
+  document.querySelectorAll('[data-switch-group]').forEach(function (group) {
+    var out = document.getElementById(group.dataset.target);
+    group.querySelectorAll('button').forEach(function (button) {
+      button.addEventListener('click', function () {
+        group.querySelectorAll('button').forEach(function (item) { item.classList.remove('active'); });
+        button.classList.add('active');
+        if (out) out.textContent = button.dataset.detail || '';
+      });
+    });
+  });
+  document.querySelectorAll('[data-toggle-target]').forEach(function (button) {
+    button.addEventListener('click', function () {
+      var target = document.getElementById(button.dataset.toggleTarget);
+      if (!target) return;
+      var hidden = target.classList.toggle('hidden');
+      button.textContent = hidden ? button.dataset.show : button.dataset.hide;
+      button.setAttribute('aria-expanded', String(!hidden));
+    });
+  });
+})();
+</script>
+
+</main>
+</body>
+</html>

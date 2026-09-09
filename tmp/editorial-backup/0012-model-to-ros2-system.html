@@ -1,0 +1,285 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Lesson 0012 — From model to ROS 2 system</title>
+<link rel="stylesheet" href="../assets/lesson.css">
+<link rel="icon" href="data:,">
+
+<link rel="stylesheet" href="../assets/lesson-interactions.css"><link rel="stylesheet" href="../assets/visual-learning.css"></head>
+<body class="lesson-0012">
+<main>
+<header>
+  <p class="eyebrow">Computer vision foundations · Lesson 12 · System integration</p>
+  <h1>From model to ROS 2 system</h1>
+  <p class="lede">A trained model becomes a robot component only when data, timing, artifacts, geometry, messages, and evidence keep the same contract.</p>
+  <div class="lesson-meta"><span>15–20 minutes</span><span class="tag">Browser required</span><span>Course synthesis</span></div>
+</header>
+
+<p><strong>Your goal:</strong> trace one camera observation through a ROS 2 perception pipeline, distinguish timing problems from model problems, and name the first boundary to inspect when detections disappear. An <strong>RGB</strong> image stores red, green, and blue channel values; a <strong>depth</strong> image stores a distance-like value at each pixel. The interactions below are small explanatory models; their numbers are hypothetical unless a repository observation is labelled explicitly.</p>
+
+<section class="concept-map">
+  <div><strong>1 · Observe</strong><span>Receive typed sensor messages.</span></div>
+  <div><strong>2 · Pair</strong><span>Match RGB and depth timestamps.</span></div>
+  <div><strong>3 · Infer</strong><span>Prepare tensors and run the artifact.</span></div>
+  <div><strong>4 · Publish</strong><span>Send a typed detection message.</span></div>
+</section>
+
+<h2>1. The local ROS 2 vocabulary</h2>
+<p><strong>Robot Operating System 2 (ROS 2)</strong> is middleware: software that lets independent robot components exchange data. Its <strong>graph</strong> is the set of named components and connections. A <strong>node</strong> is one participant in that graph. A <strong>process</strong> is an operating-system program. They are different ideas: one process can contain multiple nodes, and a launch system can arrange nodes into one or more processes. Do not infer process boundaries from node names.</p>
+<p>A <strong>topic</strong> is a named stream of values. A <strong>publisher</strong> sends values to a topic; a <strong>subscriber</strong> asks to receive them. A <strong>message</strong> is one structured, typed value on that stream. A subscriber's <strong>callback</strong> is a function invoked when a message, or a synchronized set of messages, is ready. An <strong>executor</strong> is the ROS 2 scheduler that waits for ready callbacks and runs them.</p>
+<p><strong>Quality of Service (QoS)</strong> is the delivery policy for a publisher or subscriber. The useful local questions are: how many recent samples may wait in the <strong>queue</strong>, and should delivery be <strong>reliable</strong> (retry to deliver) or <strong>best effort</strong> (attempt delivery but allow loss)? A queue is waiting storage; a queue depth of ten means up to ten recent samples under a keep-last policy. Compatibility is checked for each publisher–subscriber pair: the publisher must offer what the subscriber requests. For example, a best-effort publisher cannot satisfy a reliable subscriber. Different settings can still be compatible. <a href="https://docs.ros.org/en/humble/Concepts/Intermediate/About-Quality-of-Service-Settings.html">ROS 2 QoS compatibility reference</a>.</p><p>The <strong>synchronizer pairing queue</strong> holds received messages while seeking timestamp matches. It is separate from the transport history controlled by QoS queue depth; changing one does not automatically change the other.</p>
+<p>A <strong>timestamp</strong> is a time value attached to a measurement, usually recording capture time. <strong>Synchronization</strong> pairs observations that are close enough in timestamp. An approximate synchronizer uses a <strong>slop</strong>, the maximum allowed timestamp gap; it does not make two captures physically simultaneous.</p>
+
+<p><strong>Worked timing example:</strong> capture times of 5.000 seconds and 5.020 seconds differ by <code>0.020 s = 20 ms</code>. Here <code>s</code> means seconds and <code>ms</code> means milliseconds; one second contains 1000 milliseconds. Under the following toy rule, a 30 ms slop accepts that 20 ms gap, while a 10 ms slop rejects it. Compare the gap with the allowed slop, not with either absolute timestamp.</p>
+<figure class="system-figure">
+  <svg viewBox="0 0 680 245" role="img" aria-labelledby="graph-title graph-desc">
+    <title id="graph-title">ROS 2 nodes exchange typed topics inside processes</title>
+    <desc id="graph-desc">A camera process contains a camera node publishing an RGB topic and a depth topic. A perception process contains a cube detection node with a callback and executor. Both topics enter the node, which publishes a detection topic to a consumer node. The process boundary and node boundary are different.</desc>
+    <rect x="12" y="18" width="270" height="205" fill="none" stroke="var(--rule)" stroke-width="2"/>
+    <rect x="398" y="18" width="270" height="205" fill="none" stroke="var(--rule)" stroke-width="2"/>
+    <text x="25" y="40" fill="var(--ink)" font-size="15">process: camera</text>
+    <text x="411" y="40" fill="var(--ink)" font-size="15">process: perception</text>
+    <rect x="38" y="65" width="210" height="62" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="2"/>
+    <text x="52" y="92" fill="var(--ink)" font-size="15">node: camera driver</text>
+    <text x="52" y="113" fill="var(--ink)" font-size="13">publisher callbacks</text>
+    <rect x="425" y="65" width="210" height="80" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="2"/>
+    <text x="439" y="92" fill="var(--ink)" font-size="15">node: cube detector</text>
+    <text x="439" y="113" fill="var(--ink)" font-size="13">executor → callback</text>
+    <text x="439" y="132" fill="var(--ink)" font-size="13">publisher</text>
+    <rect x="466" y="176" width="130" height="29" fill="var(--code-bg)" stroke="var(--rule)"/>
+    <text x="480" y="196" fill="var(--ink)" font-size="13">consumer node</text>
+    <line x1="248" y1="78" x2="425" y2="78" stroke="#e85d04" stroke-width="2" marker-end="url(#arrow)"/>
+    <line x1="248" y1="114" x2="425" y2="125" stroke="#8b5cf6" stroke-width="2" marker-end="url(#arrow)"/>
+    <line x1="530" y1="145" x2="530" y2="176" stroke="#2a9d8f" stroke-width="2" marker-end="url(#arrow)"/>
+    <text x="282" y="69" fill="var(--ink)" font-size="13">RGB topic</text>
+    <text x="290" y="137" fill="var(--ink)" font-size="13">depth topic</text>
+    <text x="541" y="164" fill="var(--ink)" font-size="13">detections</text>
+    <defs><marker id="arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="var(--ink)"/></marker></defs>
+  </svg>
+  <figcaption><strong>Text alternative:</strong> the camera process contains a camera node, while a separate perception process contains the cube detector node. Typed RGB and depth topics enter the detector callback; a detection topic leaves it. A process boundary is not the same as a node boundary.</figcaption>
+</figure>
+
+<section class="browser-lab" id="timestamp-lab">
+  <h3>Explore: an approximate timestamp pair</h3>
+  <p>Imagine an RGB message captured at <code>10.000 s</code>. The depth message is captured later by the selected gap. If the gap is no larger than the selected slop, the hypothetical synchronizer pairs them.</p>
+  <div class="lab-controls">
+    <label for="timestamp-gap">RGB/depth gap in milliseconds: <output id="gap-value">32</output><input id="timestamp-gap" type="range" min="0" max="100" value="32" step="1"></label>
+    <label for="sync-slop">Allowed slop in milliseconds: <output id="slop-value">50</output><input id="sync-slop" type="range" min="10" max="80" value="50" step="1"></label>
+  </div>
+<figure class="visual-learning"><svg id="v12-time-svg" viewBox="0 0 420 230" role="img" aria-label="RGB capture at zero and depth capture within the allowed timestamp gap"></svg><figcaption>Time starts at the RGB capture. The shaded band is the permitted gap. Move the depth dot outside it by increasing the gap or reducing slop; the pair is rejected by this toy rule.</figcaption></figure>  <p class="lab-output" id="timestamp-output" role="status" aria-live="polite">Worked default: 32 ms ≤ 50 ms, so the pair is accepted by this hypothetical rule.</p>
+  <p class="answer-line">Static worked answer: timestamps <code>10.000 s</code> and <code>10.032 s</code> differ by 32 ms; a 50 ms slop accepts that pair. This is an example, not a measured camera result.</p>
+</section>
+
+<h2>2. The model and the deployment tools</h2>
+<p>The runtime path has several contracts. A <strong>model</strong> is a learned computation; <strong>training</strong> adjusts its parameters using examples. A saved model file is an <strong>artifact</strong>. A <strong>contract</strong> is an explicit agreement about a boundary's data, shape, units, and meaning. <strong>Preprocessing</strong> changes a camera array into the size, channel order, and numeric range expected by the model. A <strong>pixel</strong> is one image sample, and a <strong>channel</strong> is one colour or measurement plane in that sample. A <strong>tensor</strong> is a typed, shaped array used by a model. <strong>Inference</strong> applies the model to an input tensor. <strong>Decoding</strong> turns raw output numbers into class names, scores, and bounding boxes. A <strong>class</strong> is a category such as <code>red_cube</code>; a <strong>score</strong> supports a prediction numerically; and a <strong>bounding box</strong> is a rectangle locating an object in the image. A <strong>candidate</strong> is one possible prediction before filtering. <strong>Non-maximum suppression (NMS)</strong> is a heuristic that suppresses strongly overlapping boxes; it may also suppress nearby real objects, so it is a policy rather than proof of a duplicate.</p>
+<div class="role-grid">
+  <div class="role-card"><strong>NumPy</strong><span>Python array mathematics and indexing for image data.</span></div>
+  <div class="role-card"><strong>OpenCV</strong><span>Computer-vision library for image conversion and geometric image operations.</span></div>
+  <div class="role-card"><strong>cv_bridge</strong><span>ROS package that converts ROS image messages to OpenCV arrays and back while respecting encoding.</span></div>
+  <div class="role-card"><strong>PyTorch</strong><span>Machine-learning framework used here for the training-side model checkpoint.</span></div>
+  <div class="role-card"><strong>ONNX</strong><span>Open Neural Network Exchange: a portable computation-graph format between tools.</span></div>
+  <div class="role-card"><strong>TensorRT</strong><span>NVIDIA runtime and engine builder that prepares a target-optimized inference plan.</span></div>
+  <div class="role-card"><strong>ROS 2</strong><span>Middleware that connects sensor and detection components through typed topics.</span></div>
+</div>
+<p>A <strong>checkpoint</strong> is a saved model state that can be loaded for further use. In this project, <code>.pt</code> names the PyTorch checkpoint, <code>.onnx</code> names the portable graph, and <code>.engine</code> names the TensorRT target-specific plan. <strong>Precision</strong> describes how numbers are represented. <strong>FP16</strong> is 16-bit floating-point representation; FP32 is 32-bit floating-point representation. A precision label describes the arithmetic format, not an accuracy guarantee. This numerical precision differs from <strong>evaluation precision</strong>, the fraction of accepted detections that are correct.</p>
+
+<table class="role-table">
+  <thead><tr><th>Boundary</th><th>Current project contract</th><th>What it proves</th></tr></thead>
+  <tbody>
+    <tr><td>Model input</td><td><code>[1, 3, 640, 640]</code></td><td>One image in a batch, three colour channels, and 640×640 model pixels.</td></tr>
+    <tr><td>Model output</td><td><code>[1, 7, 8400]</code></td><td>One image in a batch, four box values plus three class scores for 8400 candidates.</td></tr>
+    <tr><td>ROS output</td><td><code>/cube_detections</code> and compatibility/debug topics</td><td>Typed detection messages are available if the callback reaches publication.</td></tr>
+  </tbody>
+</table>
+<p>The brackets show a tensor <strong>shape</strong>, the ordered dimensions of an array. The first dimension is the <strong>batch</strong>, the number of images processed together; here it is one. These are repository contracts read from the current model notes and node. They do not prove that the room images are detected reliably.</p>
+
+<h2>3. Latency, throughput, and stale queues</h2>
+<p><strong>Latency</strong> is elapsed time from a frame's capture to its published result. <strong>Throughput</strong> is how many frames the system completes per second. <strong>Frames per second (fps)</strong> is that throughput unit. If a camera produces frames faster than inference can consume them, a queue grows. A <strong>stale frame</strong> is an old capture that waits so long that a newer scene would be more useful. A bounded queue limits waiting storage; it may drop old frames, which often protects freshness while reducing the number of processed frames.</p>
+<p>Increasing throughput does not automatically reduce latency: a system can process many frames per second while an oversized queue makes each result old. The design choice depends on whether the consumer needs every frame or the newest useful frame.</p>
+
+<figure class="system-figure">
+  <svg viewBox="0 0 680 220" role="img" aria-labelledby="queue-title queue-desc">
+    <title id="queue-title">Queue size changes freshness and latency</title>
+    <desc id="queue-desc">Two timelines start with camera captures arriving faster than a detector can process. In the bounded latest-frame lane, an old waiting frame is dropped and a newer frame is processed sooner. In the large queue lane, every waiting frame remains, but the output is delayed and can be stale.</desc>
+    <rect x="0" y="0" width="680" height="220" fill="var(--code-bg)"/>
+    <text x="12" y="34" fill="var(--ink)" font-size="14">bounded queue: keep fresh</text>
+    <text x="12" y="137" fill="var(--ink)" font-size="14">large queue: keep waiting</text>
+    <line x1="170" y1="66" x2="650" y2="66" stroke="var(--rule)" stroke-width="2"/>
+    <line x1="170" y1="169" x2="650" y2="169" stroke="var(--rule)" stroke-width="2"/>
+    <g fill="#e85d04"><circle cx="210" cy="66" r="9"/><circle cx="275" cy="66" r="9"/><circle cx="340" cy="66" r="9"/></g>
+    <g fill="#8b5cf6"><circle cx="210" cy="169" r="9"/><circle cx="275" cy="169" r="9"/><circle cx="340" cy="169" r="9"/></g>
+    <path d="M210 84 L275 84 L340 84" fill="none" stroke="#e85d04" stroke-width="2" stroke-dasharray="5 4"/>
+    <path d="M210 187 L275 187 L340 187 L405 187" fill="none" stroke="#8b5cf6" stroke-width="2" stroke-dasharray="5 4"/>
+    <rect x="395" y="47" width="85" height="38" fill="var(--accent-soft)" stroke="var(--accent)"/>
+    <text x="406" y="70" fill="var(--ink)" font-size="13">new output</text>
+    <rect x="540" y="150" width="95" height="38" fill="var(--accent-soft)" stroke="#b42318"/>
+    <text x="551" y="173" fill="var(--ink)" font-size="13">stale output</text>
+    <text x="213" y="108" fill="var(--ink)" font-size="12">old frame dropped</text>
+    <text x="202" y="210" fill="var(--ink)" font-size="12">waiting frames add latency</text>
+  </svg>
+  <figcaption><strong>Text alternative:</strong> when arrivals outpace processing, a bounded queue can drop an old frame so a newer one is processed sooner. A large queue preserves waiting frames but delays the output and increases stale-frame risk. This is a conceptual diagram, not a measured trace.</figcaption>
+</figure>
+
+<p><strong>Worked queue estimate:</strong> if 10 frames arrive per second and only 8 can be processed, the waiting count grows by <code>10−8 = 2</code> frames per second while space remains. An empty queue with 3 waiting slots fills in approximately <code>3/2 = 1.5 seconds</code>. Processing three waiting frames at 8 per second takes <code>3/8 = 0.375 seconds</code>. These are steady-rate estimates: they ignore bursts and other delays. If capacity meets or exceeds arrivals, this model predicts no growing backlog.</p>
+<section class="browser-lab" id="queue-lab">
+  <h3>Explore: a small queue model</h3>
+  <p>This explanatory model compares camera production and detector capacity. The numbered slots show queue capacity. Timing estimates assume steady average rates and ignore bursts and other processing delays. It reports the direction of backlog and freshness risk; it is not a benchmark of this repository or robot.</p>
+  <div class="lab-controls">
+    <label for="camera-fps">Camera rate: <output id="camera-fps-value">10</output> fps<input id="camera-fps" type="range" min="1" max="20" value="10" step="1"></label>
+    <label for="process-fps">Detector capacity: <output id="process-fps-value">8</output> fps<input id="process-fps" type="range" min="1" max="20" value="8" step="1"></label>
+    <label for="queue-depth">Queue depth: <output id="queue-depth-value">3</output><input id="queue-depth" type="range" min="1" max="10" value="3" step="1"></label>
+  </div>
+  <div id="queue-view" role="img" aria-label="Three queue slots" style="display:flex;gap:5px;flex-wrap:wrap;margin:1rem 0"></div>
+  <p class="lab-output" id="queue-output" role="status" aria-live="polite">Illustrative default: camera 10 fps exceeds detector capacity 8 fps; a depth-3 queue can fill and make frames stale, so a drop policy matters.</p>
+  <p class="answer-line">Static worked answer: if detector capacity is at least the camera rate, the simple backlog is zero. Otherwise, waiting frames trade freshness for coverage.</p>
+</section>
+
+<h2>4. Find the first broken contract</h2>
+<p>When the final topic is empty, do not jump straight to retraining. Name the last boundary that still has trustworthy evidence, then test one hypothesis. A <strong>score threshold</strong> is the minimum score accepted as a prediction. The following explorer separates three depth-related symptoms that look similar at the output.</p>
+
+<section class="browser-lab" id="failure-lab">
+  <h3>Failure explorer</h3>
+  <label for="failure-choice">Choose a symptom<select id="failure-choice">
+    <option value="absent">No depth message arrives</option>
+    <option value="dtype">The whole depth image has the wrong dtype or shape</option>
+    <option value="local">One detection has too few valid depth samples</option>
+    <option value="scores">The model produces candidates, but scores are below threshold</option>
+  </select></label>
+  <p class="lab-output" id="failure-output" role="status" aria-live="polite">Absent depth prevents the RGB/depth synchronizer from invoking the paired callback. Inspect topic presence and timestamps before inspecting model scores.</p>
+  <p class="answer-line">Static worked answers: absent depth blocks synchronization; a whole-image dtype/shape mismatch causes the current callback to return early; local insufficient statistics return <code>KEEP</code> with a low-quality reason; low scores point to the model/input/threshold boundary.</p>
+</section>
+
+<section class="project-application">
+  <h2>Applied to our cubes</h2>
+  <p><span class="evidence-label">Repository observation</span><code>cube_detection_node</code> subscribes to <code>/depth_cam/rgb/image_raw</code> and <code>/depth_cam/depth/image_raw</code>. Its configurable defaults declare an <code>ApproximateTimeSynchronizer</code> queue size of 10 and slop of 0.05 s. It receives camera <strong>intrinsics</strong>, the internal pixel parameters used for projection, from <code>CameraInfo</code>, the ROS message carrying calibration metadata. <code>cv_bridge</code> requests RGB as <code>bgr8</code>, meaning blue-green-red 8-bit channel encoding, and depth as <strong>passthrough</strong>, meaning retain the source encoding. The callback returns before inference when the whole depth array is not 2-D <code>uint16</code>: <strong>dtype</strong> means numeric data type, <code>uint16</code> means unsigned 16-bit integer, and 2-D means rows and columns.</p>
+  <p>When the TensorRT engine is available, <code>_infer</code> <strong>letterboxes</strong> the RGB image, meaning it resizes while preserving aspect ratio and pads to a square, then runs the engine, decodes the output, and applies per-class NMS. <strong>2-D</strong> means two image coordinates. The node then calls <code>compute_geometry</code> and publishes <code>vision_msgs/Detection2DArray</code>, a standard message containing a list of 2-D detections, on <code>/cube_detections</code>. It can also publish an <code>interfaces/ObjectsInfo</code> compatibility message, a project/vendor format retained for an existing consumer, and an <strong>annotated debug image</strong>, an image with boxes and labels drawn on it. If the engine cannot load, the current fallback publishes empty detections so topic wiring can still be smoke-tested; a <strong>smoke test</strong> is a quick connection or execution check, not a model-accuracy test.</p>
+  <p>Read the <a href="../../../recognition_of_different_colored_cubes/cube_detection_node.py">current node</a>, <a href="../../../recognition_of_different_colored_cubes/geometry_filter.py">geometry filter</a>, <a href="../../architecture.md">architecture</a>, and <a href="../../../models/README.md">artifact notes</a>. The documented <strong>M5</strong> (milestone 5) status is PARTIAL: the runtime path is present, while reliable positive room detection remains unresolved.</p>
+<div class="code-connection" id="code-connection"><h3>Read the project code</h3><p><strong>Implemented training-to-file boundary:</strong> the fine-tuning script selects the saved training result and copies it to its requested output:</p><p><a href="../../../scripts/finetune_hardneg.py">Fine-tuning artifact handoff · main()</a> · selected source lines:</p><pre><code>src_best = REPO / &quot;runs&quot; / &quot;m3c&quot; / args.name / &quot;weights&quot; / &quot;best.pt&quot;
+shutil.copy2(src_best, out)</code></pre><p>By default, <code>out</code> names <code>models/best_hardneg.pt</code>. That checkpoint is not a TensorRT engine. The robot node is configured separately: <a href="../../../config/params.yaml">params.yaml</a> leaves <code>model_path</code> empty, and the node searches for <code>best.engine</code>. Copying a new checkpoint therefore does not switch the running robot to the new model.</p><p><strong>Possible next step:</strong> validate the chosen checkpoint, export it to ONNX, build a compatible TensorRT engine, explicitly select it, and compare its outputs on the same saved inputs. Record which training checkpoint produced the engine. The existing <a href="../../../training/train.ipynb">training notebook</a> describes a workflow in prose; it currently has no executable training cells. The runnable recipe is the fine-tuning script linked above.</p><details><summary>Trace this code: why might fine-tuning leave robot predictions unchanged?</summary><p>The training output and deployed engine are different files. Unless the verified new model is converted and selected for deployment, the robot can continue loading its existing engine.</p></details></div></section>
+
+<h2>Final check · explain the contracts</h2>
+<form id="system-practice">
+  <fieldset>
+    <legend>1. Which statement about nodes and processes is correct?</legend>
+    <label><input type="radio" name="system-q0" value="0"> One process always means one node.</label>
+    <label><input type="radio" name="system-q0" value="1"> One process can contain multiple nodes.</label>
+    <label><input type="radio" name="system-q0" value="2"> A topic is an operating process.</label>
+    <p id="system-feedback0" class="lab-output" role="status" aria-live="polite"></p>
+  </fieldset>
+  <fieldset>
+    <legend>2. RGB at 10.000 s, depth at 10.032 s, slop 50 ms: what follows?</legend>
+    <label><input type="radio" name="system-q1" value="0"> The hypothetical synchronizer accepts this pair.</label>
+    <label><input type="radio" name="system-q1" value="1"> Timestamp differences always reject every pair.</label>
+    <label><input type="radio" name="system-q1" value="2"> The model must be retrained immediately.</label>
+    <p id="system-feedback1" class="lab-output" role="status" aria-live="polite"></p>
+  </fieldset>
+  <fieldset>
+    <legend>3. What distinguishes whole-image bad dtype from local sparse depth?</legend>
+    <label><input type="radio" name="system-q2" value="0"> Both paths always retrain the model.</label>
+    <label><input type="radio" name="system-q2" value="1"> Whole-image returns early; local stays low-quality.</label>
+    <label><input type="radio" name="system-q2" value="2"> Neither path can affect final output.</label>
+    <p id="system-feedback2" class="lab-output" role="status" aria-live="polite"></p>
+  </fieldset>
+  <button class="check-btn" type="submit">Check answers</button>
+  <p id="system-result" class="lab-output" role="status" aria-live="polite"></p>
+</form>
+
+<h2>Explain it back · 3 minutes</h2>
+<p>Give a 90-second walkthrough from an RGB/depth capture to a published cube detection. Define node, process, topic, message, callback, executor, QoS, timestamp, synchronization, latency, throughput, and stale frame in your own words. Include the <code>.pt → .onnx → .engine</code> artifact path, one failure boundary, and one limitation that remains evidence-dependent.</p>
+<label for="system-explain">Your walkthrough (it stays on this page and is not saved)</label>
+<textarea id="system-explain" placeholder="Trace the data in order and name the contract at each boundary."></textarea>
+
+<h2>Primary sources</h2>
+<ul class="source-list">
+  <li><a href="https://raw.githubusercontent.com/ros2/ros2_documentation/humble/source/Concepts/Basic/About-Topics.rst">ROS 2 Humble topics (official raw source)</a>: typed publish/subscribe topics, publishers, and subscribers.</li>
+  <li><a href="https://raw.githubusercontent.com/ros2/ros2_documentation/humble/source/Concepts/Intermediate/About-Quality-of-Service-Settings.rst">ROS 2 Humble QoS (official raw source)</a>: queue, reliability, and compatibility policies.</li>
+  <li><a href="https://github.com/ros-perception/vision_opencv/tree/humble/cv_bridge">cv_bridge, Humble branch</a>: ROS image/message conversion.</li>
+  <li><a href="https://onnx.ai/onnx/intro/">ONNX introduction</a> and <a href="https://docs.nvidia.com/deeplearning/tensorrt/latest/getting-started/quick-start-guide.html">NVIDIA TensorRT Quick Start</a>: model-artifact boundaries.</li>
+</ul>
+
+
+</main>
+<script>
+(() => {
+  'use strict';
+  const gap = document.getElementById('timestamp-gap');
+  const slop = document.getElementById('sync-slop');
+  const gapValue = document.getElementById('gap-value');
+  const slopValue = document.getElementById('slop-value');
+  const timestampOutput = document.getElementById('timestamp-output');
+  function updateTimestamp() {
+    const gapMs = Number(gap.value);
+    const slopMs = Number(slop.value);
+    gapValue.textContent = gapMs;
+    slopValue.textContent = slopMs;
+    timestampOutput.textContent = gapMs <= slopMs
+      ? gapMs + ' ms ≤ ' + slopMs + ' ms: this hypothetical synchronizer accepts the pair. The messages are close in time, not identical in capture time.'
+      : gapMs + ' ms > ' + slopMs + ' ms: this hypothetical synchronizer does not pair the messages. Inspect rates, timestamps, and slop.';
+  }
+  gap.addEventListener('input', updateTimestamp);
+  slop.addEventListener('input', updateTimestamp);
+  updateTimestamp();
+
+  const cameraFps = document.getElementById('camera-fps');
+  const processFps = document.getElementById('process-fps');
+  const queueDepth = document.getElementById('queue-depth');
+  const cameraValue = document.getElementById('camera-fps-value');
+  const processValue = document.getElementById('process-fps-value');
+  const queueValue = document.getElementById('queue-depth-value');
+  const queueOutput = document.getElementById('queue-output');
+  function updateQueue() {
+    const camera = Number(cameraFps.value);
+    const processor = Number(processFps.value);
+    const depth = Number(queueDepth.value);
+    cameraValue.textContent = camera;
+    processValue.textContent = processor;
+    queueValue.textContent = depth;
+    const queueView = document.getElementById('queue-view');
+    if (queueView) { queueView.innerHTML = Array.from({length:depth}, (_,i) => '<span style="width:32px;height:32px;display:grid;place-items:center;border:2px solid var(--accent);background:var(--code-bg)">'+(i+1)+'</span>').join(''); queueView.setAttribute('aria-label',depth+' waiting slots in this queue.'); }
+    if (processor >= camera) {
+      queueOutput.textContent = 'Illustrative result: detector capacity ' + processor + ' fps meets camera rate ' + camera + ' fps, so the simple backlog is zero. Latency still depends on preprocessing and execution time.';
+    } else {
+      queueOutput.textContent = 'Illustrative result: camera ' + camera + ' fps exceeds detector capacity ' + processor + ' fps. A depth-' + depth + ' queue fills in roughly ' + (depth / (camera - processor)).toFixed(2) + ' seconds under steady average rates. Processing a full queue oldest-first takes about ' + (depth / processor).toFixed(2) + ' seconds. A deeper queue stores more frames but risks older results; dropping old frames favors freshness.';
+    }
+  }
+  [cameraFps, processFps, queueDepth].forEach((input) => input.addEventListener('input', updateQueue));
+  updateQueue();
+
+  const failureChoice = document.getElementById('failure-choice');
+  const failureOutput = document.getElementById('failure-output');
+  const failureText = {
+    absent: 'Absent depth prevents the RGB/depth synchronizer from invoking the paired callback. Inspect topic presence and timestamps before inspecting model scores.',
+    dtype: 'The current callback receives the pair, converts it, then returns early when the whole depth array is not 2-D uint16. Inspect encoding, dtype, and shape before changing the model.',
+    local: 'The callback can reach geometry, but local statistics are insufficient. The current decision path keeps the detection with a low-depth-quality or no-depth-stats reason; inspect that evidence instead of treating it as a clean pass.',
+    scores: 'Candidates exist but scores are below threshold. Inspect preprocessing, artifact output, class scores, and threshold at the model/input boundary before changing ROS message types.'
+  };
+  failureChoice.addEventListener('change', () => { failureOutput.textContent = failureText[failureChoice.value]; });
+
+  document.getElementById('system-practice').addEventListener('submit', (event) => {
+    event.preventDefault();
+    const expected = ['1', '0', '1'];
+    const reasons = [
+      'A process can contain multiple nodes; node and process are different layers.',
+      '32 ms is within a 50 ms slop, so the hypothetical pair is accepted.',
+      'The current whole-array guard returns early, while local sparse geometry is kept with a low-quality reason.'
+    ];
+    let correct = 0;
+    expected.forEach((answer, index) => {
+      const chosen = document.querySelector('input[name="system-q' + index + '"]:checked');
+      const feedback = document.getElementById('system-feedback' + index);
+      if (!chosen) {
+        feedback.textContent = 'Choose an answer first.';
+        return;
+      }
+      const isCorrect = chosen.value === answer;
+      if (isCorrect) correct += 1;
+      feedback.textContent = (isCorrect ? 'Correct. ' : 'Reconsider. ') + reasons[index];
+    });
+    document.getElementById('system-result').textContent = correct + ' of 3 correct. Use the explanations, then try again if needed.';
+  });
+})();
+</script>
+<script src="../assets/quiz.js"></script><script src="../assets/visual-learning-foundations.js"></script></body>
+</html>

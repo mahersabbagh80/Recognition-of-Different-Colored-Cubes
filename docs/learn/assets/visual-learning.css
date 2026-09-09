@@ -1,0 +1,17 @@
+/* Visual teaching widgets share the course theme and native controls. */
+.visual-learning { margin: 1rem 0; min-width: 0; }
+.visual-learning svg { display:block; width:100%; height:auto; margin:.8rem 0; background:#f5f8fc; color:#041d39; border:1px solid var(--rule); font-family:Arial,sans-serif; }
+.visual-learning svg text { fill:#041d39; }
+.visual-learning svg text[fill="#fff"], .visual-learning svg text[fill="white"] { fill:#fff; }
+.visual-toolbar { display:flex; flex-wrap:wrap; align-items:center; gap:.6rem; margin:.8rem 0; }
+.visual-toolbar button, .visual-toolbar select { font:inherit; }
+.visual-toolbar label { font-weight:600; }
+.visual-toolbar input[type="range"] { flex:1 1 12rem; min-width:0; }
+.visual-toolbar button[aria-pressed="true"] { outline:3px solid var(--ink); outline-offset:2px; }
+.visual-feedback { padding:.65rem; background:var(--code-bg); border-left:3px solid var(--accent); }
+.visual-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,10rem),1fr)); gap:.6rem; }
+.visual-learning .visual-note { font-size:.9rem; color:var(--ink-soft); }
+.visual-learning button:focus-visible, .visual-learning select:focus-visible, .visual-learning input:focus-visible { outline:3px solid var(--accent); outline-offset:3px; }
+@media(prefers-reduced-motion:reduce){ .visual-learning * { animation:none!important; transition:none!important; } }
+/* Diagrams use a constant light drawing surface in either page theme. */
+.visual-learning svg { --code-bg:#f5f8fc; --accent-soft:#d9ecf7; }

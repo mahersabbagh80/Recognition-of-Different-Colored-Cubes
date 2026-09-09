@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+
+<html lang="en"><head><meta charset="utf-8"/><meta content="width=device-width,initial-scale=1" name="viewport"/><title>Optional robot lesson 14 — How ROS 2 carries a frame</title><link href="../assets/lesson.css" rel="stylesheet"/><link href="../assets/lesson-interactions.css" rel="stylesheet"/><link href="../assets/visual-learning.css" rel="stylesheet"/><link href="../assets/editorial.css" rel="stylesheet"/></head><body class="lesson-0012"><main><header><p class="eyebrow">Optional robot track · Lesson 14</p><h1>How ROS 2 carries a frame</h1><p class="lede">The model works on a saved image, yet the robot publishes nothing. First check whether that image ever reaches the model.</p><p class="lesson-meta">Core path: about 15–20 minutes · optional notes take extra time</p><p class="editorial-recap">This lesson is optional for the training course. Study it when you are ready to integrate the selected detector with the robot.</p></header><p><strong>Your goal:</strong> trace a message to its callback and distinguish missing pairs from slow processing.</p><h2>1. Follow one camera message</h2><p>Follow this chain in the diagram: camera node → image topic → detector callback. A message carries one image. Receiving messages and running model inference are separate events; a missing callback means there may be no model result to inspect yet.</p>
+<p>A camera captures an image; a detector needs to receive it. They can be independent programs. <strong>Robot Operating System 2 (ROS 2)</strong> is middleware: software that lets independent robot components exchange data. Its <strong>graph</strong> is the set of named components and connections. A <strong>node</strong> is one participant in that graph. A <strong>process</strong> is an operating-system program. They are different ideas: one process can contain multiple nodes, and a launch system can arrange nodes into one or more processes. Do not infer process boundaries from node names.</p>
+<p>A <strong>topic</strong> is a named stream of values. A <strong>publisher</strong> sends values to a topic; a <strong>subscriber</strong> asks to receive them. A <strong>message</strong> is one structured, typed value on that stream. A subscriber's <strong>callback</strong> is a function invoked when a message, or a synchronized set of messages, is ready.</p>
+<details><summary>Optional: delivery policies and the two queues</summary><p><strong>Quality of Service (QoS)</strong> is the delivery policy for a publisher or subscriber. The useful local questions are: how many recent samples may wait in the <strong>queue</strong>, and should delivery be <strong>reliable</strong> (retry to deliver) or <strong>best effort</strong> (attempt delivery but allow loss)? A queue is waiting storage; a queue depth of ten means up to ten recent samples under a keep-last policy. Compatibility is checked for each publisher–subscriber pair: the publisher must offer what the subscriber requests. For example, a best-effort publisher cannot satisfy a reliable subscriber. Different settings can still be compatible. <a href="https://docs.ros.org/en/humble/Concepts/Intermediate/About-Quality-of-Service-Settings.html">ROS 2 QoS compatibility reference</a>.</p><p>The <strong>synchronizer pairing queue</strong> holds received messages while seeking timestamp matches. It is separate from the transport history controlled by QoS queue depth; changing one does not automatically change the other.</p><p>An <strong>executor</strong> is the ROS 2 scheduler that waits for ready callbacks and runs them. It is separate from the model computation performed inside a callback.</p></details>
+<p>A <strong>timestamp</strong> is a time value attached to a measurement, usually recording capture time. <strong>Synchronization</strong> pairs observations that are close enough in timestamp. An approximate synchronizer uses a <strong>slop</strong>, the maximum allowed timestamp gap; it does not make two captures physically simultaneous.</p>
+<p><strong>Worked timing example:</strong> capture times of 5.000 seconds and 5.020 seconds differ by <code>0.020 s = 20 ms</code>. Here <code>s</code> means seconds and <code>ms</code> means milliseconds; one second contains 1000 milliseconds. Under the following toy rule, a 30 ms slop accepts that 20 ms gap, while a 10 ms slop rejects it. Compare the gap with the allowed slop, not with either absolute timestamp.</p>
+<figure class="system-figure">
+<svg aria-labelledby="graph-title graph-desc" role="img" viewbox="0 0 680 245">
+<title id="graph-title">ROS 2 nodes exchange typed topics inside processes</title>
+<desc id="graph-desc">A camera process contains a camera node publishing an RGB topic and a depth topic. A perception process contains a cube detection node with a callback and executor. Both topics enter the node, which publishes a detection topic to a consumer node. The process boundary and node boundary are different.</desc>
+<rect fill="none" height="205" stroke="var(--rule)" stroke-width="2" width="270" x="12" y="18"></rect>
+<rect fill="none" height="205" stroke="var(--rule)" stroke-width="2" width="270" x="398" y="18"></rect>
+<text fill="var(--ink)" font-size="15" x="25" y="40">process: camera</text>
+<text fill="var(--ink)" font-size="15" x="411" y="40">process: perception</text>
+<rect fill="var(--accent-soft)" height="62" stroke="var(--accent)" stroke-width="2" width="210" x="38" y="65"></rect>
+<text fill="var(--ink)" font-size="15" x="52" y="92">node: camera driver</text>
+<text fill="var(--ink)" font-size="13" x="52" y="113">publisher callbacks</text>
+<rect fill="var(--accent-soft)" height="80" stroke="var(--accent)" stroke-width="2" width="210" x="425" y="65"></rect>
+<text fill="var(--ink)" font-size="15" x="439" y="92">node: cube detector</text>
+<text fill="var(--ink)" font-size="13" x="439" y="113">executor → callback</text>
+<text fill="var(--ink)" font-size="13" x="439" y="132">publisher</text>
+<rect fill="var(--code-bg)" height="29" stroke="var(--rule)" width="130" x="466" y="176"></rect>
+<text fill="var(--ink)" font-size="13" x="480" y="196">consumer node</text>
+<line marker-end="url(#arrow)" stroke="#e85d04" stroke-width="2" x1="248" x2="425" y1="78" y2="78"></line>
+<line marker-end="url(#arrow)" stroke="#8b5cf6" stroke-width="2" x1="248" x2="425" y1="114" y2="125"></line>
+<line marker-end="url(#arrow)" stroke="#2a9d8f" stroke-width="2" x1="530" x2="530" y1="145" y2="176"></line>
+<text fill="var(--ink)" font-size="13" x="282" y="69">RGB topic</text>
+<text fill="var(--ink)" font-size="13" x="290" y="137">depth topic</text>
+<text fill="var(--ink)" font-size="13" x="541" y="164">detections</text>
+<defs><marker id="arrow" markerheight="8" markerwidth="8" orient="auto" refx="7" refy="4"><path d="M0,0 L8,4 L0,8 z" fill="var(--ink)"></path></marker></defs>
+</svg>
+<figcaption><strong>Text alternative:</strong> the camera process contains a camera node, while a separate perception process contains the cube detector node. Typed RGB and depth topics enter the detector callback; a detection topic leaves it. A process boundary is not the same as a node boundary.</figcaption>
+</figure>
+<section class="browser-lab" id="timestamp-lab">
+<h3>Explore: an approximate timestamp pair</h3>
+<p>Imagine an RGB message captured at <code>10.000 s</code>. The depth message is captured later by the selected gap. If the gap is no larger than the selected slop, the hypothetical synchronizer pairs them.</p>
+<div class="lab-controls">
+<label for="timestamp-gap">RGB/depth gap in milliseconds: <output id="gap-value">32</output><input id="timestamp-gap" max="100" min="0" step="1" type="range" value="32"/></label>
+<label for="sync-slop">Allowed slop in milliseconds: <output id="slop-value">50</output><input id="sync-slop" max="80" min="10" step="1" type="range" value="50"/></label>
+</div>
+<figure class="visual-learning"><svg aria-label="RGB capture at zero and depth capture within the allowed timestamp gap" id="v12-time-svg" role="img" viewbox="0 0 420 230"></svg><figcaption>Time starts at the RGB capture. The shaded band is the permitted gap. Move the depth dot outside it by increasing the gap or reducing slop; the pair is rejected by this toy rule.</figcaption></figure> <p aria-live="polite" class="lab-output" id="timestamp-output" role="status">Worked default: 32 ms ≤ 50 ms, so the pair is accepted by this hypothetical rule.</p>
+<p class="answer-line">Static worked answer: timestamps <code>10.000 s</code> and <code>10.032 s</code> differ by 32 ms; a 50 ms slop accepts that pair. This is an example, not a measured camera result.</p>
+</section>
+<h2>2. Latency, throughput, and stale queues</h2>
+<p><strong>Latency</strong> is elapsed time from a frame's capture to its published result. <strong>Throughput</strong> is how many frames the system completes per second. <strong>Frames per second (fps)</strong> is that throughput unit. If a camera produces frames faster than inference can consume them, a queue grows. A <strong>stale frame</strong> is an old capture that waits so long that a newer scene would be more useful. A bounded queue limits waiting storage; it may drop old frames, which often protects freshness while reducing the number of processed frames.</p>
+<p>Increasing throughput does not automatically reduce latency: a system can process many frames per second while an oversized queue makes each result old. The design choice depends on whether the consumer needs every frame or the newest useful frame.</p>
+<figure class="system-figure">
+<svg aria-labelledby="queue-title queue-desc" role="img" viewbox="0 0 680 220">
+<title id="queue-title">Queue size changes freshness and latency</title>
+<desc id="queue-desc">Two timelines start with camera captures arriving faster than a detector can process. In the bounded latest-frame lane, an old waiting frame is dropped and a newer frame is processed sooner. In the large queue lane, every waiting frame remains, but the output is delayed and can be stale.</desc>
+<rect fill="var(--code-bg)" height="220" width="680" x="0" y="0"></rect>
+<text fill="var(--ink)" font-size="14" x="12" y="34">bounded queue: keep fresh</text>
+<text fill="var(--ink)" font-size="14" x="12" y="137">large queue: keep waiting</text>
+<line stroke="var(--rule)" stroke-width="2" x1="170" x2="650" y1="66" y2="66"></line>
+<line stroke="var(--rule)" stroke-width="2" x1="170" x2="650" y1="169" y2="169"></line>
+<g fill="#e85d04"><circle cx="210" cy="66" r="9"></circle><circle cx="275" cy="66" r="9"></circle><circle cx="340" cy="66" r="9"></circle></g>
+<g fill="#8b5cf6"><circle cx="210" cy="169" r="9"></circle><circle cx="275" cy="169" r="9"></circle><circle cx="340" cy="169" r="9"></circle></g>
+<path d="M210 84 L275 84 L340 84" fill="none" stroke="#e85d04" stroke-dasharray="5 4" stroke-width="2"></path>
+<path d="M210 187 L275 187 L340 187 L405 187" fill="none" stroke="#8b5cf6" stroke-dasharray="5 4" stroke-width="2"></path>
+<rect fill="var(--accent-soft)" height="38" stroke="var(--accent)" width="85" x="395" y="47"></rect>
+<text fill="var(--ink)" font-size="13" x="406" y="70">new output</text>
+<rect fill="var(--accent-soft)" height="38" stroke="#b42318" width="95" x="540" y="150"></rect>
+<text fill="var(--ink)" font-size="13" x="551" y="173">stale output</text>
+<text fill="var(--ink)" font-size="12" x="213" y="108">old frame dropped</text>
+<text fill="var(--ink)" font-size="12" x="202" y="210">waiting frames add latency</text>
+</svg>
+<figcaption><strong>Text alternative:</strong> when arrivals outpace processing, a bounded queue can drop an old frame so a newer one is processed sooner. A large queue preserves waiting frames but delays the output and increases stale-frame risk. This is a conceptual diagram, not a measured trace.</figcaption>
+</figure>
+<p><strong>Worked queue estimate:</strong> if 10 frames arrive per second and only 8 can be processed, the waiting count grows by <code>10−8 = 2</code> frames per second while space remains. An empty queue with 3 waiting slots fills in approximately <code>3/2 = 1.5 seconds</code>. Processing three waiting frames at 8 per second takes <code>3/8 = 0.375 seconds</code>. These are steady-rate estimates: they ignore bursts and other delays. If capacity meets or exceeds arrivals, this model predicts no growing backlog.</p>
+<section class="browser-lab" id="queue-lab">
+<h3>Explore: a small queue model</h3>
+<p>This explanatory model compares camera production and detector capacity. The numbered slots show queue capacity. Timing estimates assume steady average rates and ignore bursts and other processing delays. It reports the direction of backlog and freshness risk; it is not a benchmark of this repository or robot.</p>
+<div class="lab-controls">
+<label for="camera-fps">Camera rate: <output id="camera-fps-value">10</output> fps<input id="camera-fps" max="20" min="1" step="1" type="range" value="10"/></label>
+<label for="process-fps">Detector capacity: <output id="process-fps-value">8</output> fps<input id="process-fps" max="20" min="1" step="1" type="range" value="8"/></label>
+<label for="queue-depth">Queue depth: <output id="queue-depth-value">3</output><input id="queue-depth" max="10" min="1" step="1" type="range" value="3"/></label>
+</div>
+<div aria-label="Three queue slots" id="queue-view" role="img" style="display:flex;gap:5px;flex-wrap:wrap;margin:1rem 0"></div>
+<p aria-live="polite" class="lab-output" id="queue-output" role="status">Illustrative default: camera 10 fps exceeds detector capacity 8 fps; a depth-3 queue can fill and make frames stale, so a drop policy matters.</p>
+<p class="answer-line">Static worked answer: if detector capacity is at least the camera rate, the simple backlog is zero. Otherwise, waiting frames trade freshness for coverage.</p>
+</section>
+<h2>Applied to our cubes</h2><p>The node subscribes to RGB and depth topics and pairs messages before running the detector. <strong>RGB</strong> is the color image; depth stores distance samples. In the <a href="../../../recognition_of_different_colored_cubes/cube_detection_node.py">node source</a>, look for <code>ApproximateTimeSynchronizer</code>: its queue stores messages while it seeks a pair. If no depth message arrives, this paired callback cannot run. Training the model again cannot supply a missing message.</p><section class="browser-lab fresh-practice"><h2>Your turn: diagnose the wait</h2><p>Under this lesson’s pairing rule, RGB arrives at 8.100 s and depth at 8.145 s. Allowed slop is 30 ms. Both topics are present.</p><form data-editorial-check=""><label>Why is there no paired callback?<select data-answer="0"><option value="">Choose…</option><option value="0">The 45 ms gap exceeds the 30 ms allowance</option><option value="1">The queue must contain exactly 30 images</option><option value="2">The image classifier rejected depth</option></select></label><button type="submit">Check reasoning</button><p data-feedback="" data-reason="The gap is 0.045 s = 45 ms. It exceeds 30 ms. Inspect capture timestamps and timing before changing model weights; simply increasing slop may pair less simultaneous observations." role="status"></p></form><details><summary>Worked explanation</summary><p>The gap is 0.045 s = 45 ms. It exceeds 30 ms. Inspect capture timestamps and timing before changing model weights; simply increasing slop may pair less simultaneous observations.</p></details></section><h2>Primary sources</h2>
+<ul class="source-list">
+<li><a href="https://raw.githubusercontent.com/ros2/ros2_documentation/humble/source/Concepts/Basic/About-Topics.rst">ROS 2 Humble topics (official raw source)</a>: typed publish/subscribe topics, publishers, and subscribers.</li>
+<li><a href="https://raw.githubusercontent.com/ros2/ros2_documentation/humble/source/Concepts/Intermediate/About-Quality-of-Service-Settings.rst">ROS 2 Humble QoS (official raw source)</a>: queue, reliability, and compatibility policies.</li>
+<li><a href="https://github.com/ros-perception/vision_opencv/tree/humble/cv_bridge">cv_bridge, Humble branch</a>: ROS image/message conversion.</li>
+<li><a href="https://onnx.ai/onnx/intro/">ONNX introduction</a> and <a href="https://docs.nvidia.com/deeplearning/tensorrt/latest/getting-started/quick-start-guide.html">NVIDIA TensorRT Quick Start</a>: model-artifact boundaries.</li>
+</ul>
+</main><script>(()=>{'use strict';  const gap = document.getElementById('timestamp-gap');
+  const slop = document.getElementById('sync-slop');
+  const gapValue = document.getElementById('gap-value');
+  const slopValue = document.getElementById('slop-value');
+  const timestampOutput = document.getElementById('timestamp-output');
+  function updateTimestamp() {
+    const gapMs = Number(gap.value);
+    const slopMs = Number(slop.value);
+    gapValue.textContent = gapMs;
+    slopValue.textContent = slopMs;
+    timestampOutput.textContent = gapMs <= slopMs
+      ? gapMs + ' ms ≤ ' + slopMs + ' ms: this hypothetical synchronizer accepts the pair. The messages are close in time, not identical in capture time.'
+      : gapMs + ' ms > ' + slopMs + ' ms: this hypothetical synchronizer does not pair the messages. Inspect rates, timestamps, and slop.';
+  }
+  gap.addEventListener('input', updateTimestamp);
+  slop.addEventListener('input', updateTimestamp);
+  updateTimestamp();
+
+  const cameraFps = document.getElementById('camera-fps');
+  const processFps = document.getElementById('process-fps');
+  const queueDepth = document.getElementById('queue-depth');
+  const cameraValue = document.getElementById('camera-fps-value');
+  const processValue = document.getElementById('process-fps-value');
+  const queueValue = document.getElementById('queue-depth-value');
+  const queueOutput = document.getElementById('queue-output');
+  function updateQueue() {
+    const camera = Number(cameraFps.value);
+    const processor = Number(processFps.value);
+    const depth = Number(queueDepth.value);
+    cameraValue.textContent = camera;
+    processValue.textContent = processor;
+    queueValue.textContent = depth;
+    const queueView = document.getElementById('queue-view');
+    if (queueView) { queueView.innerHTML = Array.from({length:depth}, (_,i) => '<span style="width:32px;height:32px;display:grid;place-items:center;border:2px solid var(--accent);background:var(--code-bg)">'+(i+1)+'</span>').join(''); queueView.setAttribute('aria-label',depth+' waiting slots in this queue.'); }
+    if (processor >= camera) {
+      queueOutput.textContent = 'Illustrative result: detector capacity ' + processor + ' fps meets camera rate ' + camera + ' fps, so the simple backlog is zero. Latency still depends on preprocessing and execution time.';
+    } else {
+      queueOutput.textContent = 'Illustrative result: camera ' + camera + ' fps exceeds detector capacity ' + processor + ' fps. A depth-' + depth + ' queue fills in roughly ' + (depth / (camera - processor)).toFixed(2) + ' seconds under steady average rates. Processing a full queue oldest-first takes about ' + (depth / processor).toFixed(2) + ' seconds. A deeper queue stores more frames but risks older results; dropping old frames favors freshness.';
+    }
+  }
+  [cameraFps, processFps, queueDepth].forEach((input) => input.addEventListener('input', updateQueue));
+  updateQueue();
+
+})();</script><script src="../assets/quiz.js"></script><script src="../assets/visual-learning-foundations.js"></script><script src="../assets/editorial.js"></script></body></html>

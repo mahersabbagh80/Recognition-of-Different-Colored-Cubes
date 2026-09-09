@@ -1,0 +1,385 @@
+{
+  "source_annotations": "/home/maher/.codex/worktrees/67ee/Recognition-of-Different-Colored-Cubes/evaluation/robot_dataset_2026-09-07/ground_truth.json",
+  "reviews": [
+    {
+      "image_id": "background/background_0001.jpg",
+      "sha256": "2f0810ca1945c5b86f8f2c5a86ecfe32a99bed1928fde31ad37a8aa18284fa19",
+      "reviewer": "Maher",
+      "review_date": "2026-09-09",
+      "status": "confirmed",
+      "objects": [],
+      "confirmation": "User confirmed background image contains no target cubes."
+    },
+    {
+      "image_id": "blue_green/blue_green_0001.jpg",
+      "sha256": "cf4d2142888b2e8caa2d9ce42955470f3a6ef8fbb6ef19857a7c509387981135",
+      "reviewer": "Maher",
+      "review_date": "2026-09-09",
+      "status": "confirmed",
+      "objects": [
+        {
+          "class_name": "green_cube",
+          "bbox_xyxy": [
+            301,
+            110,
+            321,
+            133
+          ]
+        },
+        {
+          "class_name": "blue_cube",
+          "bbox_xyxy": [
+            337,
+            104,
+            358,
+            126
+          ]
+        }
+      ],
+      "confirmation": "User confirmed both complete-cube boxes exclude shadows and have correct color labels."
+    },
+    {
+      "image_id": "dist20cm/dist20cm_0001.jpg",
+      "sha256": "e29496df8ef3dca2ddb76a426de7d8285a899fb20c92c367e622ce8d6050db88",
+      "reviewer": "Maher",
+      "review_date": "2026-09-09",
+      "status": "confirmed",
+      "objects": [
+        {
+          "class_name": "red_cube",
+          "bbox_xyxy": [
+            284,
+            193,
+            310,
+            225
+          ]
+        },
+        {
+          "class_name": "green_cube",
+          "bbox_xyxy": [
+            341,
+            198,
+            366,
+            229
+          ]
+        },
+        {
+          "class_name": "blue_cube",
+          "bbox_xyxy": [
+            392,
+            200,
+            424,
+            233
+          ]
+        }
+      ],
+      "confirmation": "User confirmed all cube boxes cover complete cubes, exclude shadows, and have correct color labels."
+    },
+    {
+      "image_id": "dist40cm/dist40cm_0001.jpg",
+      "sha256": "058fdc04b380b78632218a2f6e0f1de8c0508fc9715e96448c216344f340e85a",
+      "reviewer": "Maher",
+      "review_date": "2026-09-09",
+      "status": "confirmed",
+      "objects": [
+        {
+          "class_name": "red_cube",
+          "bbox_xyxy": [
+            288,
+            86,
+            303,
+            106
+          ]
+        },
+        {
+          "class_name": "green_cube",
+          "bbox_xyxy": [
+            322,
+            85,
+            339,
+            104
+          ]
+        },
+        {
+          "class_name": "blue_cube",
+          "bbox_xyxy": [
+            360,
+            85,
+            376,
+            104
+          ]
+        }
+      ],
+      "confirmation": "User confirmed color labels and, in follow-up, cube enclosure boxes. Overlapping gallery label text noted as a display issue."
+    },
+    {
+      "image_id": "dist60cm/dist60cm_0001.jpg",
+      "sha256": "ed69999bc10011330012c14add62ff99756ac248b6530fb8e4467dbd811f546b",
+      "reviewer": "Maher",
+      "review_date": "2026-09-09",
+      "status": "confirmed",
+      "objects": [
+        {
+          "class_name": "green_cube",
+          "bbox_xyxy": [
+            271,
+            44,
+            283,
+            57
+          ]
+        },
+        {
+          "class_name": "red_cube",
+          "bbox_xyxy": [
+            313,
+            48,
+            325,
+            60
+          ]
+        },
+        {
+          "class_name": "blue_cube",
+          "bbox_xyxy": [
+            366,
+            46,
+            380,
+            61
+          ]
+        }
+      ],
+      "confirmation": "User confirmed all three cube boxes and color labels."
+    },
+    {
+      "image_id": "dist80cm/dist80cm_0001.jpg",
+      "sha256": "8e7b1998a4ff3e5854c94b80617d7b1fc045cc62137fe84b32c08c9bfd06db86",
+      "reviewer": "Maher",
+      "review_date": "2026-09-09",
+      "status": "confirmed",
+      "objects": [
+        {
+          "class_name": "red_cube",
+          "bbox_xyxy": [
+            287,
+            17,
+            298,
+            28
+          ]
+        },
+        {
+          "class_name": "green_cube",
+          "bbox_xyxy": [
+            312,
+            18,
+            324,
+            28
+          ]
+        },
+        {
+          "class_name": "blue_cube",
+          "bbox_xyxy": [
+            344,
+            18,
+            354,
+            28
+          ]
+        }
+      ],
+      "confirmation": "User confirmed the eighty-centimeter image annotations are correct."
+    },
+    {
+      "image_id": "red_blue/red_blue_0001.jpg",
+      "sha256": "f9a357aec9bf3898243b9d31fb0b29684aef99be0fd0cf1948baa1d540b67d8c",
+      "reviewer": "Maher",
+      "review_date": "2026-09-09",
+      "status": "confirmed",
+      "objects": [
+        {
+          "class_name": "red_cube",
+          "bbox_xyxy": [
+            303,
+            97,
+            320,
+            117
+          ]
+        },
+        {
+          "class_name": "blue_cube",
+          "bbox_xyxy": [
+            345,
+            94,
+            364,
+            116
+          ]
+        }
+      ],
+      "confirmation": "User confirmed both cube boxes and color labels."
+    },
+    {
+      "image_id": "red_green/red_green_0001.jpg",
+      "sha256": "8b2f1342b1546dda76f1fe6a6f8151874818ef12994595ee4d27f4208d676f01",
+      "reviewer": "Maher",
+      "review_date": "2026-09-09",
+      "status": "confirmed",
+      "objects": [
+        {
+          "class_name": "red_cube",
+          "bbox_xyxy": [
+            291,
+            102,
+            312,
+            123
+          ]
+        },
+        {
+          "class_name": "green_cube",
+          "bbox_xyxy": [
+            336,
+            108,
+            356,
+            130
+          ]
+        }
+      ],
+      "confirmation": "User explicitly confirmed all remaining images in the 13-image gallery have correct labels and boxes."
+    },
+    {
+      "image_id": "red_green_blue/red_green_blue_0001.jpg",
+      "sha256": "267f89123f53da24069a96fcb389240d9b0bb5d7ed06011c62c6be534334c002",
+      "reviewer": "Maher",
+      "review_date": "2026-09-09",
+      "status": "confirmed",
+      "objects": [
+        {
+          "class_name": "red_cube",
+          "bbox_xyxy": [
+            291,
+            102,
+            312,
+            123
+          ]
+        },
+        {
+          "class_name": "green_cube",
+          "bbox_xyxy": [
+            336,
+            108,
+            356,
+            130
+          ]
+        },
+        {
+          "class_name": "blue_cube",
+          "bbox_xyxy": [
+            306,
+            121,
+            324,
+            143
+          ]
+        }
+      ],
+      "confirmation": "User explicitly confirmed all remaining images in the 13-image gallery have correct labels and boxes."
+    },
+    {
+      "image_id": "single_blue/single_blue_0001.jpg",
+      "sha256": "c8d5b88d2cdcca013d6c02b9cda82c0e383a3ec0d2141dbb128b11ae0b0e1e37",
+      "reviewer": "Maher",
+      "review_date": "2026-09-09",
+      "status": "confirmed",
+      "objects": [
+        {
+          "class_name": "blue_cube",
+          "bbox_xyxy": [
+            332,
+            105,
+            352,
+            128
+          ]
+        }
+      ],
+      "confirmation": "User explicitly confirmed all remaining images in the 13-image gallery have correct labels and boxes."
+    },
+    {
+      "image_id": "single_green/single_green_0001.jpg",
+      "sha256": "98fff0182354a1f31a12239dbfc107db04a0dbf235ebb86c1f0af5fef62b005f",
+      "reviewer": "Maher",
+      "review_date": "2026-09-09",
+      "status": "confirmed",
+      "objects": [
+        {
+          "class_name": "green_cube",
+          "bbox_xyxy": [
+            335,
+            106,
+            351,
+            126
+          ]
+        }
+      ],
+      "confirmation": "User explicitly confirmed all remaining images in the 13-image gallery have correct labels and boxes."
+    },
+    {
+      "image_id": "single_red/single_red_0001.jpg",
+      "sha256": "76e02d2667589e244b6e9350ffe775e8510eaf7dc38623fd6d049eb6229c0019",
+      "reviewer": "Maher",
+      "review_date": "2026-09-09",
+      "status": "confirmed",
+      "objects": [
+        {
+          "class_name": "red_cube",
+          "bbox_xyxy": [
+            337,
+            105,
+            355,
+            127
+          ]
+        }
+      ],
+      "confirmation": "User explicitly confirmed all remaining images in the 13-image gallery have correct labels and boxes."
+    },
+    {
+      "image_id": "spread_out/spread_out_0001.jpg",
+      "sha256": "6ccfff3ddfa3cdd1b442d00132b7d23092380fb500f427129e118831dce29ab9",
+      "reviewer": "Maher",
+      "review_date": "2026-09-09",
+      "status": "confirmed",
+      "objects": [
+        {
+          "class_name": "red_cube",
+          "bbox_xyxy": [
+            187,
+            57,
+            203,
+            73
+          ]
+        },
+        {
+          "class_name": "green_cube",
+          "bbox_xyxy": [
+            414,
+            60,
+            428,
+            75
+          ]
+        },
+        {
+          "class_name": "blue_cube",
+          "bbox_xyxy": [
+            501,
+            147,
+            531,
+            172
+          ]
+        }
+      ],
+      "confirmation": "User explicitly confirmed all remaining images in the 13-image gallery have correct labels and boxes."
+    }
+  ],
+  "capture_provenance": {
+    "confirmed_by": "Maher",
+    "confirmation_date": "2026-09-09",
+    "image_count": 98,
+    "session_count": 1,
+    "description": "User confirmed all 98 images were captured in one continuous session.",
+    "allocation_decision": "Keep this collection together as development/training data; capture separate validation data. Final test remains separate from both."
+  }
+}

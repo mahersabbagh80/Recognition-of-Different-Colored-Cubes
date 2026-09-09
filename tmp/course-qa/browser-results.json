@@ -1,0 +1,122 @@
+[
+  {
+    "file": "0001-choose-the-vision-task.html",
+    "ranges": 1,
+    "selects": 3,
+    "forms": 2,
+    "mobileOverflow": false,
+    "errors": []
+  },
+  {
+    "file": "0002-images-are-data.html",
+    "ranges": 2,
+    "selects": 4,
+    "forms": 2,
+    "mobileOverflow": false,
+    "errors": []
+  },
+  {
+    "file": "0003-visual-features.html",
+    "ranges": 1,
+    "selects": 2,
+    "forms": 1,
+    "mobileOverflow": false,
+    "errors": []
+  },
+  {
+    "file": "0004-how-models-learn.html",
+    "ranges": 5,
+    "selects": 1,
+    "forms": 1,
+    "mobileOverflow": false,
+    "errors": []
+  },
+  {
+    "file": "0005-loss-and-optimization.html",
+    "ranges": 2,
+    "selects": 1,
+    "forms": 1,
+    "mobileOverflow": false,
+    "errors": []
+  },
+  {
+    "file": "0006-generalization-and-data-splits.html",
+    "ranges": 1,
+    "selects": 7,
+    "forms": 1,
+    "mobileOverflow": false,
+    "errors": []
+  },
+  {
+    "file": "0007-neural-networks-and-convolutions.html",
+    "ranges": 1,
+    "selects": 2,
+    "forms": 1,
+    "mobileOverflow": false,
+    "errors": []
+  },
+  {
+    "file": "0008-transfer-learning-and-augmentation.html",
+    "ranges": 0,
+    "selects": 7,
+    "forms": 1,
+    "mobileOverflow": false,
+    "errors": []
+  },
+  {
+    "file": "0009-object-detection.html",
+    "ranges": 4,
+    "selects": 1,
+    "forms": 1,
+    "mobileOverflow": false,
+    "errors": []
+  },
+  {
+    "file": "0010-evaluate-a-detector.html",
+    "ranges": 2,
+    "selects": 2,
+    "forms": 1,
+    "mobileOverflow": false,
+    "errors": []
+  },
+  {
+    "file": "0011-compare-a-fine-tune.html",
+    "ranges": 0,
+    "selects": 2,
+    "forms": 1,
+    "mobileOverflow": false,
+    "errors": []
+  },
+  {
+    "file": "0012-depth-and-camera-geometry.html",
+    "ranges": 2,
+    "selects": 1,
+    "forms": 1,
+    "mobileOverflow": false,
+    "errors": []
+  },
+  {
+    "file": "0013-check-depth-evidence.html",
+    "ranges": 1,
+    "selects": 2,
+    "forms": 2,
+    "mobileOverflow": false,
+    "errors": []
+  },
+  {
+    "file": "0014-ros2-message-flow.html",
+    "ranges": 5,
+    "selects": 1,
+    "forms": 1,
+    "mobileOverflow": false,
+    "errors": []
+  },
+  {
+    "file": "0015-deploy-and-diagnose.html",
+    "ranges": 0,
+    "selects": 3,
+    "forms": 2,
+    "mobileOverflow": false,
+    "errors": []
+  }
+]

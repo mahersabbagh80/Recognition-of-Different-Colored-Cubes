@@ -7,9 +7,9 @@ output0 with shape (1, 4 + nc, num_anchors) = (1, 7, 8400) where:
   - rows 4..6 are already sigmoid-activated per-class scores
     (no separate objectness channel in the 4+nc layout).
 
-We do the standard Ultralytics post-processing on top: per-class confidence
-filter (conf >= conf_thres), xywh->xyxy, torchvision NMS, then undo
-letterbox to map back into the original image frame.
+We mirror the deployed decoder: per-class confidence filter
+(conf >= conf_thres), center/size xywh->xyxy, undo letterbox and clip to the
+original image, then run per-class torchvision NMS.
 
 This is NOT a full M4 accuracy check.  It only proves that:
   - the exported graph loads into ORT,
@@ -51,13 +51,21 @@ def letterbox(im: np.ndarray, new_size: int = 640, color: int = 114):
     return np.asarray(canvas, dtype=np.uint8), r, ((new_size - nw) // 2, (new_size - nh) // 2)
 
 
-def yolov5_decode_and_nms(pred: np.ndarray, conf_thres: float, iou_thres: float):
+def yolov5_decode_and_nms(
+    pred: np.ndarray,
+    conf_thres: float,
+    iou_thres: float,
+    orig_wh: tuple[int, int],
+    ratio: float,
+    pad: tuple[int, int],
+):
     """Run standard post-processing on a (1, 4+nc, num_anchors) YOLOv5 ONNX export.
 
     pred[0] has shape (4+nc, N).  Rows 0..3 are xywh in 640x640 pixel space.
     Rows 4..4+nc are already sigmoid-activated class scores.
 
-    Returns (M, 6) array of [x1, y1, x2, y2, conf, cls] in 640x640 pixels.
+    Returns (M, 6) array of [x1, y1, x2, y2, conf, cls] in original-image
+    pixels. Mapping and clipping happen before NMS, matching the live node.
     """
     x = torch.from_numpy(pred[0])  # (4+nc, N)
     nc = x.shape[0] - 4
@@ -73,10 +81,20 @@ def yolov5_decode_and_nms(pred: np.ndarray, conf_thres: float, iou_thres: float)
     conf = conf[mask]
     j = j[mask].float()
 
-    # xywh -> xyxy in 640x640 pixel space
-    x1, y1, w, h = box[:, 0], box[:, 1], box[:, 2], box[:, 3]
-    x2, y2 = x1 + w, y1 + h
+    # The export stores box center (cx, cy) and size (w, h), not top-left x/y.
+    cx, cy, w, h = box[:, 0], box[:, 1], box[:, 2], box[:, 3]
+    x1, y1 = cx - w / 2, cy - h / 2
+    x2, y2 = cx + w / 2, cy + h / 2
     boxes_xyxy = torch.stack([x1, y1, x2, y2], dim=1)
+
+    # Undo letterbox and clip before NMS. The affine mapping alone preserves
+    # IoU, but clipping a border-crossing box can change it.
+    pad_x, pad_y = pad
+    boxes_xyxy[:, [0, 2]] = (boxes_xyxy[:, [0, 2]] - pad_x) / ratio
+    boxes_xyxy[:, [1, 3]] = (boxes_xyxy[:, [1, 3]] - pad_y) / ratio
+    orig_w, orig_h = orig_wh
+    boxes_xyxy[:, [0, 2]] = boxes_xyxy[:, [0, 2]].clamp(0, orig_w - 1)
+    boxes_xyxy[:, [1, 3]] = boxes_xyxy[:, [1, 3]].clamp(0, orig_h - 1)
 
     # Per-class NMS using torchvision
     keep = []
@@ -133,12 +151,14 @@ def main() -> int:
           f"h=[{out[0,3].min():.1f},{out[0,3].max():.1f}]")
     print(f"class_score range: min={out[0,4:].min():.3f} max={out[0,4:].max():.3f}")
 
-    dets = yolov5_decode_and_nms(out, conf_thres=args.conf, iou_thres=args.iou)
-    if dets.shape[0]:
-        dets[:, [0, 2]] = (dets[:, [0, 2]] - pad_x) / ratio
-        dets[:, [1, 3]] = (dets[:, [1, 3]] - pad_y) / ratio
-        dets[:, [0, 2]] = dets[:, [0, 2]].clamp(0, w0)
-        dets[:, [1, 3]] = dets[:, [1, 3]].clamp(0, h0)
+    dets = yolov5_decode_and_nms(
+        out,
+        conf_thres=args.conf,
+        iou_thres=args.iou,
+        orig_wh=(w0, h0),
+        ratio=ratio,
+        pad=(pad_x, pad_y),
+    )
 
     names = {0: "blue_cube", 1: "green_cube", 2: "red_cube"}
     print(f"detections_after_nms: {dets.shape[0]}  (orig_size={w0}x{h0})")

@@ -7,7 +7,7 @@
 **Created:** 2026-09-01  
 **Scope:** General computer-vision and machine-learning terminology, with special attention to the YOLOv5, TensorRT, depth-camera, and ROS 2 concepts used by this project.
 
-This glossary is intentionally **not bounded to one lesson**. New lessons may add terms, refine explanations, or link back here instead of defining the same word in several places.
+This glossary is intentionally **not bounded to one lesson**. Every lesson defines the technical vocabulary it uses locally. This glossary is an additional reference, not a prerequisite for reading a lesson.
 
 ## How to use this glossary
 
@@ -28,7 +28,7 @@ RGB + depth camera
     -> ROS 2 image messages
     -> cv_bridge / OpenCV arrays
     -> BGR-to-RGB conversion, letterbox, normalization
-    -> YOLOv5s TensorRT FP16 inference
+    -> documented YOLOv5u-style TensorRT inference
     -> candidate decoding, confidence filtering, NMS
     -> depth/geometry KEEP or REJECT decision
     -> ROS 2 detection messages and debug image
@@ -40,7 +40,7 @@ Current project-specific facts:
 - Current runtime class order in `cube_detection_node.py`: `0: blue_cube`, `1: green_cube`, `2: red_cube`.
 - Model artifact chain: `models/best.pt` -> `models/best.onnx` -> `models/best.engine`.
 - Main RGB input: `/depth_cam/rgb/image_raw` (`sensor_msgs/Image`).
-- Color-registered depth input: `/depth_cam/depth/image_raw` (`uint16` millimetres).
+- Depth input (RGB registration still requires hardware validation): `/depth_cam/depth/image_raw` (`uint16` millimetres).
 - Standard detection output: `/cube_detections` (`vision_msgs/Detection2DArray`).
 - Vendor-compatible output: `/cube_detections/vendor_objects` (`interfaces/ObjectsInfo`).
 - Human-readable output: `/cube_detections/debug_image` (`sensor_msgs/Image`).
@@ -858,7 +858,7 @@ Raising the threshold usually makes the system more selective; lowering it usual
 
 ### Node
 
-**Definition:** A process or logical computation unit in a ROS 2 system.
+**Definition:** A logical computation participant in the ROS 2 communication graph. Multiple nodes can share a process; a node is not the same thing as an operating-system process.
 
 **In this project:** `cube_detection_node` receives images, runs inference, filters candidates, and publishes results.
 
@@ -884,7 +884,7 @@ Raising the threshold usually makes the system more selective; lowering it usual
 
 **Definition:** A ROS 2 endpoint that receives messages from a topic.
 
-**In this project:** The detector subscribes to the vendor RGB stream, the color-registered depth stream, and camera information.
+**In this project:** The detector subscribes to the vendor RGB stream, the depth stream, whose alignment to RGB must be verified, and camera information.
 
 **Related terms:** topic, publisher, callback, synchronization.
 
@@ -998,9 +998,9 @@ Raising the threshold usually makes the system more selective; lowering it usual
 
 ### Depth image
 
-**Definition:** An image in which each pixel represents distance from the camera to the observed scene surface.
+**Definition:** An image whose pixels represent depth under a declared convention. ROS canonical depth measures distance along the camera optical Z axis, not Euclidean distance along an off-axis viewing ray.
 
-**In this project:** `/depth_cam/depth/image_raw` provides color-registered depth values in unsigned 16-bit millimetres.
+**In this project:** The node expects `/depth_cam/depth/image_raw` to supply unsigned 16-bit millimetres, with zero invalid. RGB registration is a required assumption, not established by matching image dimensions or the topic name.
 
 **Related terms:** RGB-depth registration, depth unit, camera intrinsics, geometry filter.
 
@@ -1056,7 +1056,7 @@ Raising the threshold usually makes the system more selective; lowering it usual
 
 **Definition:** An estimate of the background or supporting surface against which an object's height can be compared.
 
-**In this project:** The filter estimates a local floor depth around a candidate box and asks whether enough pixels inside the box are raised above that reference.
+**In this project:** The filter estimates a local depth around a candidate box. Its current greater-than comparison selects farther points under optical Z depth. Neither this comparison nor reversing it alone establishes physical height above an oblique floor.
 
 **Related terms:** annulus, raised fraction, geometry filter.
 
@@ -1072,15 +1072,15 @@ Raising the threshold usually makes the system more selective; lowering it usual
 
 **Definition:** A rule-based check that uses geometric measurements to accept or reject a model candidate.
 
-**In this project:** The M4c1 filter uses synchronized depth to reject flat colour distractors and non-cube shapes after YOLO proposes them. It is a second evidence check, not a replacement for the detector.
+**In this project:** The M4c1 filter applies depth-based acceptance rules after YOLO proposes candidates. Rejecting flat distractors is the intent, not validated behavior: registration and the current depth-selection sign need verification. The filter cannot create a missing candidate.
 
 **Related terms:** depth image, KEEP, REJECT, raised fraction, aspect ratio.
 
 ### Raised fraction
 
-**Definition:** The fraction of valid depth pixels inside a candidate region that are sufficiently above the local background reference.
+**Definition:** A project-named fraction intended to indicate a raised surface. Its physical meaning depends on how points are selected and how the supporting surface is represented.
 
-**In this project:** `filter_min_raised_frac` requires enough of the candidate region to appear raised above the floor. This helps reject flat decals, cardboard, and floor texture.
+**In this project:** The current selection uses depth greater than floor depth plus a margin. For optical Z depth this selects farther points. Calling that subset raised does not validate the intended interpretation or prove rejection of flat distractors.
 
 **Related terms:** depth image, floor reference, geometry filter.
 
@@ -1088,7 +1088,7 @@ Raising the threshold usually makes the system more selective; lowering it usual
 
 **Definition:** A relatively flat upper surface of a raised object.
 
-**In this project:** The filter checks the depth variation of the raised subset. A cube's top should be more planar than a curved ball or irregular package.
+**In this project:** The filter checks depth variation in the selected subset. Small variation in Z is not a general planarity test: a tilted flat plane can have substantial Z variation. A geometric plane fit would answer a different question.
 
 **Related terms:** standard deviation, geometry filter, depth image.
 

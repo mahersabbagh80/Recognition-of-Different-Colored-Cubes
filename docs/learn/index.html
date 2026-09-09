@@ -1,56 +1,28 @@
-<!doctype html>
-<html lang="en">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Colored-cube perception learning workspace</title>
-  <link rel="stylesheet" href="assets/lesson.css">
-</head>
-<body>
-<main data-course-dashboard>
-  <header class="reference-header">
-    <p class="brand-kicker">Software · AI · Robotics / Learning workspace</p>
-    <h1>Own the colored-cube perception stack</h1>
-    <p class="lede">Learn the current system deeply enough to debug its boundaries, defend its decisions, and explain its evidence without overclaiming.</p>
-  </header>
+<!DOCTYPE html>
 
-  <nav class="course-nav" aria-label="Workspace navigation"><a href="MISSION.md">Mission</a><a href="LESSON-PLAN.md">Curriculum plan</a><a href="reference/index.html">Quick references</a><a href="RESOURCES.md">Source shelf</a></nav>
+<html lang="en"><head><meta charset="utf-8"/><meta content="width=device-width,initial-scale=1" name="viewport"/><title>Machine Learning and Computer Vision Foundations</title><link href="assets/lesson.css" rel="stylesheet"/></head>
+<body><main data-course-dashboard=""><header class="reference-header"><p class="brand-kicker">Software · AI · Robotics / Short course</p><h1>Machine Learning and Computer Vision Foundations</h1><p class="lede">Eleven main lessons for training a better colored-cube detector, followed by four optional lessons for integrating it with the robot.</p></header>
+<nav aria-label="Workspace navigation" class="course-nav"><a href="MISSION.md">Mission</a><a href="LESSON-PLAN.md">Course plan</a><a href="reference/fundamentals-map.html">Course map</a><a href="RESOURCES.md">Source shelf</a><a href="VALIDATION.md">Validation</a></nav>
+<section class="status-strip"><div><strong>11 main + 4 optional</strong><span>Core paths plus optional notes</span></div><div><strong>Browser practice</strong><span>No Python required</span></div><div><strong>Interactive HTML</strong><span>Current lessons; PDFs deferred</span></div></section>
+<section class="dashboard-grid"><div class="dashboard-card"><span class="eyebrow">Starting point</span><strong>Programmer, new to ML/CV</strong><p>Programming ideas are assumed; ML, vision, camera geometry, and ROS 2 perception are introduced.</p></div><div class="dashboard-card"><span class="eyebrow">Learning evidence</span><strong id="learning-state">Not yet measured</strong><p id="learning-detail">Explain-backs with the teaching agent establish what you can use without prompts.</p></div><div class="dashboard-card"><span class="eyebrow">Project status</span><strong>M5 PARTIAL</strong><p>The project is an application and evidence source, including unresolved behavior—not the authority for fundamentals.</p></div></section>
+<div class="callout"><p class="callout-title">How to use the course</p><p>Take main lessons 1–11 in order on the first pass. Lessons 12–15 form the optional robot track. Follow the core explanation, predict before moving a control, then attempt the fresh problem. Optional notes preserve extra detail for a second pass. Plan around 15–20 minutes for a core path; allow longer for practice or optional reading. At each explain-back, ask the teaching agent to probe your reasoning and record demonstrated learning.</p></div>
+<h2>Part I · Seeing images as data</h2><ol class="course-list">
+<li><a href="lessons/0001-choose-the-vision-task.html"><strong>Choose the vision task</strong><span>Input, output, classification, detection, segmentation, and success.</span></a></li>
+<li><a href="lessons/0002-images-are-data.html"><strong>Images are data</strong><span>Pixels, channels, coordinates, tensor shapes, and transforms.</span></a></li>
+<li><a href="lessons/0003-visual-features.html"><strong>Visual features</strong><span>Color, edges, filters, useful invariance, and shortcuts.</span></a></li></ol>
+<h2>Part II · Learning visual representations</h2><ol class="course-list" start="4">
+<li><a href="lessons/0004-how-models-learn.html"><strong>How models learn</strong><span>Examples, targets, parameters, training, and inference.</span></a></li>
+<li><a href="lessons/0005-loss-and-optimization.html"><strong>Loss and optimization</strong><span>Prediction, error, gradient, learning rate, batch, and epoch.</span></a></li>
+<li><a href="lessons/0006-generalization-and-data-splits.html"><strong>Generalization and data splits</strong><span>Overfitting, validation, test discipline, leakage, and shift.</span></a></li>
+<li><a href="lessons/0007-neural-networks-and-convolutions.html"><strong>Neural networks and convolutions</strong><span>Activations, shared local filters, feature maps, and context.</span></a></li>
+<li><a href="lessons/0008-transfer-learning-and-augmentation.html"><strong>Transfer learning and augmentation</strong><span>Pretraining, fine-tuning, label-preserving transformations, and rollback.</span></a></li></ol>
+<h2>Part III · Evaluate and improve the detector</h2><ol class="course-list" start="9">
+<li><a href="lessons/0009-object-detection.html"><strong>Object detection</strong><span>Boxes, candidates, scores, IoU, thresholding, and NMS.</span></a></li>
+<li><a href="lessons/0010-evaluate-a-detector.html"><strong>Evaluate a detector</strong><span>Matching, TP/FP/FN, precision, recall, AP, and test matrices.</span></a></li>
 
-  <section class="dashboard-grid" aria-label="Current learning state">
-    <div class="dashboard-card"><span class="eyebrow">Engineering status</span><strong>M5 PARTIAL</strong><p>Runtime and empty-scene behavior work; reliable room-domain positive detection remains unresolved.</p></div>
-    <div class="dashboard-card"><span class="eyebrow">Verified contract</span><strong>[1, 7, 8400]</strong><p>One batch item, seven fields, and 8,400 candidate positions for the current export.</p></div>
-    <div class="dashboard-card"><span class="eyebrow">Learning evidence</span><strong id="learning-state">Not yet measured</strong><p id="learning-detail">Complete an explain-back with the agent before treating lesson exposure as mastery.</p></div>
-  </section>
-
-  <div class="callout"><p class="callout-title">Choose your entrance</p><p><strong>New to the material?</strong> Start with Lesson 0001. <strong>Already reviewed the course?</strong> Attempt Lesson 0009’s final explain-back without notes; use the gaps to select the next lesson.</p></div>
-
-  <h2>Lessons</h2>
-  <ol class="course-list">
-    <li><a href="lessons/0001-what-yolo-outputs.html"><strong>What YOLO outputs</strong><span>Detection, boxes, confidence, candidates, and final outputs.</span></a></li>
-    <li><a href="lessons/0002-how-yolo-produces-predictions.html"><strong>How YOLO produces predictions</strong><span>The current tensor contract, decoder, inverse letterbox, and NMS.</span></a></li>
-    <li><a href="lessons/0003-pytorch-and-model-training.html"><strong>PyTorch and model training</strong><span>Labels, loss, gradients, validation, and checkpoint selection.</span></a></li>
-    <li><a href="lessons/0004-why-the-model-fails-on-the-robot.html"><strong>Why the model fails on the robot</strong><span>Domain gap, evidence boundaries, and failure localization.</span></a></li>
-    <li><a href="lessons/0005-onnx-and-tensorrt.html"><strong>ONNX and TensorRT</strong><span>Artifact conversion, FP16, compatibility, and verification.</span></a></li>
-    <li><a href="lessons/0006-ros-2-perception-wiring.html"><strong>ROS 2 perception wiring</strong><span>Topics, synchronization, QoS, conversion, and publication.</span></a></li>
-    <li><a href="lessons/0007-depth-and-geometry-filtering.html"><strong>Depth and geometry filtering</strong><span>Z-depth, calibration assumptions, decision policy, and known defect.</span></a></li>
-    <li><a href="lessons/0008-evaluation-and-fine-tuning.html"><strong>Evaluation and fine-tuning</strong><span>Metrics, test matrices, hard negatives, gates, and rollback.</span></a></li>
-    <li><a href="lessons/0009-project-walkthrough-and-interview-practice.html"><strong>Project walkthrough and interview practice</strong><span>Explain the complete system, evidence, trade-offs, and next experiment.</span></a></li>
-  </ol>
-
-  <h2>Quick references</h2>
-  <div class="reference-grid compact">
-    <a class="reference-card" href="reference/image-and-tensor-contracts.html"><strong>Image and tensor contracts</strong><span>Representation and coordinates.</span></a>
-    <a class="reference-card" href="reference/yolo-output-and-decoding.html"><strong>YOLO decoding</strong><span>`[1,7,8400]` to detections.</span></a>
-    <a class="reference-card" href="reference/training-and-evaluation.html"><strong>Training and evaluation</strong><span>Evidence and metrics.</span></a>
-    <a class="reference-card" href="reference/onnx-and-tensorrt.html"><strong>ONNX and TensorRT</strong><span>Deployment boundaries.</span></a>
-    <a class="reference-card" href="reference/ros2-and-depth.html"><strong>ROS 2 and depth</strong><span>Runtime and geometry policy.</span></a>
-  </div>
-
-  <h2>How progress becomes durable</h2>
-  <p>Each lesson after the first begins with retrieval from earlier lessons. The browser saves your self-rating locally, but that is only practice evidence. When you explain or apply a concept with the agent, the agent records the demonstrated understanding in <code>learning-records/</code> and uses it to choose the next challenge.</p>
-
-  <footer><p>Project-specific learning workspace · <a href="NOTES.md">Teaching notes</a> · <a href="history/README.md">Historical records</a></p></footer>
-</main>
-<script src="assets/quiz.js"></script>
-</body>
-</html>
+<li><a href="lessons/0011-compare-a-fine-tune.html"><strong>Did fine-tuning help?</strong><span>Compare candidates fairly and finish with an experiment plan.</span></a></li></ol><h2 id="robot-track">Optional track · use the selected model on the robot</h2><p>These four lessons are not prerequisites for the main training course. Return when you need physical depth, ROS 2 integration, or runtime deployment.</p><ol class="course-list" start="12"><li><a href="lessons/0012-depth-and-camera-geometry.html"><strong>From pixels to 3-D points</strong><span>Optional robot integration</span></a></li><li><a href="lessons/0013-check-depth-evidence.html"><strong>Can we trust this depth?</strong><span>Optional robot integration</span></a></li><li><a href="lessons/0014-ros2-message-flow.html"><strong>How ROS 2 carries a frame</strong><span>Optional robot integration</span></a></li><li><a href="lessons/0015-deploy-and-diagnose.html"><strong>Deploy the model and diagnose a result</strong><span>Optional robot integration</span></a></li></ol>
+<h2>Earlier printable versions</h2><p>These PDFs predate the interactive revision. Use the HTML lessons above for the current course; PDF updates are deferred.</p><div class="reference-grid compact">
+<a class="reference-card" href="../../output/pdf/0001-choose-the-vision-task.pdf"><strong>01 · Vision task</strong><span>PDF</span></a><a class="reference-card" href="../../output/pdf/0002-images-are-data.pdf"><strong>02 · Images</strong><span>PDF</span></a><a class="reference-card" href="../../output/pdf/0003-visual-features.pdf"><strong>03 · Features</strong><span>PDF</span></a><a class="reference-card" href="../../output/pdf/0004-how-models-learn.pdf"><strong>04 · Learning</strong><span>PDF</span></a><a class="reference-card" href="../../output/pdf/0005-loss-and-optimization.pdf"><strong>05 · Optimization</strong><span>PDF</span></a><a class="reference-card" href="../../output/pdf/0006-generalization-and-data-splits.pdf"><strong>06 · Generalization</strong><span>PDF</span></a><a class="reference-card" href="../../output/pdf/0007-neural-networks-and-convolutions.pdf"><strong>07 · Convolution</strong><span>PDF</span></a><a class="reference-card" href="../../output/pdf/0008-transfer-learning-and-augmentation.pdf"><strong>08 · Transfer</strong><span>PDF</span></a><a class="reference-card" href="../../output/pdf/0009-object-detection.pdf"><strong>09 · Detection</strong><span>PDF</span></a><a class="reference-card" href="../../output/pdf/0010-evaluate-a-detector.pdf"><strong>10 · Evaluation</strong><span>PDF</span></a><a class="reference-card" href="../../output/pdf/0011-depth-and-camera-geometry.pdf"><strong>11 · Geometry</strong><span>PDF</span></a><a class="reference-card" href="../../output/pdf/0012-model-to-ros2-system.pdf"><strong>12 · ROS 2 system</strong><span>PDF</span></a></div>
+<h2>Reference library</h2><div class="reference-grid compact"><a class="reference-card" href="reference/fundamentals-map.html"><strong>Fundamentals map</strong><span>The whole course on one printable page.</span></a><a class="reference-card" href="reference/image-and-tensor-contracts.html"><strong>Image contracts</strong><span>Image and tensor representation.</span></a><a class="reference-card" href="reference/training-and-evaluation.html"><strong>Training and evaluation</strong><span>Learning and evidence reminders.</span></a><a class="reference-card" href="reference/yolo-output-and-decoding.html"><strong>YOLO decoding</strong><span>Current project output contract.</span></a><a class="reference-card" href="reference/ros2-and-depth.html"><strong>ROS 2 and depth</strong><span>Runtime and geometry reference.</span></a></div>
+<footer><p><a href="NOTES.md">Teaching notes</a> · <a href="learning-records/README.md">Learning records</a> · <a href="archive/2026-09-07-project-first-course/">Archived project-first course</a></p></footer>
+</main><script src="assets/quiz.js"></script></body></html>

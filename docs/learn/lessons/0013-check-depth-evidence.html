@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+
+<html lang="en"><head><meta charset="utf-8"/><meta content="width=device-width,initial-scale=1" name="viewport"/><title>Optional robot lesson 13 — Can we trust this depth?</title><link href="../assets/lesson.css" rel="stylesheet"/><link href="../assets/lesson-interactions.css" rel="stylesheet"/><link href="../assets/visual-learning.css" rel="stylesheet"/><link href="../assets/editorial.css" rel="stylesheet"/></head><body class="lesson-0011"><main><header><p class="eyebrow">Optional robot track · Lesson 13</p><h1>Can we trust this depth?</h1><p class="lede">A number inside a detection box may belong to the cube, the floor, or no valid measurement at all.</p><p class="lesson-meta">Core path: about 15–20 minutes · optional notes take extra time</p><p class="editorial-recap">This lesson is optional for the training course. Study it when you are ready to integrate the selected detector with the robot.</p></header><p><strong>Your goal:</strong> decide when depth supports a geometry check and when the evidence is insufficient.</p><h2>1. Check what the depth numbers mean</h2><p>A <strong>depth image</strong> stores a distance value at each pixel. A <strong>pixel</strong> is one image sample. In this lesson <strong>optical Z</strong> measures distance forward along the camera’s central axis; a larger value means farther away along that axis. <strong>RGB</strong> names the red, green, and blue color channels. A <strong>bounding box</strong> is the rectangle enclosing a detected object.</p><p>Before comparing a cube and the floor, check units, missing values, and <strong>registration</strong>: whether a depth sample corresponds to the same scene location as its RGB pixel. Two equally sized images can still be misaligned.</p><h2>2. Choose a useful sample</h2>
+<p>Suppose the stored value is <code>1050</code>. If the image uses millimetres, that is 1.05 metres. If you read it as metres, the geometry is wildly wrong. This exercise uses unsigned 16-bit integers (<strong>uint16</strong>) in millimetres, with zero marking an invalid reading. Other depth streams use fractional values in metres and may mark missing readings with <strong>NaN</strong>, “not a number.” Read the sensor’s encoding before converting.</p><details><summary>Optional: optical depth and ROS representations</summary><p>Optical Z is the forward component of distance. <strong>Ray range</strong> is the full straight-line distance to the point; away from the image center it is longer than optical Z. ROS is Robot Operating System; its depth-image specification, <a href="https://www.ros.org/reps/rep-0118.html">REP 118</a>, describes floating-point metre values and a raw integer millimetre representation. The sensor’s actual encoding determines which rule to use.</p></details>
+<p>A box contains <strong>foreground</strong>, the visible target surface, as well as floor, edges, and missing samples. A <strong>valid sample</strong> passes the sensor's validity rules. A <strong>median</strong> is the middle value after sorting valid samples. With an even count, average the two middle values: for <code>[1048, 1050, 1051, 1052]</code>, the median is <code>(1050+1051)/2 = 1050.5</code>. If too few values are valid, report low evidence instead of pretending the statistic is trustworthy.</p>
+<details><summary>Optional: percentiles and the p90 control</summary><p>A <strong>percentile</strong> is a chosen point in that sorted distribution; <strong>p90</strong> means the 90th percentile. In this lesson, the nearest-rank p90 is the value at rank <code>ceil(0.90 × n)</code>: <code>ceil</code> means round upward, and <code>n</code> is the count of valid samples. A <strong>rank</strong> counts positions starting at 1, so rank 1 selects the smallest valid reading. For five readings, <code>ceil(0.90×5) = ceil(4.5) = 5</code>: select the fifth value. With no valid readings, neither statistic can be calculated. For the illustrative millimetre values <code>[1048, 1050, 1051, 1052, 1062, 0]</code>, discard the invalid zero: the median is <code>1051 mm</code>, while the nearest-rank p90 is <code>1062 mm</code>. The median describes a typical sample; p90 exposes a high-depth tail. </p></details><section class="browser-lab" id="stats-lab">
+<h3>Explore: invalid samples change the evidence</h3>
+<p>The list starts with six illustrative readings in millimetres. Move the slider to mark readings as invalid; the script removes them before calculating. The list is synthetic and has not been measured on the robot. This control removes values from the end of the list; actual missing samples can occur anywhere and can change the statistic in either direction.</p>
+<div class="lab-controls">
+<label for="invalid-count">Additional invalid readings: <output id="invalid-value">0</output><input id="invalid-count" max="5" min="0" step="1" type="range" value="0"/></label>
+<label for="statistic-choice">Summary statistic<select id="statistic-choice"><option value="median">Median</option><option value="p90">Nearest-rank p90</option></select></label>
+</div>
+<p aria-live="polite" class="lab-output" id="stats-output" role="status">Static default: after removing the invalid zero, median = 1051 mm from 5 valid samples.</p>
+<p class="answer-line">Static worked answer: invalid values are excluded; a real implementation must also set a minimum valid-count rule.</p>
+</section>
+<h2>3. Decide whether a comparison is meaningful</h2><p>“Nearer than the floor” is not universally the same as “taller than the floor.” With a level, overhead-like view, a raised cube often has lower optical Z than the floor behind it. With an <strong>oblique</strong> (slanted) camera, the floor itself has changing Z across the image. A sound height test first models the <strong>floor plane</strong>, an ideal flat surface in 3-D, then measures a point's distance from that plane. A single global floor depth is only an assumption that must be checked against the mounting geometry.</p>
+<p>A <strong>predicate</strong> is a true-or-false comparison. A <strong>margin</strong> is a required gap beyond a reference value. For example, with floor depth 1500 mm and margin 20 mm, “nearer by more than the margin” means <code>surface depth &lt; 1500−20</code>. The symbol <code>&lt;</code> means less than. A surface at 1400 mm passes because <code>1400 &lt; 1480</code>. This compares optical depths; it does not measure height above a slanted floor.</p>
+<section class="browser-lab">
+<h3>Check the direction before writing the predicate</h3>
+<p>Under ordinary optical Z, a floor sample is <code>1200 mm</code>, a nearer cube surface is <code>1050 mm</code>, and the illustrative positive <strong>margin</strong> is <code>30 mm</code>. Which comparison describes “nearer than the floor” for this simple setup?</p>
+<form id="geometry-practice">
+<fieldset>
+<legend>Choose the comparison</legend>
+<label><input name="geometry-choice" type="radio" value="closer"/> Select smaller optical depth values</label>
+<label><input name="geometry-choice" type="radio" value="farther"/> Select larger optical depth values</label>
+<label><input name="geometry-choice" type="radio" value="height"/> Either sign always measures height</label>
+</fieldset>
+<button class="check-btn" type="submit">Check choice</button>
+<p aria-live="polite" class="lab-output" id="geometry-feedback" role="status"></p>
+</form>
+<p class="answer-line">Worked answer: <code>1050 &lt; 1200 − 30</code>, so the first comparison is correct only for this declared optical-Z setup. A slanted floor requires a plane model.</p>
+</section>
+<section class="project-application">
+<h2>Applied to our cubes</h2>
+<details><summary>Optional: how this node reads depth</summary><p><span class="evidence-label">Repository observation</span>The current node uses an approximate RGB/depth <strong>timestamp synchronizer</strong>, a component that pairs messages by nearby timestamps. It converts RGB with <code>cv_bridge</code>, a ROS image-message conversion package; requests depth with <strong>passthrough encoding</strong>, which preserves the source array's numeric representation; and returns early unless depth is a 2-D <code>uint16</code> array. It reads intrinsics from the RGB <code>CameraInfo</code> message, the ROS message carrying camera calibration metadata, when available, with configured fallbacks.</p></details>
+<p><span class="evidence-label">Confirmed code behavior</span><code>geometry_filter.py</code> collects valid millimetre samples, estimates an <strong>annulus</strong>, meaning a ring around the box, for a floor median, and computes a raised <strong>mask</strong>, a boolean selection grid, with <code>depth &gt; floor_mm + raised_mm</code>. Under ordinary optical Z, that sign selects farther points, not nearer raised surfaces. It is a code fact and a teaching example; it does not validate the hardware mounting, registration, or floor interpretation. When statistics are invalid or below the minimum count, <code>decide</code> returns <code>KEEP</code>, meaning allow this candidate to pass, with a low-quality reason, so sparse depth is visible rather than silently filtered.</p>
+<p>Read the <a href="../../../recognition_of_different_colored_cubes/cube_detection_node.py">current detection node</a> and <a href="../../../recognition_of_different_colored_cubes/geometry_filter.py">geometry filter</a> alongside the <a href="../../architecture.md">architecture</a>. The code is evidence about this checkout; it is not proof that the physical depth stream is registered.</p>
+<div class="code-connection" id="code-connection"><details><summary>Optional: follow this concept into the source code</summary><h3>Read the project code</h3><p><strong>Implemented in data collection:</strong> the paired-image capture callback creates separate RGB and depth filenames:</p><p><a href="../../../scripts/capture_rgb_depth_sync.py">Paired capture · SyncSaver callback (see _cb)</a> · selected source lines:</p><pre><code>rgb_name = f"{self.prefix}_{idx:04d}_rgb.jpg"
+depth_name = f"{self.prefix}_{idx:04d}_depth.png"</code></pre><p>Matching identifiers help relate a color frame to a depth frame. This pairing does not prove that their pixels are spatially registered. In the current <a href="../../../scripts/build_hardneg_dataset.py">training dataset builder</a>, image loading selects <code>*.jpg</code> files and creates class-and-box labels. The fine-tuning call does not add depth as an input channel or a 3-D target: this is a 2-D color-image detector.</p><p><strong>Possible next step:</strong> use verified paired depth for a separate geometry evaluation, checking units and registration. Training a model to use depth would require a deliberate change to its inputs, labels, and training preparation; merely saving a depth file does not make that happen.</p><details><summary>Trace this code: does a saved depth image mean training uses depth?</summary><p>No. Follow what the dataset builder and training loader actually read. The current builder selects color JPEG images; the robot combines detections with depth later.</p></details></details></div></section>
+<section class="browser-lab fresh-practice"><h2>Your turn: insufficient evidence</h2><p>The box has no valid depth samples. A policy must decide what to do when geometry cannot be calculated. Keeping a candidate means allowing it to pass this filter; it does not verify the candidate.</p><form data-editorial-check=""><label>If the filter keeps this candidate, what may you conclude?<select data-answer="1"><option value="">Choose…</option><option value="0">Depth confirms a raised cube</option><option value="1">The geometric check is inconclusive; inspect the low-quality reason</option><option value="2">The cube must be at depth zero</option></select></label><button type="submit">Check reasoning</button><p data-feedback="" data-reason="No valid samples means no supported depth estimate. Keeping a candidate is a fallback policy, not a positive geometry measurement." role="status"></p></form><details><summary>Worked explanation</summary><p>No valid samples means no supported depth estimate. Keeping a candidate is a fallback policy, not a positive geometry measurement.</p></details></section><h2>Primary sources</h2>
+<ul class="source-list">
+<li><a href="https://raw.githubusercontent.com/ros-infrastructure/rep/master/rep-0118.rst">ROS REP 118 — Depth Images (official raw source)</a>: optical Z, metres, millimetres, and invalid values.</li>
+<li><a href="https://raw.githubusercontent.com/ros-infrastructure/rep/master/rep-0103.rst">ROS REP 103 — Standard Units and Coordinate Conventions (official raw source)</a>: SI units and camera versus body axes.</li>
+<li><a href="https://szeliski.org/Book/">Szeliski, Computer Vision: Algorithms and Applications</a>: image formation and geometric reasoning.</li>
+</ul>
+</main><script>(()=>{'use strict';  const invalid = document.getElementById('invalid-count');
+  const invalidValue = document.getElementById('invalid-value');
+  const statistic = document.getElementById('statistic-choice');
+  const statsOutput = document.getElementById('stats-output');
+  const readings = [1048, 1050, 1051, 1052, 1062, 0];
+  function updateStats() {
+    const invalidCount = Number(invalid.value);
+    const valid = readings.slice(0, 5 - invalidCount).filter((value) => value > 0).sort((a, b) => a - b);
+    invalidValue.textContent = invalidCount;
+    if (!valid.length) {
+      statsOutput.textContent = 'No valid samples remain. A geometry decision needs an explicit low-evidence policy.';
+      return;
+    }
+    const median = valid.length % 2 ? valid[(valid.length - 1) / 2] : (valid[valid.length / 2 - 1] + valid[valid.length / 2]) / 2;
+    const rank = Math.max(1, Math.ceil(0.9 * valid.length));
+    const p90 = valid[rank - 1];
+    const chosen = statistic.value === 'median' ? median : p90;
+    statsOutput.textContent = 'Valid values: [' + valid.join(', ') + '] mm. ' + (statistic.value === 'median' ? 'Median' : 'Nearest-rank p90') + ' = ' + chosen + ' mm from ' + valid.length + ' valid sample(s).';
+  }
+  invalid.addEventListener('input', updateStats);
+  statistic.addEventListener('change', updateStats);
+  updateStats();
+
+  document.getElementById('geometry-practice').addEventListener('submit', (event) => {
+    event.preventDefault();
+    const selected = document.querySelector('input[name="geometry-choice"]:checked');
+    const feedback = document.getElementById('geometry-feedback');
+    if (!selected) {
+      feedback.textContent = 'Choose a comparison first.';
+      return;
+    }
+    if (selected.value === 'closer') {
+      feedback.textContent = 'Correct for the stated optical-Z example: 1050 mm < 1200 − 30 mm, so it is meaningfully nearer along Z. For an oblique camera, model the floor plane.';
+    } else if (selected.value === 'farther') {
+      feedback.textContent = 'Reconsider: under optical Z, a larger value is farther in this example. The greater-than predicate selects the opposite direction.';
+    } else {
+      feedback.textContent = 'Reconsider: neither sign is a universal height test. The sensor convention and the floor plane must be declared.';
+    }
+  });
+})();</script><script src="../assets/quiz.js"></script><script src="../assets/visual-learning-foundations.js"></script><script src="../assets/editorial.js"></script></body></html>

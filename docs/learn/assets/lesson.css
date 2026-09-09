@@ -40,7 +40,7 @@
   --bg: #dfe9f3;
   --ink: #041d39;
   --ink-soft: #09325d;
-  --ink-faint: #68809b;
+  --ink-faint: #50647d;
   --rule: #cadaeb;
   --accent: #02adf8;
   --accent-ink: #000916;
@@ -455,6 +455,83 @@ pre {
   font-weight: 600;
 }
 
+/* --- Fundamentals course components --- */
+
+.concept-map {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
+  gap: 0.65rem;
+  margin: 1.3rem 0 1.8rem;
+}
+.concept-map > div {
+  min-height: 7rem;
+  padding: 0.8rem;
+  border: 1px solid var(--rule);
+  border-top: 4px solid var(--accent);
+  background: var(--code-bg);
+}
+.concept-map strong, .concept-map span { display: block; }
+.concept-map strong { font-size: 0.92rem; }
+.concept-map span { margin-top: 0.35rem; color: var(--ink-soft); font-size: 0.78rem; }
+
+.mental-model {
+  margin: 1.4rem 0;
+  padding: 1.1rem;
+  border: 2px solid var(--accent);
+  background: var(--accent-soft);
+  font-size: 1.08rem;
+}
+.mental-model strong { display: block; margin-bottom: 0.35rem; }
+
+.flow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  align-items: center;
+  margin: 1rem 0;
+}
+.flow span {
+  padding: 0.5rem 0.7rem;
+  border: 1px solid var(--rule);
+  background: var(--code-bg);
+  font-size: 0.86rem;
+  font-weight: 600;
+}
+.flow b { color: var(--accent); }
+
+.browser-lab {
+  margin: 1.3rem 0;
+  padding: 1rem 1.1rem;
+  border: 1px solid var(--rule);
+  background: var(--quiz-bg);
+}
+.browser-lab h3 { margin-top: 0; }
+.browser-lab details { margin-top: 0.8rem; }
+.browser-lab summary { cursor: pointer; color: var(--link); font-weight: 600; }
+.browser-lab .lab-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr)); gap: 0.7rem; }
+.browser-lab .lab-card { padding: 0.75rem; border: 1px solid var(--rule); background: var(--code-bg); }
+.browser-lab input[type="range"] { width: 100%; accent-color: var(--accent); }
+.live-value { color: var(--accent); font-weight: 700; }
+.evidence-label {
+  display: inline-block;
+  margin-right: 0.35rem;
+  padding: 0.1rem 0.4rem;
+  background: var(--ink);
+  color: var(--bg);
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.equation { padding: 0.7rem; background: var(--code-bg); border-left: 3px solid var(--accent); font-family: monospace; overflow-x: auto; }
+.project-application { margin-top: 2.4rem; padding: 1rem 1.1rem; border-left: 4px solid var(--good); background: var(--accent-soft); }
+.project-application h2 { margin-top: 0; }
+.source-list li { margin-bottom: 0.6rem; }
+
+@media (max-width: 38rem) {
+  .concept-map { grid-template-columns: 1fr 1fr; }
+}
+
 /* --- Theme toggle (added by lesson.js) --- */
 
 .theme-toggle {
@@ -495,9 +572,72 @@ footer {
 /* --- Print --- */
 
 @media print {
-  body { background: #fff; color: #041d39; }
+  html {
+    --bg: #ffffff;
+    background: #ffffff;
+  }
+  body, body.dark, body.light {
+    --bg: #ffffff;
+    --ink: #041d39;
+    --ink-soft: #09325d;
+    --ink-faint: #526d89;
+    --rule: #cadaeb;
+    --accent: #087fb8;
+    --accent-ink: #000916;
+    --accent-soft: #eef5fb;
+    --code-bg: #ffffff;
+    --code-ink: #041d39;
+    --link: #09325d;
+    --link-visited: #041d39;
+    --good: #0f766e;
+    --bad: #b42318;
+    --quiz-bg: #ffffff;
+    background: #ffffff;
+    color: #041d39;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
   main { max-width: none; margin: 0; padding: 0 0.5cm; }
-  .check-btn, .theme-toggle, .retrieval-card textarea, .self-rate { display: none; }
+  .check-btn, .theme-toggle, .retrieval-card textarea, .self-rate,
+  .teacher-prompt, .lesson-nav, footer { display: none; }
+  .concept-map, .browser-lab, .project-application, .mental-model, .metric-table { break-inside: avoid; }
+  .quiz { break-inside: avoid; }
+  h2, h3 { break-after: avoid; }
+  .browser-lab details { display: block; }
+  .browser-lab details > * { display: block; }
   a { border-bottom: none; color: #041d39; }
   pre { border: 1px solid #68809b; }
 }
+
+/* Approved interactive revision: paper uses the visible example and worked answers. */
+@media print {
+  input[type="range"], input[type="radio"], input[type="number"], select,
+  button, textarea, .course-nav { display: none !important; }
+  .browser-lab { break-inside: auto; }
+  svg, figure { break-inside: avoid; }
+  details > summary { font-weight: 600; }
+}
+
+/* Diagrams are paper-like surfaces in either theme; keep their labels legible. */
+svg[role="img"] {
+  color: #041d39;
+  --ink: #041d39;
+  --ink-soft: #09325d;
+  --code-bg: #f5f8fc;
+  --accent-soft: #eef5fb;
+  background-color: #f5f8fc;
+}
+/* Shared controls and feedback used by the interactive course. */
+.lesson-controls { display: grid; gap: .7rem; margin: 1rem 0; }
+.lesson-controls label { font-weight: 600; }
+.lesson-controls select, .lesson-controls input[type="range"] { font: inherit; max-width: 100%; }
+.lesson-readout { min-height: 2.2rem; padding: .65rem; background: var(--code-bg); border-left: 4px solid var(--accent); }
+.lesson-feedback { min-height: 2rem; }
+.lesson-print-answer { display: none; }
+.lesson-focus:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
+@media print { .lesson-print-answer { display: block; } }
+
+/* Keep prompts and controls visually distinct within exercise cards. */
+.browser-lab [class$="-card"] label { display: block; margin-top: .55rem; }
+.browser-lab select { max-width: 100%; }
+svg[role="img"] text[fill="#02adf8"] { fill: #006796; }

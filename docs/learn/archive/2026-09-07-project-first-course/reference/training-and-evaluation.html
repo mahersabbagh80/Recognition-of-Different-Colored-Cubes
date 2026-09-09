@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Training and evaluation</title><link rel="stylesheet" href="../assets/lesson.css"></head>
+<body><main class="reference-page">
+<header class="reference-header"><p class="brand-kicker">Quick reference 03</p><h1>Training and evaluation</h1><p class="lede">Match every claim to the data split and measurement that can support it.</p></header>
+<nav class="course-nav" aria-label="Reference navigation"><a href="index.html">All references</a><a href="../index.html">Course home</a><a href="../lessons/0003-pytorch-and-model-training.html">Training lesson</a><a href="../lessons/0008-evaluation-and-fine-tuning.html">Evaluation lesson</a></nav>
+
+<h2>Learning loop</h2>
+<pre><code>labelled batch → prediction → loss → gradients → optimizer update
+validation split → checkpoint selection
+untouched test or deployment gate → final evidence</code></pre>
+<p>The gradient describes how parameter changes affect loss. Gradient descent updates parameters in the direction intended to reduce that loss.</p>
+
+<h2>Metrics answer different questions</h2>
+<table class="metric-table"><thead><tr><th>Evidence</th><th>What it can support</th><th>What it cannot support alone</th></tr></thead><tbody>
+<tr><td>Validation precision/recall/AP</td><td>Performance on that labelled validation distribution.</td><td>Reliable performance in a different room or camera domain.</td></tr>
+<tr><td>Per-class frame-hit count</td><td>Whether a predicted class ID appeared in expected frames.</td><td>Ground-truth accuracy, recall, or AP.</td></tr>
+<tr><td>Empty-scene keeps</td><td>A specific false-positive rejection gate.</td><td>Positive detection quality.</td></tr>
+<tr><td>Latency and publish rate</td><td>Runtime responsiveness under stated conditions.</td><td>Detection correctness.</td></tr>
+</tbody></table>
+
+<h2>Improvement loop</h2>
+<ol class="reference-steps"><li>Define the failing gate.</li><li>Localize the failing stage.</li><li>Change one plausible cause.</li><li>Repeat the same positive, negative, and runtime gates.</li><li>Promote only after regression checks pass; preserve rollback.</li></ol>
+<div class="callout"><p class="callout-title">Current boundary</p><p>M5 is PARTIAL: the runtime path operates and the recorded empty scene remains quiet, but reliable room-domain positive detection is not yet demonstrated.</p></div>
+<footer><p>Project anchors: <a href="../../../models/README.md">model evidence</a> · <a href="../../../evaluation/m5_live/report.md">M5 report</a> · <a href="../RESOURCES.md">sources</a></p></footer>
+</main><script src="../assets/quiz.js"></script></body></html>

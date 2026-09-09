@@ -1,142 +1,108 @@
-# Resources: Computer vision for the colored-cube detector
+# Machine Learning and Computer Vision Resources
 
-Last reviewed: 2026-09-06
+Last reviewed: 2026-09-07
 
-This is the canonical source shelf for the lessons in this directory. It is intentionally small. The goal is not to collect everything about machine learning; it is to give us dependable references for understanding, changing, and reviewing this project.
+This is the source shelf for the fundamentals-first course. Lessons use the smallest relevant section of a source; they do not require reading a textbook cover to cover.
 
-Access audit: 2026-09-06. Every retained external link below is directly readable with the available research tools. The Szeliski book also has a verified personal-use copy stored locally outside Git.
-
-## How to use this shelf
-
-When a lesson makes a technical claim, use the sources in this order:
-
-1. **Current project evidence:** code, model metadata, export commands, tests, and measured outputs. This defines what this checkout actually does.
-2. **Project documentation:** `README.md`, `models/README.md`, `docs/technical-stack.md`, lesson specifications, and experiment notes.
-3. **Primary external documentation:** the official documentation for Ultralytics, PyTorch, OpenCV, ONNX, TensorRT, and ROS 2.
-4. **Foundational books and papers:** use these to explain the underlying ideas and vocabulary.
-5. **Community discussions:** useful for troubleshooting and alternative viewpoints, but never the sole authority for the current model contract.
-
-For every new or revised lesson, record the relevant local file or artifact first, then link the external source that explains the general concept. Do not copy entire books or downloadable PDFs into the repository; keep stable links and our own project-specific explanations instead.
-
-## Recommended core books
-
-These three references complement one another. We do not need to read all three cover to cover.
-
-### 1. Computer vision foundation
+## Knowledge: foundations
 
 - [Richard Szeliski — Computer Vision: Algorithms and Applications, 2nd ed.](https://szeliski.org/Book/)
-  Best broad computer-vision reference for images, geometry, feature representations, recognition, and the reasoning behind vision algorithms. The author provides an official electronic version for personal use; the repository should link to the official page rather than redistribute it.
-  Verified local personal-use copy: `/home/maher/Dokumente/Books and Sources/Szeliski_CVAABook_2ndEd.pdf`.
-
-### 2. Deep-learning foundation
-
+  Primary computer-vision reference for image formation, filtering, recognition, geometry, and depth. The author provides an official personal-use electronic edition.
 - [Goodfellow, Bengio, and Courville — Deep Learning](https://www.deeplearningbook.org/)
-  Best reference for the mathematical and conceptual backbone: tensors, probability, optimization, regularization, convolutional networks, and practical methodology. The official HTML edition is free to read online. Use it as a reference, not as the first book to read linearly.
-
-### 3. Practical, executable companion
-
+  Reference for machine-learning basics, feedforward networks, optimization, regularization, convolutional networks, and practical methodology. The official HTML edition is free.
 - [Dive into Deep Learning](https://en.d2l.ai/)
-  Best hands-on companion. It combines explanations, mathematics, and executable code, and has directly relevant sections on image augmentation, fine-tuning, bounding boxes, multiscale detection, CNNs, optimization, and computational performance.
-
-## Project-specific authority
-
-These files outrank any generic explanation when they describe the current checkout:
-
-- [`models/README.md`](../../models/README.md) — model input/output contract, class order, export settings, and TensorRT notes.
-- [`recognition_of_different_colored_cubes/cube_detection_node.py`](../../recognition_of_different_colored_cubes/cube_detection_node.py) — camera preprocessing, inference, output decoding, confidence filtering, inverse letterboxing, NMS, and ROS publication.
-- [`scripts/m3_smoke_inference.py`](../../scripts/m3_smoke_inference.py) — read-only inspection of the exported model and a real inference result.
-- [`docs/technical-stack.md`](../technical-stack.md) — the intended training, export, deployment, and ROS stack.
-- [`docs/learn/LESSON-PLAN.md`](LESSON-PLAN.md) — learning objectives, scope boundaries, and evidence requirements for the lesson sequence.
-
-For example, the current project contract is `[1, 3, 640, 640]` input and `[1, 7, 8400]` output. That is evidence about this exported artifact, not a universal rule for every YOLO model.
-
-## Official technical references
-
-### Computer vision and image preparation
-
-- [OpenCV — Geometric Image Transformations](https://docs.opencv.org/4.13.0/da/d54/group__imgproc__transform.html)
-  Reference for resizing, interpolation, border handling, and coordinate transformations. Use it when explaining why letterboxing preserves aspect ratio and why the decoder must undo the same transform.
-
-### PyTorch and training
-
+  Executable companion for data manipulation, classification, generalization, multilayer networks, convolution, transfer learning, bounding boxes, and object detection.
 - [PyTorch — Learn the Basics](https://docs.pytorch.org/tutorials/beginner/basics/intro.html)
-  A current step-by-step workflow covering tensors, datasets, transforms, model construction, automatic differentiation, optimization, and saving/loading models.
+  Official practical reference for tensors, datasets, models, automatic differentiation, optimization, and saved models.
 - [PyTorch — Transfer Learning for Computer Vision](https://docs.pytorch.org/tutorials/beginner/transfer_learning_tutorial.html)
-  Use for the distinction between fine-tuning a pretrained model and using it as a fixed feature extractor.
+  Official worked comparison of fine-tuning a pretrained network and using it as a fixed feature extractor.
 
-### YOLO and object detection
+## Knowledge: detection and evaluation
 
-- [Ultralytics — YOLOv5 and YOLOv5u model documentation](https://docs.ultralytics.com/models/yolov5)
-  Official model and usage documentation, including the YOLOv5u anchor-free, objectness-free split-head behavior relevant to this checkout. Check the installed package and actual export before transferring any output-shape example into this project.
-- [Ultralytics — Export mode](https://docs.ultralytics.com/modes/export/)
-  Official export options for formats such as ONNX and TensorRT, including image size, dynamic shapes, and precision settings.
-- [Redmon et al. — You Only Look Once: Unified, Real-Time Object Detection](https://arxiv.org/abs/1506.02640)
-  Original YOLO paper. Use for historical and high-level one-stage-detection intuition, not for the current exported tensor layout.
+- [Redmon et al. — You Only Look Once](https://arxiv.org/abs/1506.02640)
+  Original one-stage detection paper; use for the high-level “predict boxes and classes together” idea, not for the current export layout.
+- [Lin et al. — Microsoft COCO](https://arxiv.org/abs/1405.0312)
+  Primary dataset and evaluation reference for object detection in complex scenes.
+- [Ultralytics — YOLOv5 and YOLOv5u](https://docs.ultralytics.com/models/yolov5/)
+  Official project-family documentation. Always check the installed model and export before assuming a tensor layout.
+- [OpenCV — Geometric Image Transformations](https://docs.opencv.org/4.13.0/da/d54/group__imgproc__transform.html)
+  Official reference for resizing, interpolation, borders, and coordinate mappings such as the project's letterbox transform.
 
-### ONNX and deployment
+## Knowledge: geometry and robotics integration
 
+- [ROS REP 118 — Depth Images](https://www.ros.org/reps/rep-0118.html)
+  Primary ROS convention for depth along the camera Z axis, units, encodings, and invalid readings.
+- [ROS 2 Humble — Topics](https://docs.ros.org/en/humble/Concepts/Basic/About-Topics.html)
+  Official explanation of nodes exchanging typed messages through topics.
+- [ROS 2 Humble — Quality of Service](https://docs.ros.org/en/humble/Concepts/Intermediate/About-Quality-of-Service-Settings.html)
+  Official reference for reliability, history, durability, and compatibility of camera and perception streams.
+- [cv_bridge repository, Humble branch](https://github.com/ros-perception/vision_opencv/tree/humble/cv_bridge)
+  Source and API reference for converting ROS image messages to OpenCV images.
 - [ONNX — Introduction](https://onnx.ai/onnx/intro/)
-  Official explanation of graphs, nodes, tensors, model inputs/outputs, operator sets, and model metadata.
-- [NVIDIA TensorRT — Quick Start Guide](https://docs.nvidia.com/deeplearning/tensorrt/latest/getting-started/quick-start-guide.html)
-  Current deployment overview: export, choose precision, convert to an engine, and deploy. It also explains why the best workflow depends on the target hardware and runtime.
-- [NVIDIA TensorRT 8.6 Developer Guide](https://docs.nvidia.com/deeplearning/tensorrt/archives/tensorrt-861/developer-guide/index.html)
-  Version-pinned reference for the TensorRT generation used by the project’s historical deployment notes. When current and archived documentation differ, the installed TensorRT version and the built engine are the final authority.
-- [NVIDIA TensorRT — ONNX operator support](https://docs.nvidia.com/deeplearning/tensorrt/latest/reference/onnx-opset-guide.html)
-  Use when an export imports successfully in one environment but fails in another because of opset or operator support.
+  Official explanation of the portable graph boundary used between training and deployment.
+- [NVIDIA TensorRT — Quick Start](https://docs.nvidia.com/deeplearning/tensorrt/latest/getting-started/quick-start-guide.html)
+  Official deployment overview for importing, optimizing, and executing a model on NVIDIA hardware.
 
-### ROS 2 perception wiring
+## Current project evidence
 
-- [ROS 2 Humble — Topics source](https://raw.githubusercontent.com/ros2/ros2_documentation/humble/source/Concepts/Basic/About-Topics.rst)
-  Core publisher/subscriber model for camera images and detection outputs.
-- [ROS 2 Humble — Quality of Service source](https://raw.githubusercontent.com/ros2/ros2_documentation/humble/source/Concepts/Intermediate/About-Quality-of-Service-Settings.rst)
-  Use for camera sensor-data QoS, reliability compatibility, and diagnosing topics that appear connected but do not exchange messages.
-- [ROS 2 Humble — `cv_bridge` source](https://github.com/ros-perception/vision_opencv/tree/humble/cv_bridge)
-  Reference for converting between `sensor_msgs/Image` and OpenCV images.
-- [ROS 2 — `vision_msgs` source](https://github.com/ros-perception/vision_msgs/blob/ros2/README.md)
-  Standard message definitions for object-detection results, including `Detection2DArray`.
-- [ROS REP 118 — Depth Images source](https://raw.githubusercontent.com/ros-infrastructure/rep/master/rep-0118.rst)
-  Primary ROS convention for depth along the camera Z axis, canonical metre units, the raw `uint16` millimetre representation, and zero as invalid in that raw representation.
+- [Model artifact notes](../../models/README.md)
+  Current training data, checkpoint, ONNX and TensorRT contracts, commands, metrics, and known limits.
+- [Detection node](../../recognition_of_different_colored_cubes/cube_detection_node.py)
+  Current preprocessing, inference, decoding, RGB/depth synchronization, and ROS publication behavior.
+- [Geometry filter](../../recognition_of_different_colored_cubes/geometry_filter.py)
+  Current depth post-filter behavior; useful as a code-reading example, including a known z-depth sign defect.
+- [Architecture](../architecture.md) and [milestones](../milestones.md)
+  Intended ROS 2 interfaces and current M5 PARTIAL engineering status.
+- [Live evaluation report](../../evaluation/m5_live/report.md)
+  Measured deployment evidence under its recorded conditions.
 
 ## Lesson-to-source map
 
-| Lesson | Main references | What they are for |
+| Lessons | Primary foundation | Main project evidence |
 |---|---|---|
-| 0001 — What YOLO outputs | Project node and model notes; Ultralytics YOLOv5u; original YOLO paper | Separate the project’s output contract from general detection ideas. |
-| 0002 — How YOLO produces predictions | Project node and model notes; Ultralytics YOLOv5u; OpenCV transforms | Explain the candidate field, tensor axes, letterboxing, coordinate conversion, and NMS. |
-| 0003 — PyTorch and model training | D2L; Goodfellow et al.; PyTorch basics and transfer learning | Explain datasets, labels, optimization, validation, checkpoints, and fine-tuning. |
-| 0004 — Why the model fails on the robot | Szeliski; D2L image augmentation; project evaluation evidence | Connect appearance changes, data coverage, camera conditions, and generalization. |
-| 0005 — ONNX and TensorRT | ONNX introduction; Ultralytics export; NVIDIA TensorRT guides | Explain model exchange, export settings, precision, engine building, and hardware-specific deployment. |
-| 0006 — ROS 2 perception wiring | ROS 2 topics, QoS, `cv_bridge`, and `vision_msgs`; project node | Explain message flow, image conversion, QoS compatibility, and detection messages. |
-| 0007 — Depth and geometry filtering | Szeliski; project node and calibration/evaluation evidence | Explain image coordinates versus physical geometry and why depth/calibration are needed. |
-| 0008 — Evaluation and fine-tuning | D2L; PyTorch transfer learning; project evaluation scripts | Choose data, metrics, hard negatives, and fine-tuning experiments based on evidence. |
-| 0009 — Project walkthrough | All project-specific authority files plus the relevant source above | Practice explaining the actual system without confusing it with a generic YOLO pipeline. |
+| 0001–0003 | Szeliski; D2L | Project definition; detection node preprocessing |
+| 0004–0005 | Deep Learning; D2L; PyTorch basics | Model notes and training record |
+| 0006 | Deep Learning practical methodology; D2L generalization | Dataset splits and M5 evidence |
+| 0007–0008 | D2L CNN and transfer-learning chapters; PyTorch tutorials | Current pretrained/fine-tuned artifacts |
+| 0009–0010 | YOLO and COCO papers; D2L detection | Export contract, decoder, evaluation reports |
+| 0011 | Szeliski; REP 118 | Geometry filter and depth handling |
+| 0012 | ROS 2, cv_bridge, ONNX, and TensorRT official docs | Architecture, node, model notes, milestones |
 
 ## Wisdom: practitioner communities
 
-Use these places for troubleshooting patterns, implementation experience, and alternative explanations. Community answers are leads to test, not substitutes for the current checkout, official documentation, or measured evidence.
+- [Robotics Stack Exchange](https://robotics.stackexchange.com/)
+  Use for focused, reproducible questions about ROS, cameras, calibration, and robot perception.
+- [Open Robotics Discourse](https://discourse.ros.org/)
+  Use for ecosystem design discussions and announcements; focused troubleshooting is usually better on Robotics Stack Exchange.
+- [NVIDIA Developer Forums — TensorRT](https://forums.developer.nvidia.com/c/ai-data-science/deep-learning/tensorrt/92)
+  Use for device- and version-specific engine behavior after recording JetPack, CUDA, and TensorRT versions.
 
-- [Open Robotics Discourse](https://discourse.ros.org/) — ROS announcements and broad design or ecosystem discussion. Its own guidance routes focused technical questions to a Q&A site.
-- [Robotics Stack Exchange](https://robotics.stackexchange.com/) — focused, reproducible ROS and robotics engineering questions. Include versions, topic types, QoS details, minimal logs, and what has already been tested.
-- [NVIDIA TensorRT forum](https://forums.developer.nvidia.com/c/ai-data-science/deep-learning/tensorrt/92) and [Jetson Systems forum](https://forums.developer.nvidia.com/c/robotics-edge-computing/jetson-systems/70) — target-specific engine, CUDA, JetPack, camera, and performance troubleshooting. State the exact Jetson, JetPack, CUDA, and TensorRT versions.
-- [Ultralytics Discussions](https://github.com/orgs/ultralytics/discussions) — training, export, and decoder questions. Always attach the installed Ultralytics version and the actual input/output metadata because examples from another YOLO generation may not match this project.
+## Gaps
 
-## Known source gaps
+- No recurring practitioner or local robotics reviewer has been selected.
+- The physical depth-filter assumptions still require validation with registered RGB/depth data after the known predicate defect is corrected.
 
-- No recurring practitioner or local robotics reviewer has been selected for this project. Community review is currently requested only when a concrete technical question arises.
-- The physical interpretation of the geometry filter still needs review against registered RGB/depth hardware evidence after its depth-sign defect is corrected.
-- Community threads are intentionally not pinned as factual authorities: version-specific advice must be reproduced locally and promoted into a lesson only when code, artifacts, or primary documentation confirms it.
+## Source rules
 
-## Maintenance rules
+- For general ideas, prefer the books, papers, and official documentation above.
+- For what this checkout does, verify current code and artifacts.
+- Do not transfer an example tensor shape or class order from another YOLO version.
+- Treat community advice as a hypothesis until reproduced.
+- Label illustrative numbers as examples and measured numbers with their conditions.
 
-- Prefer official documentation and stable landing pages over blog posts or copied snippets.
-- Pin a source to a version when behavior depends on a version: for example, ROS 2 Humble or TensorRT 8.6.
-- When the model, export command, dependency version, or decoder changes, re-check the affected source links and lesson claims.
-- When a lesson describes a tensor shape, field order, class order, threshold, image size, or coordinate transform, verify it against the current artifact or code before publishing the lesson.
-- Keep historical references labelled as historical. Do not use old output examples such as the traditional YOLOv5 `(1, 25200, 85)` layout as evidence for the current YOLOv5u-style export.
-- Community discussions may suggest hypotheses or troubleshooting steps, but a claim becomes lesson material only after it is confirmed by project evidence or primary documentation.
-- Add a short note to this file when a source is replaced, deprecated, or found to be misleading for this checkout.
+## Sources checked for the interactive revision
 
-## Historical and supplementary references
+- [Torchvision NMS](https://docs.pytorch.org/vision/stable/generated/torchvision.ops.nms.html): strict overlap cutoff and box suppression.
+- [Official COCO evaluator](https://github.com/cocodataset/cocoapi/blob/master/PythonAPI/pycocotools/cocoeval.py): one-to-one matching, IoU thresholds, precision/recall averaging.
+- [ROS node definition, official Humble source](https://github.com/ros2/ros2_documentation/blob/humble/source/Concepts/Basic/About-Nodes.rst): nodes can share a process.
+- [ROS REP 103, official source](https://github.com/ros-infrastructure/rep/blob/master/rep-0103.rst): optical camera axes and robot coordinate conventions.
+- [ROS REP 118, official source](https://github.com/ros-infrastructure/rep/blob/master/rep-0118.rst): optical-axis depth, meters, millimeters, invalid data.
+- [ROS QoS, official Humble source](https://github.com/ros2/ros2_documentation/blob/humble/source/Concepts/Intermediate/About-Quality-of-Service-Settings.rst): delivery policies and compatibility. Official source mirrors are useful when rendered ROS pages block automated access.
 
-- [Ultralytics YOLOv5 issue 6998](https://github.com/ultralytics/yolov5/issues/6998) — historical maintainer discussion about the older YOLOv5 output format. It is retained for comparison only and does **not** describe the current model contract.
-- [Ultralytics discussions](https://github.com/ultralytics/ultralytics/discussions) — troubleshooting and alternative viewpoints only; not an authority for this model artifact.
+Interactive controls use deliberately small hypothetical examples. They are not live model inference, robot measurements, or evidence of learner mastery.
+
+## Training code connections (reviewed 2026-09-08)
+
+The application sections now trace dataset preparation in `scripts/normalize_dataset.py` and `scripts/build_hardneg_dataset.py`, fine-tuning in `scripts/finetune_hardneg.py`, prediction reporting in `scripts/validate_hardneg.py`, and the runtime handoff. `training/train.ipynb` currently contains instructions only. Repository scripts are evidence of implementation, not proof of training success or independent test performance.
+
+[Ultralytics training documentation](https://docs.ultralytics.com/modes/train/) explains batch size, initial learning rate, optimizer selection, freezing, and augmentation arguments. These are living API documents; use explicit script settings and recorded run information when describing this project.

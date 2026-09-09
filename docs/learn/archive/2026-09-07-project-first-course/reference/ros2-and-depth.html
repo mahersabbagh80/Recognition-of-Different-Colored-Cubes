@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>ROS 2 and depth</title><link rel="stylesheet" href="../assets/lesson.css"></head>
+<body><main class="reference-page">
+<header class="reference-header"><p class="brand-kicker">Quick reference 05</p><h1>ROS 2 and depth</h1><p class="lede">Keep transport, synchronization, depth validity, and candidate policy separate.</p></header>
+<nav class="course-nav" aria-label="Reference navigation"><a href="index.html">All references</a><a href="../index.html">Course home</a><a href="../lessons/0006-ros-2-perception-wiring.html">ROS lesson</a><a href="../lessons/0007-depth-and-geometry-filtering.html">Depth lesson</a></nav>
+
+<h2>Runtime path</h2>
+<pre><code>RGB Image + depth Image --approximate sync, 0.05 s slop-->
+conversion and depth guard → inference → decode → geometry decision →
+Detection2DArray + ObjectsInfo + debug Image</code></pre>
+
+<h2>Failure boundaries</h2>
+<table class="metric-table"><thead><tr><th>Condition</th><th>Current behavior</th></tr></thead><tbody>
+<tr><td>Incompatible publisher/subscriber QoS</td><td>Messages may not connect or flow; inspect offered and requested policies.</td></tr>
+<tr><td>Missing depth frame, wrong dtype, or wrong rank</td><td>The synchronized callback returns before inference and publication for that frame.</td></tr>
+<tr><td>Valid frame but sparse depth inside one candidate box</td><td>The geometry policy keeps that candidate with a low-quality reason.</td></tr>
+<tr><td>No decoded YOLO candidate</td><td>Geometry has no box to inspect and cannot recover the object.</td></tr>
+</tbody></table>
+
+<h2>Depth vocabulary</h2>
+<p><strong>Z-depth</strong> is distance along the camera’s optical axis. A closer raised surface normally has smaller z-depth than the floor behind it. Camera intrinsics convert pixel extent into an approximate physical extent only when depth and RGB coordinates are appropriately aligned.</p>
+<div class="callout"><p class="callout-title">Known code defect</p><p>The current predicate <code>depth &gt; floor + threshold</code> selects farther pixels, not a closer raised top. Its KEEP/REJECT counts describe current software behavior, not validated physical height classification.</p></div>
+<footer><p>Project anchors: <a href="../../../recognition_of_different_colored_cubes/cube_detection_node.py">ROS node</a> · <a href="../../../recognition_of_different_colored_cubes/geometry_filter.py">geometry filter</a> · <a href="../RESOURCES.md">sources</a></p></footer>
+</main><script src="../assets/quiz.js"></script></body></html>

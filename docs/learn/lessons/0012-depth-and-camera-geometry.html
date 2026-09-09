@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+
+<html lang="en"><head><meta charset="utf-8"/><meta content="width=device-width,initial-scale=1" name="viewport"/><title>Optional robot lesson 12 — From pixels to 3-D points</title><link href="../assets/lesson.css" rel="stylesheet"/><link href="../assets/lesson-interactions.css" rel="stylesheet"/><link href="../assets/visual-learning.css" rel="stylesheet"/><link href="../assets/editorial.css" rel="stylesheet"/></head><body class="lesson-0011"><main><header><p class="eyebrow">Optional robot track · Lesson 12</p><h1>From pixels to 3-D points</h1><p class="lede">Two cubes can occupy the same number of pixels and still be different distances away. What extra measurement lets us tell?</p><p class="lesson-meta">Core path: about 15–20 minutes · optional notes take extra time</p><p class="editorial-recap">This lesson is optional for the training course. Study it when you are ready to integrate the selected detector with the robot.</p></header><p><strong>Your goal:</strong> use a pixel, camera calibration, and optical depth to locate one point in the camera frame.</p><p>A <strong>depth image</strong> stores distance samples. Here we use <strong>optical Z-depth</strong>: distance along the camera’s central forward axis, not the full slanted distance along a viewing ray. <strong>RGB</strong> is the red, green, blue color image. We assume its pixels and the depth samples have been aligned; the next lesson checks that assumption.</p><section class="concept-map">
+<div><strong>1 · Pixel</strong><span>A 2-D image coordinate.</span></div>
+<div><strong>2 · Ray</strong><span>A direction from the camera through that pixel.</span></div>
+<div><strong>3 · Z-depth</strong><span>Distance along the optical Z axis.</span></div>
+<div><strong>4 · Point</strong><span>Back-project with calibration.</span></div>
+</section>
+<h2>1. A pixel is a direction</h2>
+<p>A <strong>pixel</strong> is one sampled location in an image. <strong>2-D</strong> means two dimensions, here horizontal and vertical image position. <strong>3-D</strong> means three spatial coordinates. A <strong>viewing ray</strong> is the half-line that starts at the camera's <strong>optical centre</strong>, the ideal projection centre of the lens, and passes through one pixel. The <strong>optical axis</strong> is the camera's central forward reference direction. Without depth, every possible object on that ray looks like a candidate point.</p>
+<p><strong>Perspective projection</strong> is the camera operation that maps a 3-D point to a 2-D pixel. It loses scale: a small nearby cube and a large distant cube can occupy similar image areas. A bounding box, which is a rectangle around an image object, therefore does not by itself give physical size or distance.</p>
+<div class="mental-model"><strong>Central mental model</strong>Pixel + camera calibration = a ray. Pixel + valid depth + calibration = a 3-D point in a named camera frame. A camera frame is a coordinate system attached to the camera; it is not automatically the robot's coordinate system.</div>
+<figure class="geometry-grid">
+<svg aria-labelledby="ray-title ray-desc" role="img" viewbox="0 0 620 235">
+<title id="ray-title">A pixel selects a viewing ray</title>
+<desc id="ray-desc">A camera centre at the left sends a ray through one pixel on an image plane to a point in space. The optical Z axis points forward. A second point farther along the same ray would have the same pixel but a different depth.</desc>
+<rect fill="var(--code-bg)" height="235" width="620" x="0" y="0"></rect>
+<line stroke="var(--ink)" stroke-width="4" x1="75" x2="175" y1="117" y2="117"></line>
+<circle cx="75" cy="117" fill="var(--accent)" r="9"></circle>
+<text fill="var(--ink)" font-size="15" x="30" y="98">camera</text>
+<line stroke="var(--ink)" stroke-width="4" x1="205" x2="205" y1="35" y2="200"></line>
+<circle cx="205" cy="103" fill="#e85d04" r="6"></circle>
+<text fill="var(--ink)" font-size="14" x="181" y="222">image plane</text>
+<line stroke="#e85d04" stroke-width="3" x1="75" x2="500" y1="117" y2="72"></line>
+<circle cx="500" cy="72" fill="#e85d04" r="10"></circle>
+<circle cx="370" cy="86" fill="#8b5cf6" r="7"></circle>
+<line stroke="#2a9d8f" stroke-dasharray="7 6" stroke-width="2" x1="75" x2="560" y1="117" y2="117"></line>
+<text fill="var(--ink)" font-size="14" x="512" y="63">point</text>
+<text fill="var(--ink)" font-size="14" x="294" y="53">same ray</text>
+<text fill="var(--ink)" font-size="14" x="410" y="137">optical Z →</text>
+<text fill="var(--ink)" font-size="13" x="227" y="99">pixel</text>
+</svg>
+<figcaption><strong>Text alternative:</strong> the camera centre, one image-plane pixel, and a 3-D point form one ray. Moving the point along that ray changes depth but does not change the pixel.</figcaption>
+</figure>
+<h2>2. Turn the ray into a point</h2>
+<p><strong>Camera calibration</strong> estimates parameters that describe a camera. <strong>Intrinsics</strong> are internal image parameters: <code>fx</code> and <code>fy</code> are focal lengths measured in pixels. A focal length is an image-scale factor: larger focal length makes the same off-axis point appear farther from the principal point. <code>cx</code> and <code>cy</code> are the principal point, the pixel where the optical axis meets the image. <strong>Extrinsics</strong> describe the rigid relationship between two coordinate frames: a rotation changes orientation and a translation changes origin. Intuitively, extrinsics tell us how the camera is mounted relative to the robot.</p>
+<p>The common <strong>pinhole model</strong> approximates the camera as one projection centre with straight rays. <strong>Lens distortion</strong> is the real lens's bending or warping of ideal straight-ray positions. A <strong>rectified</strong> image has that distortion corrected so corresponding pixels follow the pinhole model. The equations below are useful under that rectified pinhole assumption, with a depth value that really is optical Z.</p>
+<div aria-label="Back projection equations" class="equation">
+  X = (u − cx) × Z / fx<br/>
+  Y = (v − cy) × Z / fy<br/>
+  Z = optical-axis depth
+</div>
+<p><strong>Back-projection</strong> means reversing the image projection to recover a 3-D point from a pixel and depth. Here <code>u</code> and <code>v</code> are the horizontal and vertical pixel coordinates. <code>X</code>, <code>Y</code>, and <code>Z</code> are the point's coordinates in the camera frame. A <strong>resolution</strong> is an image's width and height in pixels. The abbreviation <code>px</code> means pixel. Calibration parameters belong to a particular camera stream and resolution, so a crop or resize needs matching coordinate handling.</p>
+<ul class="symbol-list">
+<li><strong>Worked example:</strong> <code>u=420</code>, <code>cx=320</code>, <code>fx=500 px</code>, <code>Z=1 m</code>.</li>
+<li><strong>Substitute:</strong> <code>X=(420−320)×1/500=0.2 m</code>.</li>
+<li><strong>Interpret:</strong> the point is 0.2 m to the camera-frame right of the optical axis.</li>
+</ul>
+<section class="browser-lab" id="backproject-lab">
+<h3>Explore: back-project one pixel</h3>
+<p>Move either control and watch the calculated <code>X</code> change with the selected pixel and depth. This is a calculation exercise, not a camera measurement. The fixed calibration values are illustrative.</p>
+<div class="lab-controls">
+<label for="pixel-u">Pixel <code>u</code>: <output id="u-value">420</output><input id="pixel-u" max="560" min="280" step="1" type="range" value="420"/></label>
+<label for="point-z">Optical Z in metres: <output id="z-value">1.0</output><input id="point-z" max="2" min="0.5" step="0.1" type="range" value="1"/></label>
+</div>
+<figure class="visual-learning"><svg aria-label="Camera viewing ray through a fixed image plane to a point" id="v11-ray-svg" role="img" viewbox="0 0 420 320"></svg><figcaption>A schematic view of the camera’s X/Z plane: X goes right; forward Z goes down this page. The orange mark is the image-plane location; the green mark is the point. This illustrative plane is drawn 0.25 m in front of the camera. Change depth alone: the point moves on the same ray and the orange mark stays put.</figcaption></figure> <p aria-live="polite" class="lab-output" id="backproject-output" role="status">Worked default: X = (420 − 320) × 1 / 500 = 0.200 m.</p>
+<p class="answer-line">Static worked answer: with <code>u=420</code> and <code>Z=1 m</code>, the result is <code>X=0.2 m</code>.</p>
+</section>
+<p><strong>Registration</strong> is a separate job. It transforms or resamples one sensor's image so a pixel in the RGB grid refers to the same physical ray as the depth sample. Calibration can be correct while registration is wrong. Equal width and height also do not prove physical alignment: two 640×480 images can still come from different viewpoints or crops.</p>
+<h2>3. Name the point’s coordinate frame</h2><p>REP 103 uses an optical camera frame with <code>x</code> right, <code>y</code> down, and <code>z</code> forward. A typical robot body frame uses <code>x</code> forward, <code>y</code> left, and <code>z</code> up. A frame is only a naming convention until its axes and origin are declared. To use a camera point for a robot, apply the calibrated extrinsic rotation and translation; this is a coordinate conversion, not a new detection.</p>
+<h2>Applied to our cubes</h2><p>The detector supplies an image location. The node’s <a href="../../../recognition_of_different_colored_cubes/cube_detection_node.py">camera input path</a> reads camera calibration from <strong>CameraInfo</strong>, a ROS message carrying the camera parameters. To turn a location into a physical point, the depth and calibration must describe the same pixel grid. The next lesson tests that assumption before trusting a distance.</p><section class="browser-lab fresh-practice"><h2>Your turn: same pixel, different distance</h2><p>Use u = 420, cx = 320 and fx = 500 pixels, as above. Now optical Z is 2 metres.</p><form data-editorial-check=""><label>What changes?<select data-answer="1"><option value="">Choose…</option><option value="0">X stays 0.2 m because the pixel is fixed</option><option value="1">X becomes 0.4 m; the point stays on the same viewing ray</option><option value="2">X becomes 0.4 pixels</option></select></label><button type="submit">Check reasoning</button><p data-feedback="" data-reason="X = (420 − 320) × 2 / 500 = 0.4 m. The pixel and ray stay fixed; both X and Z double. This point is still in the camera frame." role="status"></p></form><details><summary>Worked explanation</summary><p>X = (420 − 320) × 2 / 500 = 0.4 m. The pixel and ray stay fixed; both X and Z double. This point is still in the camera frame.</p></details></section><h2>Primary sources</h2>
+<ul class="source-list">
+<li><a href="https://raw.githubusercontent.com/ros-infrastructure/rep/master/rep-0118.rst">ROS REP 118 — Depth Images (official raw source)</a>: optical Z, metres, millimetres, and invalid values.</li>
+<li><a href="https://raw.githubusercontent.com/ros-infrastructure/rep/master/rep-0103.rst">ROS REP 103 — Standard Units and Coordinate Conventions (official raw source)</a>: SI units and camera versus body axes.</li>
+<li><a href="https://szeliski.org/Book/">Szeliski, Computer Vision: Algorithms and Applications</a>: image formation and geometric reasoning.</li>
+</ul>
+</main><script>(()=>{'use strict';  const u = document.getElementById('pixel-u');
+  const z = document.getElementById('point-z');
+  const uValue = document.getElementById('u-value');
+  const zValue = document.getElementById('z-value');
+  const backproject = document.getElementById('backproject-output');
+  function updateBackprojection() {
+    const x = (Number(u.value) - 320) * Number(z.value) / 500;
+    uValue.textContent = u.value;
+    zValue.textContent = Number(z.value).toFixed(1);
+    backproject.textContent = 'X = (' + u.value + ' − 320) × ' + Number(z.value).toFixed(1) + ' / 500 = ' + x.toFixed(3) + ' m. This is camera-frame X under the stated pinhole assumptions.';
+  }
+  u.addEventListener('input', updateBackprojection);
+  z.addEventListener('input', updateBackprojection);
+  updateBackprojection();
+
+})();</script><script src="../assets/quiz.js"></script><script src="../assets/visual-learning-foundations.js"></script><script src="../assets/editorial.js"></script></body></html>

@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Lesson 0005 — ONNX and TensorRT</title>
+  <link rel="stylesheet" href="../assets/lesson.css">
+  <link rel="icon" href="data:,">
+  <style>
+    .figure { margin: 1.2rem 0 1.4rem; border: 1px solid var(--rule); background: var(--quiz-bg); padding: 0.85rem; }
+    .figure svg, .concept-art img, .real-pair img { display: block; width: 100%; height: auto; border-radius: 0; }
+    .concept-art { width: min(1160px, calc(100vw - 3rem)); max-width: none; margin-left: 50%; margin-right: 0; transform: translateX(-50%); }
+    .concept-art a { border-bottom: 0; }
+    .brand-header { position: relative; overflow: hidden; margin: 0 -0.5rem 2rem; padding: 2rem; background: #000916; border-top: 6px solid #02adf8; color: #cadaeb; }
+    .brand-header::before { position: absolute; inset: 0; background-image: linear-gradient(#09325d55 1px, transparent 1px), linear-gradient(90deg, #09325d55 1px, transparent 1px); background-size: 2.5rem 2.5rem; content: ""; mask-image: linear-gradient(to right, black, transparent 74%); }
+    .brand-header > * { position: relative; }
+    .brand-kicker { margin: 0 0 0.55rem; color: #02adf8; font-family: "Poppins", "Inter", sans-serif; font-size: 0.75rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; }
+    .brand-header h1 { color: #cadaeb; }
+    .brand-header .lesson-meta { color: #b8efff; margin: 0.8rem 0 1rem; }
+    .brand-header .lesson-meta .tag { background: #02adf8; color: #000916; }
+    .brand-header .lede { color: #dfe9f3; max-width: 62ch; margin-bottom: 0; }
+    .figure-caption { margin: 0.65rem 0 0.1rem; color: var(--ink-soft); font-size: 0.9rem; }
+    .diagram text { font-family: "Poppins", "Inter", sans-serif; fill: #041d39; }
+    .diagram .muted { fill: #09325d; }
+    .diagram .tiny { font-size: 10px; }
+    .diagram .label { font-size: 13px; font-weight: 600; }
+    .interaction { margin: 1rem 0 1.4rem; padding: 0.9rem 1rem; border: 1px solid var(--rule); background: var(--accent-soft); }
+    .interaction-title { margin: 0 0 0.45rem; font-family: "Poppins", "Inter", sans-serif; font-size: 0.9rem; font-weight: 700; color: var(--ink-soft); }
+    .step-buttons { display: flex; flex-wrap: wrap; gap: 0.4rem; margin: 0.7rem 0; }
+    .step-btn, .action-btn { border: 1px solid var(--rule); border-radius: 0; background: var(--quiz-bg); color: var(--ink); padding: 0.35rem 0.6rem; font-family: "Poppins", "Inter", sans-serif; font-size: 0.82rem; cursor: pointer; }
+    .step-btn:hover, .step-btn.active, .action-btn:hover { border-color: var(--accent); color: var(--ink-soft); }
+    .step-btn:focus, .action-btn:focus { outline: 2px solid var(--accent); outline-offset: 2px; }
+    .stage-detail { margin: 0.7rem 0 0; color: var(--ink-soft); }
+    .stage-detail strong { color: var(--ink); }
+    .hidden { display: none; }
+    .metric-table { width: 100%; border-collapse: collapse; margin: 1rem 0; font-size: 0.9rem; }
+    .metric-table th, .metric-table td { border: 1px solid var(--rule); padding: 0.45rem 0.5rem; text-align: left; vertical-align: top; }
+    .metric-table th { background: var(--accent-soft); color: var(--ink-soft); font-weight: 700; }
+    .record-grid, .two-col, .real-pair { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.8rem; margin: 1rem 0; }
+    .record-grid.three { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .record-card { border: 1px solid var(--rule); padding: 0.75rem; background: var(--quiz-bg); }
+    .record-card h3 { margin: 0 0 0.3rem; font-size: 0.95rem; }
+    .record-card p { margin: 0; color: var(--ink-soft); font-size: 0.9rem; }
+    .status-strip { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.55rem; margin: 1rem 0; }
+    .status-strip div { border-left: 4px solid var(--accent); padding: 0.55rem 0.65rem; background: var(--accent-soft); }
+    .status-strip strong { display: block; font-size: 1.05rem; }
+    .status-strip span { color: var(--ink-soft); font-size: 0.8rem; }
+    .real-pair figure { margin: 0; }
+    .real-pair figcaption { margin-top: 0.35rem; color: var(--ink-soft); font-size: 0.82rem; }
+    .prompt { border: 1px solid var(--accent); padding: 0.9rem 1rem; background: var(--accent-soft); }
+    main > ol code { overflow-wrap: anywhere; word-break: break-word; }
+    @media (max-width: 720px) { .concept-art { width: 100%; max-width: 100%; margin-left: 0; margin-right: 0; transform: none; } .brand-header { margin: 0 0 1.5rem; padding: 1.5rem; } }
+    @media (max-width: 34rem) { .real-pair, .record-grid, .record-grid.three, .two-col, .status-strip { grid-template-columns: 1fr; } .metric-table { font-size: 0.78rem; } }
+    @media print {
+      html { background: #fff; } body { background: #fff; }
+      .concept-art { width: 100%; max-width: none; margin: 0; transform: none; break-inside: avoid; }
+      .concept-art img { max-height: 25cm; object-fit: contain; }
+      .interaction, .figure, .record-card, .callout, .quiz { break-inside: avoid; }
+      .step-buttons, .action-btn, .slider-row input, .check-btn, .theme-toggle { display: none !important; }
+      .hidden { display: none !important; }
+      a { color: #041d39; border-bottom: none; }
+    }
+</style>
+</head>
+<body>
+<main>
+<header class="brand-header">
+  <p class="brand-kicker">Software · AI · Robotics / Learning system</p>
+  <h1>Lesson 0005 — ONNX and TensorRT</h1>
+  <div class="lesson-meta"><span>~80–105 min</span><span class="tag">Deployment</span><span>Anchored to: <code>models/README.md · m3_smoke_inference.py · cube_detection_node.py</code></span></div>
+  <p class="lede">The detector moves through three representations because training, exchange, and Jetson execution have different contracts. Follow the artifact boundary and verify each one.</p>
+</header>
+<div class="callout"><p class="callout-title">How to use this lesson</p><p>Read the explanation, inspect the visual, make a prediction, and then compare it with the repository evidence. The goal is a model of this project that you can explain—not a list of framework slogans.</p></div>
+<div class="callout"><p class="callout-title">Prerequisites and scope</p><p>Start after the training/checkpoint model in <a href="0003-pytorch-and-model-training.html">Lesson 0003</a> and the exact tensor contract in <a href="0002-how-yolo-produces-predictions.html">Lesson 0002</a>. This lesson treats deployment like a compiler pipeline; CUDA kernel and TensorRT tactic internals are not required.</p></div>
+
+<figure class="figure concept-art">
+  <a href="../assets/lesson-0005-concept-art-handdrawn-portrait.png" target="_blank" rel="noopener">
+    <img src="../assets/lesson-0005-concept-art-handdrawn-portrait.png" alt="Tall hand-drawn overview sheet with twelve stations explaining PyTorch checkpoints, ONNX graphs, static tensor contracts, smoke checks, TensorRT, FP16, and engine verification.">
+  </a>
+  <figcaption class="figure-caption">Orientation map of the deployment artifact chain. The detailed sections add the graph/runtime vocabulary and verification boundaries. Click the PNG to open it at full resolution; the <a href="../assets/lesson-0005-concept-art-handdrawn-portrait.svg" target="_blank" rel="noopener">source SVG</a> remains available for inspection.</figcaption>
+</figure>
+
+
+<h2>The question this lesson answers</h2>
+<p>Why does the detector travel through <code>best.pt → best.onnx → best.engine</code> instead of running the training checkpoint directly on the robot? Each file represents the same learned behavior in a different container, with a different compatibility and verification boundary.</p>
+<div class="callout"><p class="callout-title">By the end, you should be able to</p><ul><li>separate model architecture, learned weights, serialized graph, and compiled engine;</li><li>read the input/output tensor contract and explain static versus dynamic shapes;</li><li>distinguish structural validity, executable validity, numerical equivalence, task behavior, and target-device compatibility;</li><li>explain why FP16 and TensorRT may change numerical results without retraining;</li><li>identify exactly what the current smoke scripts verify and what remains unverified.</li></ul></div>
+<div class="status-strip"><div><strong>best.pt</strong><span>18.5 MB PyTorch checkpoint</span></div><div><strong>best.onnx</strong><span>35.0 MB static ONNX graph</span></div><div><strong>best.engine</strong><span>20.4 MB TensorRT FP16 artifact</span></div></div>
+<div class="callout"><p class="callout-title">Mental model in software terms</p><p><code>.pt</code> is framework-native model state, ONNX is a portable intermediate representation, and a TensorRT engine is a hardware/runtime-specific compiled artifact. They aim to represent the same learned function, but conversion is a real transformation and must be tested—not assumed equivalent because the filenames share <code>best</code>.</p></div>
+<div class="callout"><p class="callout-title">Minimal tensor and graph vocabulary</p><p>A <strong>tensor</strong> is a typed multidimensional array. An <strong>operator</strong> is one graph computation such as convolution, addition, reshape, or activation. A <strong>graph</strong> connects operators and tensors into the forward pass. <strong>Serialization</strong> stores that structure and its weights in a file. A runtime loads it and allocates host (CPU) and device (GPU) memory to execute it.</p></div>
+<div class="callout"><p class="callout-title">Three operations that are easy to confuse</p><p><strong>Serialization</strong> writes an existing representation to bytes. <strong>Export</strong> translates a framework model into another graph format. <strong>Compilation</strong> specializes and optimizes that graph for a runtime and target device. None of these operations trains new cube knowledge.</p></div>
+
+<h2>1. One learned function, several containers</h2>
+<p>Training is done in PyTorch/Ultralytics. ONNX is an exchange representation. TensorRT is the Jetson-oriented optimized runtime artifact. The goal of export is not to retrain the detector; it is to preserve the computation while changing how another environment executes it. <span class="source-note">[<a href="https://onnx.ai/onnx/intro/">ONNX</a> · <a href="https://docs.nvidia.com/deeplearning/tensorrt/latest/getting-started/quick-start-guide.html">TensorRT</a> · <a href="../../../models/README.md">project artifacts</a>]</span></p>
+<div class="figure"><svg class="diagram" viewBox="0 0 640 190" role="img" aria-labelledby="d5a-title d5a-desc"><title id="d5a-title">The model artifact chain</title><desc id="d5a-desc">Three artifact boxes connected by arrows from PyTorch checkpoint through ONNX to a TensorRT engine.</desc><rect x="0" y="0" width="640" height="190" fill="#dfe9f3"/><rect x="28" y="55" width="160" height="70" fill="#041d39" stroke="#09325d" stroke-width="3"/><rect x="240" y="55" width="160" height="70" fill="#ffffff" stroke="#02adf8" stroke-width="3"/><rect x="452" y="55" width="160" height="70" fill="#041d39" stroke="#0f766e" stroke-width="3"/><path d="M192 90 H232 M404 90 H444" stroke="#02adf8" stroke-width="4"/><path d="M221 80 L232 90 L221 100 M433 80 L444 90 L433 100" fill="none" stroke="#02adf8" stroke-width="4"/><text x="108" y="84" font-size="20" fill="#b8efff" text-anchor="middle" font-weight="700">best.pt</text><text x="108" y="108" font-size="12" fill="#cadaeb" text-anchor="middle">learn / continue</text><text x="320" y="84" font-size="20" fill="#041d39" text-anchor="middle" font-weight="700">best.onnx</text><text x="320" y="108" font-size="12" fill="#09325d" text-anchor="middle">exchange / check</text><text x="532" y="84" font-size="20" fill="#ddf7f4" text-anchor="middle" font-weight="700">best.engine</text><text x="532" y="108" font-size="12" fill="#cadaeb" text-anchor="middle">Jetson / run</text><text x="28" y="157" class="tiny muted">same detector intent · different execution contract</text></svg><p class="figure-caption">A successful export preserves the input/output meaning closely enough that downstream verification remains valid.</p></div>
+<p>“Same learned function” is an engineering intention, not byte-for-byte identity. Export may replace operators, fold constants, fuse layers, or change floating-point precision. Equivalence must therefore be defined with tolerances and decoded outputs on identical test inputs.</p>
+
+<h2>2. What is inside <code>best.pt</code>?</h2>
+<p>The M2 file is an Ultralytics YOLOv5s detection PyTorch checkpoint containing learned parameters and framework-specific model metadata. The raw graph has <code>9,123,353</code> parameters; fusing convolution and batch-normalization layers for inference yields the documented <code>9,112,697</code>. These are two representations of the same model, not an unresolved discrepancy. A current load reports <code>epoch=-1</code> and no optimizer state, so this stripped deployment copy should not be presented as a complete resumable training state.</p>
+<p>The class order is also a project boundary: the running artifact uses blue/green/red indices, while <a href="../../../docs/project-definition.md">docs/project-definition.md</a> still lists red/green/blue. Do not silently use the stale order when interpreting outputs or preparing another training run.</p>
+<p>It is a training-side artifact, not automatically a Jetson TensorRT engine. Keeping it unchanged also gives the project a rollback point when a later candidate model is tested.</p>
+
+<h2>3. ONNX is an exchange graph</h2>
+<p>ONNX represents computation as typed inputs, outputs, and operator nodes. It lets a runtime such as ONNX Runtime or TensorRT consume a graph without loading the original training framework's full execution path. That portability is useful, but the graph still has an exact input shape, output layout, operator set, and class-name contract.</p>
+<p>An ONNX <strong>opset</strong> specifies the versions and semantics of operators used by the graph; the <strong>IR version</strong> describes the ONNX file's graph representation. A runtime must support both the operators and their versions. “The file opens” does not guarantee that every target runtime implements every node.</p>
+<p>The ONNX file is larger than this project's <code>.pt</code> file because file size depends on serialization format, stored dtypes, metadata, and graph representation—not only parameter count. Smaller does not automatically mean faster or more accurate.</p>
+
+<h2>4. The current export contract</h2>
+<p>The recorded M3 artifact uses a static batch of one and a 640×640 model input. Its checkpoint is a YOLOv5u-style, anchor-free model even though the project shorthand often says “YOLOv5s”:</p>
+<table class="metric-table"><thead><tr><th>Boundary</th><th>Recorded contract</th></tr></thead><tbody><tr><td>Input</td><td><code>images</code>, float32 <code>[1, 3, 640, 640]</code></td></tr><tr><td>Output</td><td><code>output0</code>, float32 <code>[1, 7, 8400]</code></td></tr><tr><td>ONNX</td><td>IR 7, opset 13, <code>dynamic=False</code>, <code>simplify=False</code></td></tr><tr><td>Classes</td><td><code>blue_cube</code>, <code>green_cube</code>, <code>red_cube</code> in that order</td></tr></tbody></table>
+<p>These values are not decorative metadata. Lesson 0002 showed that the output shape determines how the decoder reads candidate rows. A changed export contract requires a new verification pass.</p>
+<p><code>NCHW</code> names the input axis order: batch count, color channels, height, width. The node begins with a camera array in height–width–channel order, then normalizes pixel values, transposes the axes, and adds the batch dimension. Shape equality alone is insufficient if channel order, scaling, dtype, or letterboxing differs.</p>
+
+<h2>5. Why static 640×640 is deliberate here</h2>
+<p>The ROS node letterboxes each camera frame to the configured <code>imgsz=640</code>. The export, ONNX smoke script, TensorRT engine, and node therefore share the same model canvas. A static shape reduces runtime shape negotiation and keeps the deployment path explicit. It also means that changing image size is a model-contract change, not just a UI preference.</p>
+<p>A <strong>dynamic</strong> export can accept a range of supported dimensions, but the runtime must select or build optimization profiles and allocate for them. Dynamic is more flexible, not automatically faster. This project chose one static shape because its node and engine are designed around one-image inference at 640×640.</p>
+
+<h2>6. Structural checking is necessary but not sufficient</h2>
+<p>Verification has layers: (1) the file parses and its graph is valid; (2) input/output names, shapes, dtypes, and class order match the decoder; (3) ONNX outputs are numerically close to the PyTorch reference on identical inputs; (4) decoded task behavior remains acceptable; and (5) the target Jetson can build, load, and run the engine. Passing an earlier layer does not imply the later ones.</p>
+<p>The recorded M3 verification runs <code>onnx.checker.check_model</code> and reports <code>checker OK</code>. That answers “is this serialized graph structurally consistent?” It does not answer “does it detect JetRover-room cubes?” Accuracy and deployment-domain behavior still require inference and live evidence.</p>
+<table class="metric-table"><thead><tr><th>Verification layer</th><th>Question answered</th><th>Still not proved</th></tr></thead><tbody><tr><td>Checksum/size</td><td>Are these the expected bytes?</td><td>Graph validity or behavior</td></tr><tr><td>ONNX checker</td><td>Is the graph structurally valid?</td><td>Runtime support or accuracy</td></tr><tr><td>ORT execution</td><td>Can this graph run on this input/provider?</td><td>PyTorch equivalence or Jetson compatibility</td></tr><tr><td>Cross-runtime comparison</td><td>Are raw/decoded outputs close on identical inputs?</td><td>Deployment-domain performance</td></tr><tr><td>Jetson live evaluation</td><td>Does the whole target pipeline meet acceptance gates?</td><td>All future environments</td></tr></tbody></table>
+<pre><code>yolo export model=models/best.pt format=onnx imgsz=640 opset=13 \\
+  simplify=False dynamic=False</code></pre>
+
+<h2>7. ONNX Runtime smoke inference</h2>
+<p><a href="../../../scripts/m3_smoke_inference.py">m3_smoke_inference.py</a> is a read-only CPU check. It letterboxes one image, runs the ONNX graph, applies confidence filtering, converts and maps boxes back through the inverse letterbox, clips them, and then applies per-class NMS. The prepared checkout produced <code>output0 [1, 7, 8400]</code> with the documented smoke command.</p>
+<p>The current script checks execution, output shape, decoded detections, and class-name ordering. It does <strong>not</strong> run the PyTorch checkpoint on the same tensor or calculate element-wise/decoded tolerances, so a direct PyTorch-versus-ONNX numerical-equivalence test remains a missing verification layer.</p>
+<div class="interaction"><p class="interaction-title">Interactive: what does each check prove?</p><div class="step-buttons" data-switch-group data-target="export-detail"><button type="button" class="step-btn active" data-detail="The ONNX checker proves graph structure is consistent.">checker</button><button type="button" class="step-btn" data-detail="The ORT smoke proves the graph can execute and feed the project decoder on a saved image.">ORT smoke</button><button type="button" class="step-btn" data-detail="The Jetson load proves the serialized TensorRT engine is compatible with that runtime and device.">TRT load</button><button type="button" class="step-btn" data-detail="The live bag proves behavior under the actual camera, synchronization, depth, and room conditions.">live bag</button></div><p id="export-detail" class="stage-detail">The ONNX checker proves graph structure is consistent.</p></div>
+
+<h2>8. TensorRT builds a device-oriented engine</h2>
+<p>On the Jetson, <code>trtexec</code> consumes the ONNX graph and builds a serialized TensorRT engine. The recorded command enables FP16 and reserves a 2048 MiB workspace:</p>
+<pre><code>/usr/src/tensorrt/bin/trtexec \\
+  --onnx=best.onnx --saveEngine=best.engine \\
+  --fp16 --workspace=2048</code></pre>
+<p>The M4a engine was built on an Orin Nano with TensorRT 8.6.2. A TensorRT engine is not a portable replacement for the original weights: device architecture, TensorRT version, CUDA context, and tactic choices matter. The command's <code>2048</code> value is MiB in TensorRT's workspace option; use “MiB” rather than decimal “MB” when reporting it precisely.</p>
+<p>During the build, TensorRT chooses implementations—often called <strong>tactics</strong>—for graph operations under the available device, precision, and workspace constraints. Workspace is temporary working memory, not additional learned parameters and not the final engine file size.</p>
+
+<h2>9. FP16 is an execution choice</h2>
+<p>FP32 and FP16 store floating-point values with different bit widths. FP16 reduces memory traffic and can use faster GPU hardware, but it has less precision and range, so rounding and overflow behavior can differ. “The engine runs faster” and “the engine preserves detector behavior” are therefore separate claims requiring separate measurements.</p>
+<p><code>--fp16</code> allows TensorRT to choose half-precision paths where supported. It is a performance/compatibility decision for the target GPU, not a new class definition and not a guarantee that every operation is stored or executed at exactly one precision. The project records the resulting engine and its measured behavior instead of assuming the flag is enough.</p>
+
+<h2>10. Runtime loading and fallback behavior</h2>
+<p>In <code>cube_detection_node.py</code>, <code>_try_load_engine()</code> deserializes the engine, discovers the input/output bindings, allocates page-locked host buffers and device memory, and creates one CUDA stream. <code>_infer()</code> prepares the image, copies it, runs <code>execute_async_v2</code>, synchronizes, copies the output back, and calls the decoder.</p>
+<p>The project documentation lists ONNX Runtime as an optional fallback path, but the current ROS node does not automatically switch to ONNX Runtime. If TensorRT is missing or the engine cannot load, the node enters a no-inference fallback and publishes empty detections. Do not teach the documentation's option as current automatic behavior.</p>
+<div class="callout"><p class="callout-title">Empty output versus healthy inference</p><p>An empty detection array can mean “the engine ran and found nothing” or “the engine never loaded and fallback emitted nothing.” Downstream consumers cannot infer system health from the array alone; operators must also inspect node logs and engine-loaded state.</p></div>
+
+<h2>11. Benchmark numbers need their context</h2>
+<p>The M4a random-input <code>trtexec</code> benchmark reported 70.47 qps and 14.76 ms mean latency. The live M5 node reported roughly 26.6 ms YOLO time and around 59–63 ms total p50/p95, including synchronization, copies, decode, geometry, and publishing. These measurements answer different questions; comparing them as if they were one FPS number would be misleading.</p>
+<p><strong>Latency</strong> is time for one unit of work; <strong>throughput</strong> is work completed per unit time. Warm-up, batch size, host-to-device copies, synchronization, and measurement boundaries all matter. The reciprocal of isolated engine latency is not automatically the end-to-end ROS frame rate.</p>
+
+<h2>12. Check your understanding</h2>
+<div class="quiz" data-correct="0" data-correct-text="ONNX is the required intermediate graph for this TensorRT export path; the .pt file is the training checkpoint."><p class="quiz-q">Why is ONNX in the artifact chain?</p><ol><li><label><input type="radio" name="q5a" value="0">It provides the exchange graph used before TensorRT conversion.</label></li><li><label><input type="radio" name="q5a" value="1">It provides the checkpoint format used for continued training.</label></li><li><label><input type="radio" name="q5a" value="2">It provides the camera-message format used during ROS synchronization.</label></li></ol><button type="button" class="check-btn">Check answer</button><p class="answer"></p></div>
+<div class="quiz" data-correct="2" data-correct-text="A structural checker cannot prove accuracy on a new room domain; it only checks the serialized graph's consistency."><p class="quiz-q">What does onnx.checker.check_model not prove?</p><ol><li><label><input type="radio" name="q5b" value="0">Whether the graph file is structurally valid and readable.</label></li><li><label><input type="radio" name="q5b" value="1">Whether graph inputs and outputs have declared tensor contracts.</label></li><li><label><input type="radio" name="q5b" value="2">Whether live room detections satisfy the project acceptance target.</label></li></ol><button type="button" class="check-btn">Check answer</button><p class="answer"></p></div>
+<div class="quiz" data-correct="1" data-correct-text="The current node's missing-engine path is a no-inference fallback that publishes empty detections; it does not transparently run ONNX Runtime instead."><p class="quiz-q">What happens when the current node cannot load TensorRT?</p><ol><li><label><input type="radio" name="q5c" value="0">It switches to ONNX Runtime using the same model.</label></li><li><label><input type="radio" name="q5c" value="1">It enters a no-inference fallback and publishes empty detections.</label></li><li><label><input type="radio" name="q5c" value="2">It rebuilds the missing TensorRT engine during node startup.</label></li></ol><button type="button" class="check-btn">Check answer</button><p class="answer"></p></div>
+<div class="quiz" data-correct="2" data-correct-text="The current ORT smoke does not execute PyTorch on the identical tensor and compare outputs with tolerances."><p class="quiz-q">Which verification is still missing from the current ONNX smoke script?</p><ol><li><label><input type="radio" name="q5d" value="0">Reading the ONNX output shape.</label></li><li><label><input type="radio" name="q5d" value="1">Applying the project decoder to one saved image.</label></li><li><label><input type="radio" name="q5d" value="2">A direct numerical comparison against PyTorch on identical input.</label></li></ol><button type="button" class="check-btn">Check answer</button><p class="answer"></p></div>
+
+<h2>13. Read-only artifact exercise</h2>
+<p>From the repository root, run the documented ONNX smoke check:</p>
+<pre><code>.venv-m2/bin/python scripts/m3_smoke_inference.py --topk 5</code></pre>
+<p><strong>Observable result on the prepared checkout:</strong> exit code 0 and an output shape line containing <code>output0 [1, 7, 8400]</code>. This is an ONNX execution check, not evidence that the live room acceptance gate passes.</p>
+<p>Then compare the SHA-256 values in <a href="../../../models/README.md">models/README.md</a> with <code>sha256sum models/best.pt models/best.onnx</code>. Matching hashes establish artifact identity; they do not establish semantic equivalence.</p>
+
+<h2>14. Explain it back</h2>
+<div class="prompt"><p><strong>Explain this without reading:</strong> “Why can two files contain the same learned detector but require different verification, and why is <code>best.engine</code> tied to the Jetson?”</p><p>Include the words: checkpoint, graph, static shape, runtime, FP16, and device compatibility.</p></div>
+
+<h2>What this lesson intentionally postpones</h2>
+<p>This lesson intentionally postpones CUDA kernel internals, detailed tactic selection, and ONNX operator implementation. <a href="0006-ros-2-perception-wiring.html">Lesson 0006</a> follows the ROS message graph around the runtime; <a href="0008-evaluation-and-fine-tuning.html">Lesson 0008</a> defines cross-artifact regression and deployment acceptance evidence.</p>
+<h2>Primary references and next lesson</h2>
+<ul>
+  <li><a href="https://onnx.ai/onnx/intro/">ONNX introduction</a> — the authoritative exchange-format model and graph concepts.</li>
+  <li><a href="https://docs.nvidia.com/deeplearning/tensorrt/archives/tensorrt-861/pdf/TensorRT-Developer-Guide.pdf">NVIDIA TensorRT 8.6.1 developer guide</a> — engine building, precision, compatibility, and runtime concepts for this deployment generation.</li>
+  <li><a href="../../../README.md">Project README</a> and the linked canonical documentation.</li>
+  <li><a href="../../../docs/learn/LESSON-PLAN.md">Curriculum plan</a> — scope, teaching contract, and project truth.</li>
+  <li><a href="0006-ros-2-perception-wiring.html">Lesson 0006 — ROS 2 Perception Wiring</a>: trace typed messages through the live node.</li>
+</ul>
+<footer><p>Learning system · Recognition of Different Colored Cubes · Technical teaching artifact. Current engineering status: M5 PARTIAL; learner review remains separate from artifact validation.</p></footer>
+
+<script src="../assets/quiz.js"></script>
+<script>
+(function () {
+  document.querySelectorAll('[data-switch-group]').forEach(function (group) {
+    var out = document.getElementById(group.dataset.target);
+    group.querySelectorAll('button').forEach(function (button) {
+      button.addEventListener('click', function () {
+        group.querySelectorAll('button').forEach(function (item) { item.classList.remove('active'); });
+        button.classList.add('active');
+        if (out) out.textContent = button.dataset.detail || '';
+      });
+    });
+  });
+  document.querySelectorAll('[data-toggle-target]').forEach(function (button) {
+    button.addEventListener('click', function () {
+      var target = document.getElementById(button.dataset.toggleTarget);
+      if (!target) return;
+      var hidden = target.classList.toggle('hidden');
+      button.textContent = hidden ? button.dataset.show : button.dataset.hide;
+      button.setAttribute('aria-expanded', String(!hidden));
+    });
+  });
+})();
+</script>
+
+</main>
+</body>
+</html>

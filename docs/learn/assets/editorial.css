@@ -1,0 +1,16 @@
+/* Quiet, consistent framing for the core path and optional reading. */
+main details { margin:1rem 0; padding:.65rem .9rem; border-left:2px solid var(--rule); }
+main details > summary { cursor:pointer; font-weight:600; }
+.fresh-practice label { display:block; margin:1rem 0; }
+.fresh-practice select { display:block; max-width:100%; margin-top:.5rem; }
+.fresh-practice button { font:inherit; padding:.5rem .8rem; }
+.course-photo { display:block; width:100%; max-width:640px; height:auto; margin:auto; }
+.lesson-meta { flex-wrap:wrap; }
+textarea { box-sizing:border-box; max-width:100%; width:100%; }
+.editorial-recap { border-left:3px solid var(--accent); padding:.65rem 1rem; }
+main code { overflow-wrap:anywhere; }
+.fresh-practice select { width:100%; min-width:0; }
+form[data-editorial-check] select { box-sizing:border-box; width:100%; max-width:100%; min-width:0; padding:.55rem; font:inherit; color:var(--ink); background:var(--code-bg); border:1px solid var(--rule); }
+form[data-editorial-check] button { padding:.55rem .8rem; margin-top:.7rem; font:inherit; font-weight:600; color:#041d39; background:#02adf8; border:1px solid #02adf8; cursor:pointer; }
+form[data-editorial-check] button:focus-visible, form[data-editorial-check] select:focus-visible { outline:3px solid var(--ink); outline-offset:3px; }
+.flow > b { color:var(--ink); }

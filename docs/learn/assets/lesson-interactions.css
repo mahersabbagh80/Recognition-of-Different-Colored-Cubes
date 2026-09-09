@@ -1,0 +1,378 @@
+/* Shared visual and interaction components for the approved course.
+   Body scopes preserve each diagram layout; identical declarations are shared. */
+
+body.lesson-0001 .task-views { display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:1rem }
+
+body.lesson-0001 figure,
+body.lesson-0011 .geometry-grid figure { margin:0;padding:1rem;background:var(--code-bg);border:1px solid var(--rule) }
+
+body.lesson-0001 figure h3 { margin:0 0 .8rem }
+
+body.lesson-0001 figure svg,
+body.lesson-0011 .geometry-grid svg,
+body.lesson-0012 .system-figure svg { display:block;width:100%;height:auto }
+
+body.lesson-0001 figcaption { font-size:.88rem;margin-top:.7rem }
+
+body.lesson-0001 select { max-width:100%;font:inherit;padding:.35rem;background:var(--code-bg);color:var(--ink);border:1px solid var(--ink-faint) }
+
+body.lesson-0001 fieldset { border:1px solid var(--rule);padding:1rem;margin:1.2rem 0 }
+
+body.lesson-0001 legend,
+body.lesson-0003 .lesson-controls label,
+body.lesson-0004 .lesson-controls label,
+body.lesson-0005 .lesson-controls label,
+body.lesson-0006 .lesson-controls label,
+body.lesson-0007 .lesson-controls label,
+body.lesson-0008 .lesson-controls label { font-weight:600 }
+
+body.lesson-0001 fieldset label { display:block;padding:.3rem 0 }
+
+body.lesson-0001 .task-feedback { min-height:1.5em }
+
+body.lesson-0001 textarea { width:100%;min-height:7rem;padding:.7rem;font:inherit;background:var(--code-bg);color:var(--ink);border:1px solid var(--ink-faint) }
+
+body.lesson-0001 :focus-visible,
+body.lesson-0002 :focus-visible,
+body.lesson-0003 .lesson-focus:focus-visible,
+body.lesson-0004 .lesson-focus:focus-visible,
+body.lesson-0005 .lesson-focus:focus-visible,
+body.lesson-0006 .lesson-focus:focus-visible,
+body.lesson-0007 .lesson-focus:focus-visible,
+body.lesson-0008 .lesson-focus:focus-visible,
+body.lesson-0009 :focus-visible,
+body.lesson-0010 :focus-visible,
+body.lesson-0011 :focus-visible,
+body.lesson-0012 :focus-visible { outline:3px solid var(--accent);outline-offset:3px }
+
+@media print {
+body.lesson-0001,
+body.lesson-0002,
+body.lesson-0003,
+body.lesson-0004,
+body.lesson-0005,
+body.lesson-0006,
+body.lesson-0007,
+body.lesson-0008,
+body.lesson-0009,
+body.lesson-0010 { font-size:11pt }
+}
+
+@media print {
+body.lesson-0001 h2,
+body.lesson-0002 h2,
+body.lesson-0003 h2,
+body.lesson-0004 h2,
+body.lesson-0005 h2,
+body.lesson-0006 h2,
+body.lesson-0007 h2,
+body.lesson-0008 h2,
+body.lesson-0009 h2,
+body.lesson-0010 h2 { margin-top:1.5rem }
+}
+
+@media print {
+body.lesson-0001 figure,
+body.lesson-0001 fieldset,
+body.lesson-0002 figure,
+body.lesson-0003 .l3-diagram,
+body.lesson-0003 .l3-grid,
+body.lesson-0003 .l3-kernel-table,
+body.lesson-0003 .l3-swatch,
+body.lesson-0004 .l4-diagram,
+body.lesson-0004 .l4-card,
+body.lesson-0005 .l5-svg,
+body.lesson-0005 .l5-card,
+body.lesson-0006 .l6-svg,
+body.lesson-0006 .l6-card,
+body.lesson-0006 .l6-table,
+body.lesson-0007 .l7-svg,
+body.lesson-0007 .l7-card,
+body.lesson-0007 .l7-table,
+body.lesson-0008 .l8-svg,
+body.lesson-0008 .l8-card,
+body.lesson-0009 svg.demo,
+body.lesson-0009 figure,
+body.lesson-0010 svg.demo,
+body.lesson-0010 figure,
+body.lesson-0011 .geometry-grid,
+body.lesson-0011 fieldset,
+body.lesson-0011 .browser-lab,
+body.lesson-0011 .mental-model,
+body.lesson-0011 .project-application,
+body.lesson-0012 .system-figure,
+body.lesson-0012 .role-table,
+body.lesson-0012 fieldset,
+body.lesson-0012 .browser-lab,
+body.lesson-0012 .mental-model,
+body.lesson-0012 .project-application { break-inside:avoid }
+}
+
+@media print {
+body.lesson-0001 .browser-lab,
+body.lesson-0002 .browser-lab,
+body.lesson-0003 .browser-lab,
+body.lesson-0004 .browser-lab,
+body.lesson-0005 .browser-lab,
+body.lesson-0006 .browser-lab,
+body.lesson-0007 .browser-lab,
+body.lesson-0008 .browser-lab,
+body.lesson-0009 .browser-lab,
+body.lesson-0010 .browser-lab { break-inside:auto }
+}
+
+@media print {
+body.lesson-0001 textarea,
+body.lesson-0001 .task-feedback,
+body.lesson-0001 #task-result,
+body.lesson-0002 .practice-row input,
+body.lesson-0002 .feedback,
+body.lesson-0003 .lesson-controls input,
+body.lesson-0003 .lesson-controls select,
+body.lesson-0003 .lesson-controls button,
+body.lesson-0003 .lesson-feedback,
+body.lesson-0004 .lesson-controls input,
+body.lesson-0004 .l4-card select,
+body.lesson-0004 .l4-card button,
+body.lesson-0004 .lesson-feedback,
+body.lesson-0005 .lesson-controls input,
+body.lesson-0005 .l5-card select,
+body.lesson-0006 .lesson-controls input,
+body.lesson-0006 .l6-card select,
+body.lesson-0006 .lesson-feedback,
+body.lesson-0007 .lesson-controls input,
+body.lesson-0007 .l7-card button,
+body.lesson-0008 .lesson-controls input,
+body.lesson-0008 .lesson-controls select,
+body.lesson-0008 .l8-card select,
+body.lesson-0008 .lesson-feedback,
+body.lesson-0011 .lab-controls,
+body.lesson-0011 .check-btn,
+body.lesson-0011 textarea,
+body.lesson-0012 .lab-controls,
+body.lesson-0012 .check-btn,
+body.lesson-0012 textarea { display:none }
+}
+
+@media print {
+body.lesson-0001 .task-views { grid-template-columns:1fr 1fr }
+}
+
+body.lesson-0002 figure { margin:1.2rem 0;padding:1rem;background:var(--code-bg);border:1px solid var(--rule) }
+
+body.lesson-0002 figure svg { width:100%;height:auto;display:block }
+
+body.lesson-0002 figcaption { font-size:.88rem;margin-top:.6rem }
+
+body.lesson-0002 .practice-row { margin:1.2rem 0 }
+
+body.lesson-0002 .practice-row label,
+body.lesson-0011 .lab-controls label,
+body.lesson-0012 .lab-controls label { display:block;font-weight:600 }
+
+body.lesson-0002 .practice-row input { width:9rem;max-width:100%;padding:.5rem;font:inherit;background:var(--code-bg);color:var(--ink);border:1px solid var(--ink-faint) }
+
+body.lesson-0002 .feedback { min-height:1.6em }
+
+body.lesson-0002 .print-answer,
+body.lesson-0003 .lesson-print-answer,
+body.lesson-0004 .lesson-print-answer,
+body.lesson-0005 .lesson-print-answer,
+body.lesson-0006 .lesson-print-answer,
+body.lesson-0007 .lesson-print-answer,
+body.lesson-0008 .lesson-print-answer { display:none }
+
+@media print {
+body.lesson-0002 .print-answer,
+body.lesson-0003 .lesson-print-answer,
+body.lesson-0004 .lesson-print-answer,
+body.lesson-0005 .lesson-print-answer,
+body.lesson-0006 .lesson-print-answer,
+body.lesson-0007 .lesson-print-answer,
+body.lesson-0008 .lesson-print-answer,
+body.lesson-0011 .print-answer { display:block }
+}
+
+body.lesson-0003 .l3-grid { display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.35rem;max-width:20rem;margin:1rem 0 }
+
+body.lesson-0003 .l3-grid span { display:grid;place-items:center;min-height:3rem;border:1px solid var(--rule);background:var(--code-bg);font-family:monospace }
+
+body.lesson-0003 .l3-grid .l3-head { font-weight:700;background:var(--accent-soft) }
+
+body.lesson-0003 .l3-kernel-table { border-collapse:collapse;margin:.8rem 0 }
+
+body.lesson-0003 .l3-kernel-table td,
+body.lesson-0003 .l3-kernel-table th { border:1px solid var(--rule);padding:.35rem .55rem;text-align:center;font-family:monospace }
+
+body.lesson-0003 .l3-kernel-table th,
+body.lesson-0006 .l6-table th,
+body.lesson-0007 .l7-table th,
+body.lesson-0012 .role-table th { background:var(--accent-soft) }
+
+body.lesson-0003 .lesson-controls { display:grid;gap:.7rem;margin:1rem 0 }
+
+body.lesson-0003 .lesson-controls select,
+body.lesson-0003 .lesson-controls input[type=range],
+body.lesson-0008 .lesson-controls select,
+body.lesson-0008 .lesson-controls input { font:inherit;max-width:100% }
+
+body.lesson-0003 .lesson-readout { min-height:2.2rem;padding:.65rem;background:var(--code-bg);border-left:4px solid var(--accent) }
+
+body.lesson-0003 .l3-swatch-row { display:flex;gap:.7rem;flex-wrap:wrap;margin:1rem 0 }
+
+body.lesson-0003 .l3-swatch { min-width:8rem;padding:.7rem;border:1px solid var(--rule);background:var(--code-bg) }
+
+body.lesson-0003 .l3-swatch i { display:block;width:100%;height:2rem;margin-bottom:.4rem;border:1px solid var(--ink-faint) }
+
+body.lesson-0003 .l3-small { font-size:.9rem;color:var(--ink-soft) }
+
+body.lesson-0003 .lesson-feedback { min-height:2rem }
+
+body.lesson-0003 .l3-diagram { width:100%;height:auto;background:var(--code-bg);border:1px solid var(--rule);padding:.5rem }
+
+body.lesson-0004 .lesson-controls { display:grid;grid-template-columns:minmax(0,1fr);gap:.45rem .8rem;align-items:center;margin:1rem 0 }
+
+body.lesson-0004 .lesson-controls output,
+body.lesson-0005 .lesson-controls output,
+body.lesson-0006 .lesson-controls output,
+body.lesson-0007 .lesson-controls output { font-family:monospace }
+
+body.lesson-0004 .lesson-controls input,
+body.lesson-0005 .lesson-controls input,
+body.lesson-0006 .lesson-controls input,
+body.lesson-0007 .lesson-controls input { width:100%;accent-color:var(--accent) }
+
+body.lesson-0004 .lesson-readout,
+body.lesson-0005 .lesson-readout { padding:.8rem;background:var(--code-bg);border-left:4px solid var(--accent);min-height:3rem }
+
+body.lesson-0004 .l4-card-grid,
+body.lesson-0011 .lab-controls,
+body.lesson-0012 .lab-controls { display:grid;grid-template-columns:repeat(auto-fit,minmax(12rem,1fr));gap:.8rem;margin:1rem 0 }
+
+body.lesson-0004 .l4-card { border:1px solid var(--rule);padding:.8rem;background:var(--code-bg) }
+
+body.lesson-0004 .l4-card select,
+body.lesson-0004 .l4-card button,
+body.lesson-0005 .l5-card select,
+body.lesson-0006 .l6-card select,
+body.lesson-0008 .l8-card select { font:inherit;max-width:100%;padding:.3rem }
+
+body.lesson-0004 .lesson-feedback,
+body.lesson-0006 .lesson-feedback,
+body.lesson-0008 .lesson-feedback { min-height:2.2rem }
+
+body.lesson-0004 .l4-prob-bar { height:1.4rem;background:var(--rule);position:relative;margin:.7rem 0 }
+
+body.lesson-0004 .l4-prob-fill { height:100%;background:var(--accent);width:0 }
+
+body.lesson-0004 .l4-threshold { position:absolute;top:-.35rem;bottom:-.35rem;border-left:2px dashed var(--bad) }
+
+body.lesson-0004 .l4-diagram { width:100%;height:auto;border:1px solid var(--rule);background:var(--code-bg) }
+
+body.lesson-0005 .lesson-controls,
+body.lesson-0006 .lesson-controls,
+body.lesson-0007 .lesson-controls { display:grid;grid-template-columns:minmax(0,1fr);gap:.45rem .8rem;align-items:center;margin:1rem 0 }
+
+body.lesson-0005 .l5-card-grid,
+body.lesson-0006 .l6-card-grid,
+body.lesson-0007 .l7-card-grid,
+body.lesson-0008 .l8-card-grid { display:grid;grid-template-columns:repeat(auto-fit,minmax(12rem,1fr));gap:.8rem }
+
+body.lesson-0005 .l5-card,
+body.lesson-0006 .l6-card { background:var(--code-bg);border:1px solid var(--rule);padding:.8rem }
+
+body.lesson-0005 .l5-svg { display:block;width:100%;height:auto;background:var(--code-bg);border:1px solid var(--rule);margin:1rem 0 }
+
+body.lesson-0005 .l5-bar { height:1.2rem;background:var(--rule);margin:.7rem 0;position:relative }
+
+body.lesson-0005 .l5-bar span { display:block;height:100%;background:var(--accent) }
+
+body.lesson-0006 .l6-table { width:100%;border-collapse:collapse;margin:1rem 0 }
+
+body.lesson-0006 .l6-table th,
+body.lesson-0006 .l6-table td { border:1px solid var(--rule);padding:.55rem;text-align:left;vertical-align:top }
+
+body.lesson-0006 .lesson-readout,
+body.lesson-0007 .lesson-readout { padding:.8rem;background:var(--code-bg);border-left:4px solid var(--accent);min-height:2.4rem }
+
+body.lesson-0006 .l6-svg,
+body.lesson-0007 .l7-svg,
+body.lesson-0008 .l8-svg { width:100%;height:auto;background:var(--code-bg);border:1px solid var(--rule);display:block;margin:1rem 0 }
+
+body.lesson-0007 .l7-table { border-collapse:collapse;margin:1rem 0 }
+
+body.lesson-0007 .l7-table td,
+body.lesson-0007 .l7-table th { border:1px solid var(--rule);padding:.38rem .6rem;text-align:center;font-family:monospace }
+
+body.lesson-0007 .l7-card,
+body.lesson-0008 .l8-card { border:1px solid var(--rule);background:var(--code-bg);padding:.8rem }
+
+body.lesson-0007 .l7-card button { font:inherit;padding:.3rem;margin:.25rem 0 }
+
+body.lesson-0008 .lesson-controls { display:grid;grid-template-columns:minmax(0,1fr);gap:.45rem .8rem;align-items:center;margin:1rem 0 }
+
+body.lesson-0008 .lesson-readout { padding:.8rem;background:var(--code-bg);border-left:4px solid var(--accent);min-height:2.5rem }
+
+body.lesson-0009 figure,
+body.lesson-0010 figure { margin:1rem 0;padding:1rem;border:1px solid var(--rule);background:var(--code-bg) }
+
+body.lesson-0009 svg.demo,
+body.lesson-0010 svg.demo { display:block;width:100%;max-width:520px;margin:1rem auto }
+
+body.lesson-0009 .feedback,
+body.lesson-0010 .feedback { padding:.6rem;border-left:3px solid var(--accent) }
+
+body.lesson-0009 select,
+body.lesson-0009 input[type=number],
+body.lesson-0010 select,
+body.lesson-0010 input[type=number] { max-width:100%;padding:.35rem;font:inherit;background:var(--code-bg);color:var(--ink);border:1px solid var(--ink-faint) }
+
+body.lesson-0009 input[type=number],
+body.lesson-0010 input[type=number] { width:7rem }
+
+body.lesson-0011 .geometry-grid { display:grid;grid-template-columns:repeat(auto-fit,minmax(13rem,1fr));gap:1rem;margin:1rem 0 }
+
+body.lesson-0011 figcaption,
+body.lesson-0012 figcaption { font-size:.86rem;color:var(--ink-soft);margin-top:.7rem }
+
+body.lesson-0011 .symbol-list { display:grid;grid-template-columns:repeat(auto-fit,minmax(13rem,1fr));gap:.45rem;margin:1rem 0;padding:0;list-style:none }
+
+body.lesson-0011 .symbol-list li { padding:.55rem .7rem;border:1px solid var(--rule);background:var(--code-bg) }
+
+body.lesson-0011 .lab-controls input[type=range],
+body.lesson-0011 .lab-controls select,
+body.lesson-0012 .lab-controls input[type=range],
+body.lesson-0012 .lab-controls select { display:block;width:100%;margin-top:.35rem;font:inherit }
+
+body.lesson-0011 .lab-output,
+body.lesson-0012 .lab-output { margin:.8rem 0;padding:.7rem .9rem;border-left:3px solid var(--accent);background:var(--accent-soft);min-height:2.6rem }
+
+body.lesson-0011 .answer-line,
+body.lesson-0012 .answer-line { color:var(--ink-soft);font-size:.92rem }
+
+body.lesson-0011 .axis-note { font-size:.86rem;color:var(--ink-soft) }
+
+body.lesson-0011 fieldset,
+body.lesson-0012 fieldset { border:1px solid var(--rule);padding:.9rem 1rem;margin:1rem 0 }
+
+body.lesson-0011 fieldset label,
+body.lesson-0012 fieldset label { display:block;padding:.25rem 0;cursor:pointer }
+
+body.lesson-0011 textarea,
+body.lesson-0012 textarea { width:100%;min-height:7rem;padding:.7rem;font:inherit;background:var(--code-bg);color:var(--code-ink);border:1px solid var(--rule) }
+
+body.lesson-0012 .system-figure { margin:1.1rem 0;padding:1rem;background:var(--code-bg);border:1px solid var(--rule) }
+
+body.lesson-0012 .role-grid { display:grid;grid-template-columns:repeat(auto-fit,minmax(12rem,1fr));gap:.7rem;margin:1rem 0 }
+
+body.lesson-0012 .role-card { padding:.8rem;border:1px solid var(--rule);background:var(--code-bg) }
+
+body.lesson-0012 .role-card strong,
+body.lesson-0012 .role-card span { display:block }
+
+body.lesson-0012 .role-card span { margin-top:.3rem;color:var(--ink-soft);font-size:.88rem }
+
+body.lesson-0012 .role-table { width:100%;border-collapse:collapse;margin:1rem 0;font-size:.88rem }
+
+body.lesson-0012 .role-table th,
+body.lesson-0012 .role-table td { border:1px solid var(--rule);padding:.55rem .65rem;text-align:left;vertical-align:top }

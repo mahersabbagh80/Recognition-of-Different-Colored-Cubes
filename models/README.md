@@ -1,5 +1,7 @@
 # models/ — YOLOv5s weights for the cube-detection pipeline
 
+> **Current status — 9 September 2026:** At Maher’s explicit request, the old cube-trained weights, ONNX export, TensorRT engine, and related local training checkpoints were removed. No replacement is trained yet. The artifact descriptions below are historical records, not a current inventory. The new run will use reviewed self-captured images and a verified general pretrained checkpoint. See `docs/sunday-progress.md` for the deletion record. Robot-side copies were not changed.
+
 This directory holds the trained detection artifacts. Both files are git-ignored
 along with everything else under `models/` except this `README.md` and `.gitkeep`.
 
@@ -169,8 +171,9 @@ image; it does not replace M4 accuracy work on the Jetson):
 
 The smoke script takes `--model`, `--image`, `--imgsz`, `--conf`, `--iou`, and
 `--topk`. It performs letterbox preprocessing, an ONNX Runtime forward pass on
-the CPU provider, per-class confidence filtering, torchvision NMS, and undoes
-the letterbox to map boxes back into the original image frame.
+the CPU provider, per-class confidence filtering, center/size box conversion,
+inverse-letterbox mapping and clipping, then per-class torchvision NMS. This
+order mirrors the deployed node, including clipping before NMS.
 
 ## M4a artifact: `best.engine`
 
