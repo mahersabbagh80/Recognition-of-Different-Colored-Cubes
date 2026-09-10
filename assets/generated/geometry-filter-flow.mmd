@@ -1,0 +1,44 @@
+flowchart TD
+    A[geometry_filter.py] --> B[compute_geometry]
+
+    B --> C[Inputs:<br/>depth image + bounding box + parameters]
+    C --> D[Apply inward inset to bounding box]
+    D --> E[Extract depth pixels inside the box]
+    E --> F[Remove invalid and excessively distant depth values]
+
+    F --> G{Valid depth inside box?}
+    G -- No --> H[Return invalid statistics]
+    G -- Yes --> I[Extract surrounding annulus]
+    I --> J[Remove the box area from the annulus]
+    J --> K{Valid floor depth around box?}
+
+    K -- No --> H
+    K -- Yes --> L[Estimate floor depth using median]
+    L --> M[Calculate in-box depth statistics]
+    M --> N[Find pixels raised above the floor]
+    N --> O[Calculate raised-pixel fraction]
+
+    O --> P[Calculate 3D extent of raised pixels]
+    P --> Q[Calculate width-to-depth aspect ratio]
+    Q --> R[Measure raised top-surface flatness]
+    R --> S[Calculate diagnostic edge and center statistics]
+    S --> T[Return statistics dictionary]
+
+    H --> U[decide]
+    T --> U
+
+    U --> V{Statistics valid?}
+    V -- No --> W[KEEP<br/>no depth statistics]
+    V -- Yes --> X{Enough valid depth pixels?}
+
+    X -- No --> Y[KEEP<br/>low depth quality]
+    X -- Yes --> Z{Raised fraction sufficient?}
+
+    Z -- No --> AA[REJECT<br/>flat]
+    Z -- Yes --> AB{Aspect ratio acceptable?}
+
+    AB -- No --> AC[REJECT<br/>aspect]
+    AB -- Yes --> AD{Top surface flat enough?}
+
+    AD -- No --> AE[REJECT<br/>no planar top]
+    AD -- Yes --> AF[KEEP<br/>all tests passed]

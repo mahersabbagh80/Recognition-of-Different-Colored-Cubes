@@ -1,0 +1,42 @@
+flowchart TD
+    A[Start main()] --> B[Create ROS 2 node]
+    B --> C[Load parameters and TensorRT engine]
+    C --> D[Subscribe to synchronized RGB + depth images]
+
+    D --> E[_sync_cb()]
+    E --> F[Convert ROS images]
+    F --> G{Valid depth image?}
+
+    G -- No --> H[Skip frame]
+    G -- Yes --> I{Engine loaded?}
+
+    I -- No --> J[Empty detections]
+    I -- Yes --> K[_infer()]
+
+    K --> L[Prepare RGB image]
+    L --> M[Letterbox to 640 x 640]
+    M --> N[Run TensorRT]
+    N --> O[Receive raw output]
+    O --> P[_decode_yolov5_output()]
+
+    P --> Q[Confidence threshold]
+    Q --> R[Convert and correct boxes]
+    R --> S[Apply NMS]
+    S --> T[Candidate detections]
+
+    J --> U[Geometry filtering]
+    T --> U
+
+    U --> V{Filter enabled?}
+    V -- No --> W[Keep candidate]
+    V -- Yes --> X[compute_geometry()]
+    X --> Y[decide()]
+    Y --> Z{KEEP or REJECT?}
+
+    Z -- KEEP --> W
+    Z -- REJECT --> AA[Record rejection]
+
+    W --> AB[Publish detections and debug image]
+    AA --> AB
+    AB --> AC[Record timing]
+    AC --> D
