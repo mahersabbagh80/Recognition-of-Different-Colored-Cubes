@@ -83,6 +83,8 @@ data/hardneg/
 # OS / editor
 .DS_Store
 *~
+# VS Code C/C++ browse database (machine-local and regenerable)
+.vscode/browse.vc.db*
 
 # Local-only noise (per M7a, 2026-07-05). Kept conservative:
 # - .local-bin/ holds scratch scripts / one-off binaries.
