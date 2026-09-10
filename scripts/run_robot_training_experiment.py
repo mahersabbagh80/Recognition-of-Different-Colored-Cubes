@@ -3,16 +3,28 @@
 import json
 import math
 import csv
+from datetime import datetime
 import torch
 from ultralytics import YOLO
 from run_robot_training_smoke import ROOT, EVIDENCE, CHECKPOINT, DATA, RUNS, sha
 
-RUN_NAME = 'experiment_60ep'
+def reserve_run_directory(parent, timestamp=None):
+    """Atomically reserve a fresh directory, even for simultaneous launches."""
+    stamp = timestamp or datetime.now().astimezone().strftime('%Y%m%d_%H%M%S%z')
+    base = f'experiment_60ep_{stamp}'
+    parent.mkdir(parents=True, exist_ok=True)
+    suffix = 0
+    while True:
+        name = base if suffix == 0 else f'{base}_{suffix}'
+        run = parent / name
+        try:
+            run.mkdir()  # No exist_ok: an existing run is never reused.
+            return run
+        except FileExistsError:
+            suffix += 1
+
 
 def main():
-    run = RUNS / RUN_NAME
-    if run.exists():
-        raise FileExistsError(run)
     assert torch.cuda.is_available()
     assert sha(CHECKPOINT) == '054272ddbbb3035cea7ff6b97e5becea63d2cc57a4f06a2a8133f4d1a56e74ed'
     split = json.loads((EVIDENCE / 'development_split.json').read_text())
@@ -26,14 +38,17 @@ def main():
             values = list(map(float, row.split()))
             assert len(values) == 5 and all(math.isfinite(v) for v in values)
     torch.set_num_threads(4)
+    run = reserve_run_directory(RUNS)
+    print(f"New experiment directory: {run}", flush=True)
     settings = dict(data=str(DATA), epochs=60, imgsz=640, batch=4, nbs=4,
-        device=0, workers=0, project=str(RUNS), name=RUN_NAME, exist_ok=False,
+        device=0, workers=0, project=str(run.parent), name=run.name, exist_ok=True,
         seed=42, deterministic=True, optimizer='AdamW', lr0=0.001, lrf=0.1,
         warmup_epochs=0.0, patience=15, amp=False, pretrained=True,
         hsv_h=0.0, hsv_s=0.0, hsv_v=0.1, mosaic=0.0, mixup=0.0,
         scale=0.1, translate=0.05, fliplr=0.5, flipud=0.0,
         close_mosaic=0, cache=False, plots=True, save=True, val=True)
-    (EVIDENCE / 'experiment_requested_settings.json').write_text(json.dumps(settings, indent=2)+'\n')
+    # Ultralytics may use only the directory we just reserved, not an old run.
+    (run / 'requested_settings.json').write_text(json.dumps(settings, indent=2)+'\n')
     model = YOLO(str(CHECKPOINT))
     metrics = model.train(**settings)
     best = run / 'weights/best.pt'
@@ -52,7 +67,7 @@ def main():
         manifest_sha256=sha(EVIDENCE/'development_split.json'),
         output_shape=list(tensor.shape), class_names=trained.names,
         limitation='Four same-session validation images; no independent test or robot acceptance.')
-    (EVIDENCE/'experiment_summary.json').write_text(json.dumps(summary,indent=2)+'\n')
+    (run/'summary.json').write_text(json.dumps(summary,indent=2)+'\n')
     print(json.dumps(summary,indent=2))
 
 if __name__ == '__main__':

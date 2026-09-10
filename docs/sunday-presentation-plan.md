@@ -108,7 +108,20 @@ Use image quality, variety, and class coverage to select useful images; 98 is no
 
 ## 5. Friday, 11 September — deploy, verify, and freeze scope
 
-**Start message:** “Start Friday's three-hour session. Deploy the reviewed candidate if ready, compare its Jetson behavior with the offline results, and help me freeze a realistic demonstration scope today. Preserve the new candidate and its settings before making deployment changes.”
+**Updated handoff agreed Thursday evening:** Wednesday's core preparation, training and explanation are complete. Friday starts with the deferred candidate-improvement work below. The original deployment timetable is conditional on readiness and remaining time; do not assume two full daily plans fit into three hours.
+
+**Start message:** “Start Friday's session by reading the latest progress and confirming our available time. Guide me through a small batch of additional robot-camera photos inside my room. First show a numbered checklist describing exactly where to put the robot and cubes, the background and distances, and why each scene is useful. Work one setup at a time. Then review the labels and agree on the next training/evaluation step before executing it. Reassess deployment and presentation priorities against the time remaining.”
+
+**Capture instructions to prepare before taking photos:**
+
+- Use Maher's apartment, probably the same room. Outdoor captures are outside this agreed scope. Work with the actual floor, furniture and available indoor space.
+- For every numbered setup, specify the robot's location and camera-facing direction; cube colors and count; cube distance from the camera and left/center/right placement in its view; cube orientation; and the visible background/scenery and lighting.
+- State what remains fixed and what changes between shots, how many photos to take, and what to check in the camera preview. If room dimensions or camera framing are needed to make instructions concrete, establish them first rather than inventing measurements.
+- Prioritize the weak blue-cube cases while including green/red combinations and empty-room backgrounds. Explain each setup's purpose; do not assume more images guarantee better performance.
+- Assign whole arrangements to training additions or held-out development validation before retraining. Keep the later independent final test separate. Avoid repetitive frames being split across these groups.
+- Lead the sequence and give Maher the physical capture steps. Pause for each setup's result and adapt to what the camera actually sees. A detailed scene checklist has been requested but has not yet been produced or executed.
+
+**Original deployment sequence below — use only after the capture/improvement checkpoint and time review:**
 
 | Elapsed time | Maher | Codex | Checkpoint/output |
 |---|---|---|---|

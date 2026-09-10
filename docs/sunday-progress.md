@@ -117,3 +117,17 @@ Fresh general YOLOv5u-small initialization, same 22/4 split, 60 epochs with Adam
 ## Wednesday missed-cube diagnosis complete
 
 Ran `scripts/inspect_robot_experiment_misses.py` on unchanged best weights and verified reproduction of the fixed 0.50 counts. All three misses are in spread-out validation frames. Correct blue boxes have confidence0.0092/0.0310; missed green has0.4630. At0.25: TP10 FP0 FN2; at0.001: TP12 FP7 FN0. Threshold remains0.50; no acceptance claim. Original spread-out frame visually inspected. Training source blue positions are concentrated toward the center; this is a coverage observation, not a proven cause. Technical walkthrough updated with commands, evidence, interpretation and a proposed targeted capture batch. Next: obtain robot-camera access and capture deliberately varied blue/green scenes, then approve labels and allocate whole setups before another training run. No job running or deployment change.
+
+## Thursday guided continuation — run naming
+
+Resumed Wednesday's learning checkpoint. At Maher's suggestion, training experiments now reserve timestamped directories with numbered collision suffixes. Settings and summary are stored per run. Temporary-directory collision/preservation checks passed; no training launched. Thursday's technical walkthrough records implementation and scope limits, including existing evaluation scripts still pointing to Wednesday's candidate and shell log redirection remaining separate. Next: inspect this small change together, then continue understanding training settings.
+
+## Thursday session handoff — Friday capture agreed
+
+Maher is tired and plans to resume tomorrow, Friday. Wednesday's core work and explanation are complete; historical M1 camera/runtime verification is confirmed in the logbook and is not a missing Wednesday prerequisite. New-model deployment validation remains later work.
+
+Maher agreed to try additional robot-camera photographs tomorrow and explicitly wants concrete descriptions of each scene. Begin with a manageable capture checklist specifying cube colors, placement, distance, orientation/background, and what must stay fixed or change. Guide one setup at a time; distinguish training additions, held-out development arrangements, and a later independent final test. Prioritize weak spread-out blue examples while retaining other colors and empty backgrounds. No captures have occurred and no new run is authorized merely by this handoff. Reassess available time before combining Thursday/Friday work; do not promise both fit automatically.
+
+## Friday capture scope clarified and plan updated
+
+Maher specified indoor photographs in his apartment, probably his room, with explicit instructions for robot placement, camera direction, cube placement/distance and background/scenery. Added this requirement and a revised Friday start message to the presentation plan. Friday begins with deferred capture/improvement work; deployment remains conditional on readiness and available time. Detailed scene checklist and captures remain pending.
