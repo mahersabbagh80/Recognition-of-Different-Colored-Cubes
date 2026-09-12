@@ -194,6 +194,10 @@ Practise: Why YOLO? Why not color alone? Why did source-image performance fail t
 
 ## 8. Stop rules and records
 
+### Saturday revision: new indoor training and validation captures
+
+Maher chose to collect new photos after cleaning the usable room area. Follow the [numbered indoor capture checklist](indoor-cube-capture-checklist.md): keep the 13 existing examples for training, propose 10 targeted new training and 9 separately arranged validation photos after the individual-image review, annotate and review both batches, then configure a disjoint training/validation run before deployment and fresh live evaluation. This supersedes today's same-image-only evaluation proposal. Capture counts and layouts are planned, not completed. Keep the guided workflow and preserve time for deployment and presentation preparation.
+
 - Thursday: lack of useful three-color detection triggers a narrower commitment and focused diagnosis.
 - Friday: freeze scope and implementation; retain recoverable versions of the new candidate.
 - Saturday: preserve evaluation integrity and presentation time even if targets fail.

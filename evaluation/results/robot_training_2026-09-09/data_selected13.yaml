@@ -1,0 +1,12 @@
+path: "/home/maher/maher_ws/src/Recognition-of-Different-Colored-Cubes/evaluation/results/robot_training_2026-09-09"
+
+# Learn from all 13 selected images.
+train: images/train
+
+# Check training examples only; not independent validation.
+val: images/train
+
+names:
+  0: blue_cube
+  1: green_cube
+  2: red_cube

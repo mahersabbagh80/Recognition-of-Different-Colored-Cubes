@@ -3,10 +3,14 @@
 import json
 import math
 import csv
+from pathlib import Path
+import yaml
 from datetime import datetime
 import torch
 from ultralytics import YOLO
-from run_robot_training_smoke import ROOT, EVIDENCE, CHECKPOINT, DATA, RUNS, sha
+from run_robot_training_smoke import ROOT, EVIDENCE, CHECKPOINT, RUNS, sha
+
+DATA = ROOT / "evaluation/results/robot_training_2026-09-09/data_selected13.yaml"
 
 def reserve_run_directory(parent, timestamp=None):
     """Atomically reserve a fresh directory, even for simultaneous launches."""
@@ -29,10 +33,20 @@ def main():
     assert sha(CHECKPOINT) == '054272ddbbb3035cea7ff6b97e5becea63d2cc57a4f06a2a8133f4d1a56e74ed'
     split = json.loads((EVIDENCE / 'development_split.json').read_text())
     assert sha(EVIDENCE / 'human_review.json') == split['review_sha256']
-    data_root = ROOT / 'evaluation/results/robot_training_2026-09-09'
-    for frame in split['frames']:
-        assert sha(data_root / frame['image']) == frame['sha256']
-        rows = (data_root / frame['label']).read_text().splitlines()
+    config = yaml.safe_load(DATA.read_text())
+    data_root = Path(config['path'])
+    image_folder = data_root / config['train']
+    approved = {Path(frame['image']).name: frame for frame in split['frames']}
+    assert len(approved) == len(split['frames']), "Duplicate approved filenames"
+    assert image_folder.is_dir(), "Training image folder is missing"
+    image_paths = sorted(image_folder.glob('*.jpg'))
+    assert image_paths, "No training images found"
+    for image_path in image_paths:
+        assert image_path.name in approved, f"Unapproved image: {image_path.name}"
+        frame = approved[image_path.name]
+        assert sha(image_path) == frame['sha256']
+        label_path = data_root / 'labels/train' / (image_path.stem + '.txt')
+        rows = label_path.read_text().splitlines()
         assert len(rows) == len(frame['objects'])
         for row, obj in zip(rows, frame['objects']):
             values = list(map(float, row.split()))

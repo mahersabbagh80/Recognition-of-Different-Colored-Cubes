@@ -28,7 +28,8 @@ Explain a new operation briefly before executing it; then record the exact imple
 |---|---|---|
 | [Wednesday, 9 September](development-learning-journal/2026-09-09-wednesday.md) | Annotation review, image selection, box conversion, development split, training-environment checks, smoke training, and the 60-epoch experiment with fixed-confidence evaluation | In progress; initial substantive training completed |
 | [Thursday, 10 September](development-learning-journal/2026-09-10-thursday.md) | Guided fine-tuning explanation and unique experiment naming | In progress; naming checks passed, no new training |
+| [Saturday, 12 September](development-learning-journal/2026-09-12-saturday.md) | Guided 13-image consolidation, folder-driven preflight, and training/validation methodology review | Preparation verified; new training paused for methodology decision |
 
-Friday through Sunday will be added as work occurs. The [daily plan](sunday-presentation-plan.md) describes intended future activities; they are not recorded here as completed work.
+Other days will be added as work occurs. The [daily plan](sunday-presentation-plan.md) describes intended future activities; they are not recorded here as completed work. The [training and validation workflow](training-and-validation-workflow.md) describes the revised guided experiment.
 
 Each daily document follows the actual engineering steps, explains the code and configuration, links to evidence, and separates results from hypotheses. This index remains the stable entry point for the journal.
