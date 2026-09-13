@@ -16,6 +16,7 @@ The new fine-tuned model has been converted and demonstrated live on Jetson with
 | [Project definition](project-definition.md) | Goal, class mapping, scope and proposed acceptance |
 | [Concept and approach](Concept-and-Approach.md) | Why these methods were chosen |
 | [Architecture](architecture.md) | Current camera-to-output pipeline |
+| [Configuration reference](configuration.md) | Detector parameters, defaults, and geometry limitations |
 | [Technical stack](technical-stack.md) | Runtime, dependencies and artifact identity |
 | [Training and validation workflow](training-and-validation-workflow.md) | Actual dataset and reproducible stages |
 | [Methodology research](training-validation-methodology-review.md) | Sources behind held-out validation |
