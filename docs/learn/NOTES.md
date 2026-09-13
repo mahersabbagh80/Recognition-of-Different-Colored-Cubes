@@ -46,3 +46,7 @@ Last refreshed: 2026-09-07
 - 2026-09-08 editorial consolidation approved: expand beyond twelve when a topic needs room. The course now has fourteen lessons: camera geometry, depth reliability, ROS 2 flow, and deployment diagnosis have separate core paths. Preserve local prerequisites while avoiding repeated glossary blocks; keep secondary code audit detail and advanced extensions optional. Fresh challenges require a committed answer and have worked explanations. This is an authoring change, not evidence that Maher has mastered the material.
 
 - Training-focus implementation: main lessons 1–11 target better color-image cube detection and fine-tuning. Optional lessons 12–15 preserve geometry, depth, ROS 2, and deployment. A new browser-only comparison finale uses explicitly fictional counts and independent validation/test roles. Real training remains optional and must not be implied by the teaching results.
+
+## 13 September 2026 · Recover useful archived teaching
+
+User values the original nine lessons' useful explanations and interactions. Recover non-duplicated material into optional current-course workshops while preserving the archive. Two workshops added, linked from lessons 9/15 and the course index; no inference about learner mastery. PDFs remain deferred.

@@ -1,9 +1,9 @@
 # Scripts index
 
-Index for every tracked script under `scripts/`. Use this to find the
-right script for a given task.
+Index for the current scripts and historical archive under `scripts/`. Use
+this to find the right entry point for the current workflow.
 
-Last updated: 2026-09-13 (current workflow added; historical harnesses retained).
+Last updated: 2026-09-13 (current workflow and archive pointers).
 
 ## Current September workflow
 
@@ -28,8 +28,7 @@ Categories:
 - **M4c Geometry filter** — distractor gate, V3/V4 runs, summary.
 - **M5 Live eval** — bag capture, analysis, offline replay, latency parsing.
 - **Capture** — JetRover-side ROS subscribers that save RGB / depth frames.
-- **Training / fine-tune** — Roboflow dataset normalization and hard-neg fine-tune recipes.
-- **Dev helpers** — one-off scripts under [`dev_helpers/`](dev_helpers/) (M4c1-era debug).
+- **Historical recipes** — earlier Roboflow and M4c1 utilities in the [archive](archive/README.md); not part of the active workflow.
 
 ## M0 Model / export
 
@@ -48,7 +47,6 @@ Full artifact provenance → [`models/README.md`](../models/README.md).
 
 | Script | One-liner |
 |---|---|
-| `_download_weights.py` | Roboflow helper: download dataset/weights and record SHA-256. |
 | `test_inference.py` | Run the engine on every JPG in a directory and dump per-image detections. |
 
 ## M3 Smoke tests (dev PC)
@@ -66,6 +64,7 @@ Full artifact provenance → [`models/README.md`](../models/README.md).
 | `m4c_yolo_inference.py` | Run YOLO alone on M4c capture frames to produce distractor candidates. |
 | `m4c_v3v4_run.sh` | SSH-to-Jetson orchestration: for each distractor, capture 30 sync RGB+depth frames and run the filter. |
 | `m4c_v3v4_summary.py` | Read `evaluation/m4c_geometry_filter/filter_results_*.json` and print a KEEP/REJECT markdown table. |
+| `check_empty_scene.py` | Pre-V4 helper: prints how much clutter is on the floor before a capture. |
 
 ## M5 Live evaluation
 
@@ -84,25 +83,15 @@ Full artifact provenance → [`models/README.md`](../models/README.md).
 | `capture_rgb_depth_sync.py` | Synchronised RGB + depth capture (used for M4c1). |
 | `verify_camera_samples.py` | Sidecar SHA-256 + count checker for captured samples. |
 
-## Training / fine-tune (dev PC, optional)
+## Earlier Roboflow training utilities (archived)
 
-| Script | One-liner |
-|---|---|
-| `normalize_dataset.py` | Convert Roboflow segmentation export → YOLOv5 detection format. |
-| `build_hardneg_dataset.py` | Build the M3c hard-negative dataset (Roboflow + JetRover-room frames). |
-| `finetune_hardneg.py` | Continue-train `models/best.pt` on the hard-negative dataset. |
-| `validate_hardneg.py` | Before/after FP comparison between original and fine-tuned model on M4b frames. |
-| `check_empty_scene.py` | Pre-V4 helper: prints how much clutter is on the floor before a capture. |
+The Roboflow download, dataset-normalization, hard-negative build, fine-tuning,
+and validation scripts were moved to [`archive/roboflow/`](archive/roboflow/).
+They document earlier experiments and are not part of the current September
+workflow above.
 
-## Dev helpers (`dev_helpers/`)
+## Earlier M4c1 debug helpers (archived)
 
-One-shot scripts from the M4c1 distractor analysis. Not part of any routine pipeline.
-
-| Script | One-liner |
-|---|---|
-| `dev_helpers/_cleanup_inspect.py` | Clean up `_*` inspection files under `data/hardneg`. |
-| `dev_helpers/_inspect_tall_cyl_schema.py` | Dump the JSON schema of the M4c1 tall_cyl outputs. |
-| `dev_helpers/_peek_bboxes_once.py` | One-shot live RGB peek with bbox overlay + per-frame JSON dump. |
-| `dev_helpers/_summarize_carton.py` | Summarize carton YOLO + filter results (superseded by `m4c_v3v4_summary.py`). |
-| `dev_helpers/_summarize_cup.py` | Same, for the cup distractor. |
-| `dev_helpers/_summarize_tall_cyl.py` | Same, for the tall cylinder distractor. |
+The one-shot M4c1 distractor-analysis helpers are preserved under
+[`archive/dev_helpers/`](archive/dev_helpers/). See the [archive index](archive/README.md)
+for their names and historical roles.

@@ -13,4 +13,8 @@ If a question is answered here and in a live doc (`Concept-and-Approach.md`,
 
 ## Pre-refresh snapshots
 
-[pre-september-refresh/](pre-september-refresh/) preserves the older architecture, stack, definition and concept pages before the September consistency update. Their proposed decisions and performance comparisons are historical, not verified current claims.
+[pre-september-refresh/](pre-september-refresh) preserves the older architecture, stack, definition and concept pages before the September consistency update. Their proposed decisions and performance comparisons are historical, not verified current claims.
+
+## Completed planning records
+
+[completed-2026-09-13/](completed-2026-09-13/README.md) contains the superseded fine-tune proposal, Sunday planning/progress records, documentation audit and historical logbook. Current status lives in [milestones](../milestones.md); append new engineering work to the [daily journal](../development-learning-journal.md).

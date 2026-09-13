@@ -1,6 +1,6 @@
 # Milestones
 
-Current status: 13 September 2026. Detailed evidence is in the [daily journal](development-learning-journal.md); earlier milestones retain their historical evidence in the [logbook](LOGBOOK.md).
+Current status: 13 September 2026. Detailed evidence is in the [daily journal](development-learning-journal.md); earlier milestones retain their historical evidence in the [logbook](archive/completed-2026-09-13/LOGBOOK.md).
 
 ## Goal
 

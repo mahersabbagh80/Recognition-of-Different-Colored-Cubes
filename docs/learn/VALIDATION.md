@@ -102,3 +102,13 @@ The course contains eleven main lessons and four optional robot lessons. The new
 Practical coverage was strengthened in lessons 4 (annotation and missing-label inspection), 6 (varied capture sessions and split planning), and 8 (the script’s HSV, mosaic, and MixUp settings). A positive image containing a distracting region is distinguished from a verified cube-free hard-negative crop. Repeated arithmetic is optional where it does not add a new training decision.
 
 Validation completed: all fifteen pages load in Chrome without page errors or failed resources; expanded optional controls pass range/select checks, theme persistence, and 390-pixel page-overflow checks. Sixteen fresh checks pass unanswered/correct/incorrect feedback. The comparison chart’s counts and ratios match the supplied data, including undefined recall for an empty reference slice. Course links, fragment targets, the 15-entry index, and the main-to-optional navigation boundary pass. The non-SVG text contrast scan is clear in both themes, and the comparison chart was visually inspected. No model was trained, evaluated on real data, exported, or deployed by this revision; PDFs remain unchanged.
+
+## 13 September 2026 · Archived-material recovery
+
+Seventeen active HTML pages: eleven main lessons, four optional robot lessons and two optional recovered workshops. Existing sequence navigation remains the 15-lesson route; optional workshops are reached through the index and contextual links in lessons 9 and 15.
+
+Checks performed: JavaScript syntax; HTML local-file links, duplicate IDs and label references across all 17 pages; archive SHA256SUMS verification; browser checks of the two new workshops (three candidate grids, three coordinate stages, four evidence choices, all four gate combinations, correct responses to both fresh questions); 390px overflow checks in light/dark modes; no browser page errors. The camera-coordinate graphic was visually inspected. Existing lessons' interactions were not exhaustively rerun because their behavior was unchanged. PDFs were not generated. This verifies the recovered teaching artifacts, not detector performance or learner understanding.
+
+Additional recovery in lesson 13: illustrated selected-subset versus whole-box distinction, extents, aspect ratio and the limits of optical-depth standard deviation. Checked against `geometry_filter.py`, visually inspected the rendered diagram and verified 390px layout. No filter code changed.
+
+The restored lesson-15 geometry-rejection choice was browser-tested for its feedback and mobile layout. Its current-example link points to the dated 13 September live record; the older hard-negative script example is explicitly distinguished from the newer model inventory.

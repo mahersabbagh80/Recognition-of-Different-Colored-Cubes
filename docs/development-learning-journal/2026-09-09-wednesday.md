@@ -1,6 +1,6 @@
 # Wednesday, 9 September 2026 — technical development journal
 
-[Journal index](../development-learning-journal.md) · [Daily plan](../sunday-presentation-plan.md) · [Progress record](../sunday-progress.md)
+[Journal index](../development-learning-journal.md) · [Daily plan](../archive/completed-2026-09-13/sunday-presentation-plan.md) · [Progress record](../archive/completed-2026-09-13/sunday-progress.md)
 
 This records data preparation, environment checks, and the completed three-epoch training smoke run. Earlier sections preserve the status at each stage; the latest outcome is at the end. Paths in code examples are relative to the project root unless stated otherwise.
 

@@ -56,8 +56,12 @@ A lesson is ready for review only when its HTML parses, internal links resolve, 
 
 ## Archive
 
-The superseded nine-lesson course is preserved in [`archive/2026-09-07-project-first-course/`](archive/2026-09-07-project-first-course/). Its `SHA256SUMS` file records the archived contents.
+The superseded nine-lesson course is preserved in [`archive/2026-09-07-project-first-course/`](archive/2026-09-07-project-first-course). Its `SHA256SUMS` file records the archived contents.
 
 ## Editorial structure
 
 Start with a concrete problem, introduce terms where they explain it, preserve a worked visual, then explore and attempt a fresh case. Local definitions remain available before dependent questions. Optional notes hold secondary audit details and advanced calculations. The final case brings together artifact selection, data contracts, matching, and a controlled comparison; page completion does not establish mastery.
+
+## Optional archive recovery · 13 September 2026
+
+The required route is unchanged. Workshop 16, **Follow a candidate back to the camera**, extends lesson 9 with grid counts and inverse letterboxing. Workshop 17, **Check the export, then defend the result**, extends lesson 15 with verification boundaries and a project walkthrough. These two additional HTML pages are optional supplements, not required training lessons. See [the nine-lesson recovery map](ARCHIVE-RECOVERY.md).

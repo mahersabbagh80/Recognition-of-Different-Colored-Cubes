@@ -7,7 +7,7 @@ Parent: `t_bfeee153`. Inputs: prior `docs/model-options.md` (M2), `docs/model-ha
 > **Update 2026-06-27 (M3c3, `t_becf3451`):** the primary-path recommendation
 > in this document (option F — depth/geometry post-filter only) is
 > **superseded** by the hybrid plan in
-> [`docs/model-objectness-addendum.md`](./model-objectness-addendum.md)
+> [`docs/model-objectness-addendum.md`](model-objectness-addendum.md)
 > §0/§5. Option F remains correct as Phase 1 of the hybrid. The
 > addendum introduces Phase 1 (combined height + ratio + planar-top
 > filter) and a V3 raised-3D-distractor validation gate that option F

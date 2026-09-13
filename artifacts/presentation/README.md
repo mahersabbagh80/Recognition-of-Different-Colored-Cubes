@@ -11,7 +11,7 @@ Current draft: **version 8 — 16 main slides and two appendix slides**. Revised
 - [Tutor questions v8](tutor-questions-v8.md) — 18 questions with suggested answers.
 - [Saved-evidence fallback](fallback-demo.md) — demonstration using preserved evidence.
 
-The current aliases speaker-notes.md and tutor-questions.md match v8. The older rehearsal checklist is optional historical material; no rehearsal is requested or claimed.
+The versioned v8 notes and questions are the canonical copies. Superseded slides, notes and the optional older rehearsal checklist are grouped in [archive/](archive/). No rehearsal is requested or claimed.
 
 ## Evidence boundary
 

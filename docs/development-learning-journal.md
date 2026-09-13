@@ -1,6 +1,6 @@
 # Development learning journal
 
-This journal connects the work we actually perform to the machine-learning and computer-vision ideas behind it. Read it alongside the [daily plan](sunday-presentation-plan.md), [progress record](sunday-progress.md), and [learning course](learn/index.html).
+This journal connects the work we actually perform to the machine-learning and computer-vision ideas behind it. Read it alongside the [daily plan](archive/completed-2026-09-13/sunday-presentation-plan.md), [progress record](archive/completed-2026-09-13/sunday-progress.md), and [learning course](learn/index.html).
 
 The plan describes intended work. The progress record tracks completed actions and evidence. This journal explains the reasoning, tradeoffs, and lessons. Completing an engineering step does not by itself establish that Maher can explain the underlying concept.
 
@@ -31,6 +31,6 @@ Explain a new operation briefly before executing it; then record the exact imple
 | [Saturday, 12 September](development-learning-journal/2026-09-12-saturday.md) | Guided 13-image consolidation, folder-driven preflight, and training/validation methodology review | Completed: reviewed export with 23 train / 8 validation images and 60-epoch training run |
 | [Sunday, 13 September](development-learning-journal/2026-09-13-sunday.md) | Validation review, ONNX/TensorRT deployment, live tests, filter limitation and presentation v8 | Completed-work documentation current; filter and full-system acceptance remain open |
 
-Other days will be added as work occurs. The [daily plan](sunday-presentation-plan.md) describes intended future activities; they are not recorded here as completed work. The [training and validation workflow](training-and-validation-workflow.md) describes the revised guided experiment.
+Other days will be added as work occurs. The archived [daily plan](archive/completed-2026-09-13/sunday-presentation-plan.md) records the earlier intended activities. Use [milestones](milestones.md) for current remaining work. The [training and validation workflow](training-and-validation-workflow.md) describes the revised guided experiment.
 
 Each daily document follows the actual engineering steps, explains the code and configuration, links to evidence, and separates results from hypotheses. This index remains the stable entry point for the journal.

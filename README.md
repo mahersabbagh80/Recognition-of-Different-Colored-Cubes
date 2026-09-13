@@ -194,8 +194,8 @@ Browse the full tree on GitHub — this table only highlights non-obvious layout
 | [`docs/project-definition.md`](docs/project-definition.md) | Problem definition, classes, constraints |
 | [`docs/technical-stack.md`](docs/technical-stack.md) | Runtime stack, dependencies, model artifacts |
 | [`docs/milestones.md`](docs/milestones.md) | Implementation milestones and ordered steps |
-| [`docs/m3d-revived-plan.md`](docs/m3d-revived-plan.md) | Historical fine-tune proposal; see the current training workflow |
-| [`docs/LOGBOOK.md`](docs/LOGBOOK.md) | Session-by-session development log |
+| [Historical fine-tune proposal](docs/archive/completed-2026-09-13/m3d-revived-plan.md) | Historical fine-tune proposal; see the current training workflow |
+| [Historical logbook](docs/archive/completed-2026-09-13/LOGBOOK.md) | Session-by-session development log |
 
 ### Script index
 

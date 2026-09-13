@@ -1,6 +1,6 @@
 # ML and Computer Vision Learning Workspace
 
-Open [`index.html`](index.html) in a browser to begin the eleven-lesson training course. Four additional lessons form an optional robot-integration track.
+Open [`index.html`](index.html) in a browser to begin the eleven-lesson training course. Four additional lessons form an optional robot-integration track. Two [recovered workshops](index.html#recovered-workshops) add useful material from the original nine lessons; see the [recovery map](ARCHIVE-RECOVERY.md).
 
 ## Structure
 

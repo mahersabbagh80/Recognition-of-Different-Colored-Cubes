@@ -72,12 +72,12 @@ venv/
 .venv-m2/
 .yolo_config/
 
-# M2 normalized dataset (regenerable via scripts/normalize_dataset.py)
+# M2 normalized dataset (regenerable via scripts/archive/roboflow/normalize_dataset.py)
 data/roboflow_det/
 
 # M2 raw dataset (downloaded from Roboflow manually or via SDK; never commit images)
 data/roboflow/
-# M3c hard-negative fine-tune dataset (regenerable via scripts/build_hardneg_dataset.py)
+# M3c hard-negative fine-tune dataset (regenerable via scripts/archive/roboflow/build_hardneg_dataset.py)
 data/hardneg/
 
 # OS / editor
@@ -109,3 +109,13 @@ artifacts/presentation/slide-overview-*.png
 # Model exports are transferred separately, including outside models/
 *.onnx
 *.engine
+
+# Generated course/PDF previews; retain reusable QA source files.
+tmp/**
+!tmp/course-qa/
+!tmp/course-qa/*.cjs
+!tmp/course-qa/*.py
+# Superseded presentation binaries remain local in the archive.
+artifacts/presentation/archive/*.pptx
+artifacts/presentation/archive/*.pdf
+artifacts/presentation/archive/*.png
