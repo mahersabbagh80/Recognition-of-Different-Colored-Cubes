@@ -1,0 +1,988 @@
+{
+  "purpose": "Human-confirmed annotations for the 12 September training and validation captures",
+  "review": "/home/maher/maher_ws/src/Recognition-of-Different-Colored-Cubes/evaluation/robot_dataset_2026-09-12/human_review.json",
+  "output_root": "/home/maher/maher_ws/src/Recognition-of-Different-Colored-Cubes/evaluation/results/robot_training_2026-09-12",
+  "review_sha256": "cd69bc0d07c19367b2d4e84d7277fd0ed5941012999d4daeb185cd2521984da7",
+  "classes": [
+    "blue_cube",
+    "green_cube",
+    "red_cube"
+  ],
+  "base_training_dataset": "/home/maher/maher_ws/src/Recognition-of-Different-Colored-Cubes/evaluation/results/robot_training_2026-09-09",
+  "base_manifest": "/home/maher/maher_ws/src/Recognition-of-Different-Colored-Cubes/evaluation/robot_dataset_2026-09-09/development_split.json",
+  "base_manifest_sha256": "6ab0461c415e2689a24b77300e5dd1f747524a5d93e8634c0d49f21402cce688",
+  "split_rule": "Use each review entry's declared split; legacy records use fixed validation groups.",
+  "counts": {
+    "train": {
+      "images": 23,
+      "background_images": 3,
+      "green_cube": 13,
+      "blue_cube": 13,
+      "red_cube": 13
+    },
+    "val": {
+      "green_cube": 6,
+      "blue_cube": 6,
+      "red_cube": 6,
+      "images": 8,
+      "background_images": 2
+    }
+  },
+  "frames": [
+    {
+      "image_id": "background/background_0001.jpg",
+      "group": "background",
+      "split": "train",
+      "source_file": "/home/maher/maher_ws/src/Recognition-of-Different-Colored-Cubes/evaluation/results/robot_training_2026-09-09/images/train/background__background_0001.jpg",
+      "sha256": "2f0810ca1945c5b86f8f2c5a86ecfe32a99bed1928fde31ad37a8aa18284fa19",
+      "width": 640,
+      "height": 360,
+      "image": "images/train/background__background_0001.jpg",
+      "label": "labels/train/background__background_0001.txt",
+      "objects": [],
+      "reviewer": "Maher",
+      "origin": "retained_base_training_dataset"
+    },
+    {
+      "image_id": "blue_green/blue_green_0001.jpg",
+      "group": "blue_green",
+      "split": "train",
+      "source_file": "/home/maher/maher_ws/src/Recognition-of-Different-Colored-Cubes/evaluation/results/robot_training_2026-09-09/images/train/blue_green__blue_green_0001.jpg",
+      "sha256": "cf4d2142888b2e8caa2d9ce42955470f3a6ef8fbb6ef19857a7c509387981135",
+      "width": 640,
+      "height": 360,
+      "image": "images/train/blue_green__blue_green_0001.jpg",
+      "label": "labels/train/blue_green__blue_green_0001.txt",
+      "objects": [
+        {
+          "class_name": "green_cube",
+          "bbox_xyxy": [
+            301,
+            110,
+            321,
+            133
+          ]
+        },
+        {
+          "class_name": "blue_cube",
+          "bbox_xyxy": [
+            337,
+            104,
+            358,
+            126
+          ]
+        }
+      ],
+      "reviewer": "Maher",
+      "origin": "retained_base_training_dataset"
+    },
+    {
+      "image_id": "dist20cm/dist20cm_0001.jpg",
+      "group": "dist20cm",
+      "split": "train",
+      "source_file": "/home/maher/maher_ws/src/Recognition-of-Different-Colored-Cubes/evaluation/results/robot_training_2026-09-09/images/train/dist20cm__dist20cm_0001.jpg",
+      "sha256": "e29496df8ef3dca2ddb76a426de7d8285a899fb20c92c367e622ce8d6050db88",
+      "width": 640,
+      "height": 360,
+      "image": "images/train/dist20cm__dist20cm_0001.jpg",
+      "label": "labels/train/dist20cm__dist20cm_0001.txt",
+      "objects": [
+        {
+          "class_name": "red_cube",
+          "bbox_xyxy": [
+            284,
+            193,
+            310,
+            225
+          ]
+        },
+        {
+          "class_name": "green_cube",
+          "bbox_xyxy": [
+            341,
+            198,
+            366,
+            229
+          ]
+        },
+        {
+          "class_name": "blue_cube",
+          "bbox_xyxy": [
+            392,
+            200,
+            424,
+            233
+          ]
+        }
+      ],
+      "reviewer": "Maher",
+      "origin": "retained_base_training_dataset"
+    },
+    {
+      "image_id": "dist40cm/dist40cm_0001.jpg",
+      "group": "dist40cm",
+      "split": "train",
+      "source_file": "/home/maher/maher_ws/src/Recognition-of-Different-Colored-Cubes/evaluation/results/robot_training_2026-09-09/images/train/dist40cm__dist40cm_0001.jpg",
+      "sha256": "058fdc04b380b78632218a2f6e0f1de8c0508fc9715e96448c216344f340e85a",
+      "width": 640,
+      "height": 360,
+      "image": "images/train/dist40cm__dist40cm_0001.jpg",
+      "label": "labels/train/dist40cm__dist40cm_0001.txt",
+      "objects": [
+        {
+          "class_name": "red_cube",
+          "bbox_xyxy": [
+            288,
+            86,
+            303,
+            106
+          ]
+        },
+        {
+          "class_name": "green_cube",
+          "bbox_xyxy": [
+            322,
+            85,
+            339,
+            104
+          ]
+        },
+        {
+          "class_name": "blue_cube",
+          "bbox_xyxy": [
+            360,
+            85,
+            376,
+            104
+          ]
+        }
+      ],
+      "reviewer": "Maher",
+      "origin": "retained_base_training_dataset"
+    },
+    {
+      "image_id": "dist60cm/dist60cm_0001.jpg",
+      "group": "dist60cm",
+      "split": "train",
+      "source_file": "/home/maher/maher_ws/src/Recognition-of-Different-Colored-Cubes/evaluation/results/robot_training_2026-09-09/images/train/dist60cm__dist60cm_0001.jpg",
+      "sha256": "ed69999bc10011330012c14add62ff99756ac248b6530fb8e4467dbd811f546b",
+      "width": 640,
+      "height": 360,
+      "image": "images/train/dist60cm__dist60cm_0001.jpg",
+      "label": "labels/train/dist60cm__dist60cm_0001.txt",
+      "objects": [
+        {
+          "class_name": "green_cube",
+          "bbox_xyxy": [
+            271,
+            44,
+            283,
+            57
+          ]
+        },
+        {
+          "class_name": "red_cube",
+          "bbox_xyxy": [
+            313,
+            48,
+            325,
+            60
+          ]
+        },
+        {
+          "class_name": "blue_cube",
+          "bbox_xyxy": [
+            366,
+            46,
+            380,
+            61
+          ]
+        }
+      ],
+      "reviewer": "Maher",
+      "origin": "retained_base_training_dataset"
+    },
+    {
+      "image_id": "dist80cm/dist80cm_0001.jpg",
+      "group": "dist80cm",
+      "split": "train",
+      "source_file": "/home/maher/maher_ws/src/Recognition-of-Different-Colored-Cubes/evaluation/results/robot_training_2026-09-09/images/train/dist80cm__dist80cm_0001.jpg",
+      "sha256": "8e7b1998a4ff3e5854c94b80617d7b1fc045cc62137fe84b32c08c9bfd06db86",
+      "width": 640,
+      "height": 360,
+      "image": "images/train/dist80cm__dist80cm_0001.jpg",
+      "label": "labels/train/dist80cm__dist80cm_0001.txt",
+      "objects": [
+        {
+          "class_name": "red_cube",
+          "bbox_xyxy": [
+            287,
+            17,
+            298,
+            28
+          ]
+        },
+        {
+          "class_name": "green_cube",
+          "bbox_xyxy": [
+            312,
+            18,
+            324,
+            28
+          ]
+        },
+        {
+          "class_name": "blue_cube",
+          "bbox_xyxy": [
+            344,
+            18,
+            354,
+            28
+          ]
+        }
+      ],
+      "reviewer": "Maher",
+      "origin": "retained_base_training_dataset"
+    },
+    {
+      "image_id": "red_blue/red_blue_0001.jpg",
+      "group": "red_blue",
+      "split": "train",
+      "source_file": "/home/maher/maher_ws/src/Recognition-of-Different-Colored-Cubes/evaluation/results/robot_training_2026-09-09/images/train/red_blue__red_blue_0001.jpg",
+      "sha256": "f9a357aec9bf3898243b9d31fb0b29684aef99be0fd0cf1948baa1d540b67d8c",
+      "width": 640,
+      "height": 360,
+      "image": "images/train/red_blue__red_blue_0001.jpg",
+      "label": "labels/train/red_blue__red_blue_0001.txt",
+      "objects": [
+        {
+          "class_name": "red_cube",
+          "bbox_xyxy": [
+            303,
+            97,
+            320,
+            117
+          ]
+        },
+        {
+          "class_name": "blue_cube",
+          "bbox_xyxy": [
+            345,
+            94,
+            364,
+            116
+          ]
+        }
+      ],
+      "reviewer": "Maher",
+      "origin": "retained_base_training_dataset"
+    },
+    {
+      "image_id": "red_green/red_green_0001.jpg",
+      "group": "red_green",
+      "split": "train",
+      "source_file": "/home/maher/maher_ws/src/Recognition-of-Different-Colored-Cubes/evaluation/results/robot_training_2026-09-09/images/train/red_green__red_green_0001.jpg",
+      "sha256": "8b2f1342b1546dda76f1fe6a6f8151874818ef12994595ee4d27f4208d676f01",
+      "width": 640,
+      "height": 360,
+      "image": "images/train/red_green__red_green_0001.jpg",
+      "label": "labels/train/red_green__red_green_0001.txt",
+      "objects": [
+        {
+          "class_name": "red_cube",
+          "bbox_xyxy": [
+            291,
+            102,
+            312,
+            123
+          ]
+        },
+        {
+          "class_name": "green_cube",
+          "bbox_xyxy": [
+            336,
+            108,
+            356,
+            130
+          ]
+        }
+      ],
+      "reviewer": "Maher",
+      "origin": "retained_base_training_dataset"
+    },
+    {
+      "image_id": "red_green_blue/red_green_blue_0001.jpg",
+      "group": "red_green_blue",
+      "split": "train",
+      "source_file": "/home/maher/maher_ws/src/Recognition-of-Different-Colored-Cubes/evaluation/results/robot_training_2026-09-09/images/train/red_green_blue__red_green_blue_0001.jpg",
+      "sha256": "267f89123f53da24069a96fcb389240d9b0bb5d7ed06011c62c6be534334c002",
+      "width": 640,
+      "height": 360,
+      "image": "images/train/red_green_blue__red_green_blue_0001.jpg",
+      "label": "labels/train/red_green_blue__red_green_blue_0001.txt",
+      "objects": [
+        {
+          "class_name": "red_cube",
+          "bbox_xyxy": [
+            291,
+            102,
+            312,
+            123
+          ]
+        },
+        {
+          "class_name": "green_cube",
+          "bbox_xyxy": [
+            336,
+            108,
+            356,
+            130
+          ]
+        },
+        {
+          "class_name": "blue_cube",
+          "bbox_xyxy": [
+            306,
+            121,
+            324,
+            143
+          ]
+        }
+      ],
+      "reviewer": "Maher",
+      "origin": "retained_base_training_dataset"
+    },
+    {
+      "image_id": "single_blue/single_blue_0001.jpg",
+      "group": "single_blue",
+      "split": "train",
+      "source_file": "/home/maher/maher_ws/src/Recognition-of-Different-Colored-Cubes/evaluation/results/robot_training_2026-09-09/images/train/single_blue__single_blue_0001.jpg",
+      "sha256": "c8d5b88d2cdcca013d6c02b9cda82c0e383a3ec0d2141dbb128b11ae0b0e1e37",
+      "width": 640,
+      "height": 360,
+      "image": "images/train/single_blue__single_blue_0001.jpg",
+      "label": "labels/train/single_blue__single_blue_0001.txt",
+      "objects": [
+        {
+          "class_name": "blue_cube",
+          "bbox_xyxy": [
+            332,
+            105,
+            352,
+            128
+          ]
+        }
+      ],
+      "reviewer": "Maher",
+      "origin": "retained_base_training_dataset"
+    },
+    {
+      "image_id": "single_green/single_green_0001.jpg",
+      "group": "single_green",
+      "split": "train",
+      "source_file": "/home/maher/maher_ws/src/Recognition-of-Different-Colored-Cubes/evaluation/results/robot_training_2026-09-09/images/train/single_green__single_green_0001.jpg",
+      "sha256": "98fff0182354a1f31a12239dbfc107db04a0dbf235ebb86c1f0af5fef62b005f",
+      "width": 640,
+      "height": 360,
+      "image": "images/train/single_green__single_green_0001.jpg",
+      "label": "labels/train/single_green__single_green_0001.txt",
+      "objects": [
+        {
+          "class_name": "green_cube",
+          "bbox_xyxy": [
+            335,
+            106,
+            351,
+            126
+          ]
+        }
+      ],
+      "reviewer": "Maher",
+      "origin": "retained_base_training_dataset"
+    },
+    {
+      "image_id": "single_red/single_red_0001.jpg",
+      "group": "single_red",
+      "split": "train",
+      "source_file": "/home/maher/maher_ws/src/Recognition-of-Different-Colored-Cubes/evaluation/results/robot_training_2026-09-09/images/train/single_red__single_red_0001.jpg",
+      "sha256": "76e02d2667589e244b6e9350ffe775e8510eaf7dc38623fd6d049eb6229c0019",
+      "width": 640,
+      "height": 360,
+      "image": "images/train/single_red__single_red_0001.jpg",
+      "label": "labels/train/single_red__single_red_0001.txt",
+      "objects": [
+        {
+          "class_name": "red_cube",
+          "bbox_xyxy": [
+            337,
+            105,
+            355,
+            127
+          ]
+        }
+      ],
+      "reviewer": "Maher",
+      "origin": "retained_base_training_dataset"
+    },
+    {
+      "image_id": "spread_out/spread_out_0001.jpg",
+      "group": "spread_out",
+      "split": "train",
+      "source_file": "/home/maher/maher_ws/src/Recognition-of-Different-Colored-Cubes/evaluation/results/robot_training_2026-09-09/images/train/spread_out__spread_out_0001.jpg",
+      "sha256": "6ccfff3ddfa3cdd1b442d00132b7d23092380fb500f427129e118831dce29ab9",
+      "width": 640,
+      "height": 360,
+      "image": "images/train/spread_out__spread_out_0001.jpg",
+      "label": "labels/train/spread_out__spread_out_0001.txt",
+      "objects": [
+        {
+          "class_name": "red_cube",
+          "bbox_xyxy": [
+            187,
+            57,
+            203,
+            73
+          ]
+        },
+        {
+          "class_name": "green_cube",
+          "bbox_xyxy": [
+            414,
+            60,
+            428,
+            75
+          ]
+        },
+        {
+          "class_name": "blue_cube",
+          "bbox_xyxy": [
+            501,
+            147,
+            531,
+            172
+          ]
+        }
+      ],
+      "reviewer": "Maher",
+      "origin": "retained_base_training_dataset"
+    },
+    {
+      "image_id": "T01_take1",
+      "group": "T01_take1",
+      "split": "train",
+      "source_file": "/home/maher/maher_ws/src/Recognition-of-Different-Colored-Cubes/evaluation/camera_samples/cube_training_validation_2026-09-12/raw/new_training/2026-09-12/T01_take1/T01_take1_0001.jpg",
+      "sha256": "3cfe68d5a71f421c632a89554f1927bc9298eceb5286405bc327bc1ab78c1b87",
+      "width": 640,
+      "height": 360,
+      "image": "images/train/T01_take1__T01_take1_0001.jpg",
+      "label": "labels/train/T01_take1__T01_take1_0001.txt",
+      "objects": [
+        {
+          "class_name": "blue_cube",
+          "bbox_xyxy": [
+            95,
+            157,
+            130,
+            194
+          ]
+        }
+      ],
+      "reviewer": "Maher"
+    },
+    {
+      "image_id": "T02_take1",
+      "group": "T02_take1",
+      "split": "train",
+      "source_file": "/home/maher/maher_ws/src/Recognition-of-Different-Colored-Cubes/evaluation/camera_samples/cube_training_validation_2026-09-12/raw/new_training/2026-09-12/T02_take1/T02_take1_0001.jpg",
+      "sha256": "d606a5a3b273b5e39692a893ba830f9e16c1c804831ac0d362d7b8176a6daea9",
+      "width": 640,
+      "height": 360,
+      "image": "images/train/T02_take1__T02_take1_0001.jpg",
+      "label": "labels/train/T02_take1__T02_take1_0001.txt",
+      "objects": [
+        {
+          "class_name": "blue_cube",
+          "bbox_xyxy": [
+            535,
+            67,
+            561,
+            92
+          ]
+        }
+      ],
+      "reviewer": "Maher"
+    },
+    {
+      "image_id": "T03",
+      "group": "T03",
+      "split": "train",
+      "source_file": "/home/maher/maher_ws/src/Recognition-of-Different-Colored-Cubes/evaluation/camera_samples/cube_training_validation_2026-09-12/raw/new_training/2026-09-12/T03/T03_0001.jpg",
+      "sha256": "3a716e3baf80c110e8e0d8bce51f3b0046e68ceef3c064f016d207d5bd45690f",
+      "width": 640,
+      "height": 360,
+      "image": "images/train/T03__T03_0001.jpg",
+      "label": "labels/train/T03__T03_0001.txt",
+      "objects": [
+        {
+          "class_name": "green_cube",
+          "bbox_xyxy": [
+            33,
+            57,
+            63,
+            84
+          ]
+        }
+      ],
+      "reviewer": "Maher"
+    },
+    {
+      "image_id": "T04",
+      "group": "T04",
+      "split": "train",
+      "source_file": "/home/maher/maher_ws/src/Recognition-of-Different-Colored-Cubes/evaluation/camera_samples/cube_training_validation_2026-09-12/raw/new_training/2026-09-12/T04/T04_0001.jpg",
+      "sha256": "5b7c60b59f7501f39932a76095be588e506a5e003a9a4cbaa68b773526664506",
+      "width": 640,
+      "height": 360,
+      "image": "images/train/T04__T04_0001.jpg",
+      "label": "labels/train/T04__T04_0001.txt",
+      "objects": [
+        {
+          "class_name": "green_cube",
+          "bbox_xyxy": [
+            554,
+            165,
+            597,
+            207
+          ]
+        }
+      ],
+      "reviewer": "Maher"
+    },
+    {
+      "image_id": "T05",
+      "group": "T05",
+      "split": "train",
+      "source_file": "/home/maher/maher_ws/src/Recognition-of-Different-Colored-Cubes/evaluation/camera_samples/cube_training_validation_2026-09-12/raw/new_training/2026-09-12/T05/T05_0001.jpg",
+      "sha256": "34c47c36d6d15aa802ef0b83380ca3e7c3f57609eb38d90030e601be3c515d85",
+      "width": 640,
+      "height": 360,
+      "image": "images/train/T05__T05_0001.jpg",
+      "label": "labels/train/T05__T05_0001.txt",
+      "objects": [
+        {
+          "class_name": "red_cube",
+          "bbox_xyxy": [
+            83,
+            139,
+            126,
+            177
+          ]
+        }
+      ],
+      "reviewer": "Maher"
+    },
+    {
+      "image_id": "T06",
+      "group": "T06",
+      "split": "train",
+      "source_file": "/home/maher/maher_ws/src/Recognition-of-Different-Colored-Cubes/evaluation/camera_samples/cube_training_validation_2026-09-12/raw/new_training/2026-09-12/T06/T06_0001.jpg",
+      "sha256": "c3bab463108390e3b164fe694480618363aedcd80cd9b24cd535341537fe32d7",
+      "width": 640,
+      "height": 360,
+      "image": "images/train/T06__T06_0001.jpg",
+      "label": "labels/train/T06__T06_0001.txt",
+      "objects": [
+        {
+          "class_name": "red_cube",
+          "bbox_xyxy": [
+            530,
+            62,
+            559,
+            91
+          ]
+        }
+      ],
+      "reviewer": "Maher"
+    },
+    {
+      "image_id": "T07",
+      "group": "T07",
+      "split": "train",
+      "source_file": "/home/maher/maher_ws/src/Recognition-of-Different-Colored-Cubes/evaluation/camera_samples/cube_training_validation_2026-09-12/raw/new_training/2026-09-12/T07/T07_0001.jpg",
+      "sha256": "0d3e1cbbe19265ad485ff3db5a7ac995b5962e16d956ca2353ccfafee42bdd07",
+      "width": 640,
+      "height": 360,
+      "image": "images/train/T07__T07_0001.jpg",
+      "label": "labels/train/T07__T07_0001.txt",
+      "objects": [
+        {
+          "class_name": "blue_cube",
+          "bbox_xyxy": [
+            27,
+            189,
+            75,
+            233
+          ]
+        },
+        {
+          "class_name": "red_cube",
+          "bbox_xyxy": [
+            335,
+            96,
+            357,
+            126
+          ]
+        },
+        {
+          "class_name": "green_cube",
+          "bbox_xyxy": [
+            490,
+            63,
+            514,
+            88
+          ]
+        }
+      ],
+      "reviewer": "Maher"
+    },
+    {
+      "image_id": "T08",
+      "group": "T08",
+      "split": "train",
+      "source_file": "/home/maher/maher_ws/src/Recognition-of-Different-Colored-Cubes/evaluation/camera_samples/cube_training_validation_2026-09-12/raw/new_training/2026-09-12/T08/T08_0001.jpg",
+      "sha256": "4f80d43de8c79aaa31e6b3a9742104d5e2a509a2bed97e152b2aaee997d24ab1",
+      "width": 640,
+      "height": 360,
+      "image": "images/train/T08__T08_0001.jpg",
+      "label": "labels/train/T08__T08_0001.txt",
+      "objects": [
+        {
+          "class_name": "green_cube",
+          "bbox_xyxy": [
+            40,
+            197,
+            89,
+            242
+          ]
+        },
+        {
+          "class_name": "blue_cube",
+          "bbox_xyxy": [
+            348,
+            35,
+            367,
+            56
+          ]
+        },
+        {
+          "class_name": "red_cube",
+          "bbox_xyxy": [
+            519,
+            108,
+            553,
+            143
+          ]
+        }
+      ],
+      "reviewer": "Maher"
+    },
+    {
+      "image_id": "T09",
+      "group": "T09",
+      "split": "train",
+      "source_file": "/home/maher/maher_ws/src/Recognition-of-Different-Colored-Cubes/evaluation/camera_samples/cube_training_validation_2026-09-12/raw/new_training/2026-09-12/T09/T09_0001.jpg",
+      "sha256": "09ac72d7fe5fc73ced3700cdd8f66ba78a049636e088372b1cdb1e023543c115",
+      "width": 640,
+      "height": 360,
+      "image": "images/train/T09__T09_0001.jpg",
+      "label": "labels/train/T09__T09_0001.txt",
+      "objects": [],
+      "reviewer": "Maher"
+    },
+    {
+      "image_id": "T10",
+      "group": "T10",
+      "split": "train",
+      "source_file": "/home/maher/maher_ws/src/Recognition-of-Different-Colored-Cubes/evaluation/camera_samples/cube_training_validation_2026-09-12/raw/new_training/2026-09-12/T10/T10_0001.jpg",
+      "sha256": "958de8f87d614a409e639473c84523b9f1939a9ebe26c5c4fb962a39c83e4703",
+      "width": 640,
+      "height": 360,
+      "image": "images/train/T10__T10_0001.jpg",
+      "label": "labels/train/T10__T10_0001.txt",
+      "objects": [],
+      "reviewer": "Maher"
+    },
+    {
+      "image_id": "V01",
+      "group": "V01",
+      "split": "val",
+      "source_file": "/home/maher/maher_ws/src/Recognition-of-Different-Colored-Cubes/evaluation/camera_samples/cube_training_validation_2026-09-12/raw/new_training/2026-09-12/V01/V01_0001.jpg",
+      "sha256": "9d439a1fe87a2aa8a5632df9c0e6c67c93d02a337c839e82a06cdee13b0a979c",
+      "width": 640,
+      "height": 360,
+      "image": "images/val/V01__V01_0001.jpg",
+      "label": "labels/val/V01__V01_0001.txt",
+      "objects": [
+        {
+          "class_name": "green_cube",
+          "bbox_xyxy": [
+            43,
+            148,
+            81,
+            185
+          ]
+        },
+        {
+          "class_name": "blue_cube",
+          "bbox_xyxy": [
+            296,
+            147,
+            324,
+            185
+          ]
+        },
+        {
+          "class_name": "red_cube",
+          "bbox_xyxy": [
+            542,
+            152,
+            589,
+            193
+          ]
+        }
+      ],
+      "reviewer": "Maher"
+    },
+    {
+      "image_id": "V02",
+      "group": "V02",
+      "split": "val",
+      "source_file": "/home/maher/maher_ws/src/Recognition-of-Different-Colored-Cubes/evaluation/camera_samples/cube_training_validation_2026-09-12/raw/new_training/2026-09-12/V02/V02_0001.jpg",
+      "sha256": "0622bbe231f695b2a23824890e0442228f6fb4a24aaa0bf3ff4d7f654b684674",
+      "width": 640,
+      "height": 360,
+      "image": "images/val/V02__V02_0001.jpg",
+      "label": "labels/val/V02__V02_0001.txt",
+      "objects": [
+        {
+          "class_name": "blue_cube",
+          "bbox_xyxy": [
+            126,
+            97,
+            157,
+            130
+          ]
+        },
+        {
+          "class_name": "red_cube",
+          "bbox_xyxy": [
+            324,
+            103,
+            352,
+            137
+          ]
+        },
+        {
+          "class_name": "green_cube",
+          "bbox_xyxy": [
+            523,
+            111,
+            556,
+            145
+          ]
+        }
+      ],
+      "reviewer": "Maher"
+    },
+    {
+      "image_id": "V03",
+      "group": "V03",
+      "split": "val",
+      "source_file": "/home/maher/maher_ws/src/Recognition-of-Different-Colored-Cubes/evaluation/camera_samples/cube_training_validation_2026-09-12/raw/new_training/2026-09-12/V03/V03_0001.jpg",
+      "sha256": "ef101e00d73002d8c953d9e6d59b9a3676502f2158e53b61251b50bf2cdd2e40",
+      "width": 640,
+      "height": 360,
+      "image": "images/val/V03__V03_0001.jpg",
+      "label": "labels/val/V03__V03_0001.txt",
+      "objects": [
+        {
+          "class_name": "red_cube",
+          "bbox_xyxy": [
+            145,
+            56,
+            172,
+            85
+          ]
+        },
+        {
+          "class_name": "green_cube",
+          "bbox_xyxy": [
+            313,
+            57,
+            335,
+            85
+          ]
+        },
+        {
+          "class_name": "blue_cube",
+          "bbox_xyxy": [
+            509,
+            66,
+            535,
+            90
+          ]
+        }
+      ],
+      "reviewer": "Maher"
+    },
+    {
+      "image_id": "V04",
+      "group": "V04",
+      "split": "val",
+      "source_file": "/home/maher/maher_ws/src/Recognition-of-Different-Colored-Cubes/evaluation/camera_samples/cube_training_validation_2026-09-12/raw/new_training/2026-09-12/V04/V04_0001.jpg",
+      "sha256": "28b9293e2fb8b79aabcfb24e55b02dff6e780edff9840afe8a844da9c8cc649b",
+      "width": 640,
+      "height": 360,
+      "image": "images/val/V04__V04_0001.jpg",
+      "label": "labels/val/V04__V04_0001.txt",
+      "objects": [
+        {
+          "class_name": "red_cube",
+          "bbox_xyxy": [
+            17,
+            154,
+            68,
+            201
+          ]
+        },
+        {
+          "class_name": "blue_cube",
+          "bbox_xyxy": [
+            278,
+            120,
+            306,
+            154
+          ]
+        },
+        {
+          "class_name": "green_cube",
+          "bbox_xyxy": [
+            489,
+            71,
+            515,
+            96
+          ]
+        }
+      ],
+      "reviewer": "Maher"
+    },
+    {
+      "image_id": "V05",
+      "group": "V05",
+      "split": "val",
+      "source_file": "/home/maher/maher_ws/src/Recognition-of-Different-Colored-Cubes/evaluation/camera_samples/cube_training_validation_2026-09-12/raw/new_training/2026-09-12/V05/V05_0001.jpg",
+      "sha256": "5005b439d45231ed3835c50171e299e4289a6ffb6decf292d74ab1e49c91a922",
+      "width": 640,
+      "height": 360,
+      "image": "images/val/V05__V05_0001.jpg",
+      "label": "labels/val/V05__V05_0001.txt",
+      "objects": [
+        {
+          "class_name": "green_cube",
+          "bbox_xyxy": [
+            136,
+            57,
+            161,
+            85
+          ]
+        },
+        {
+          "class_name": "red_cube",
+          "bbox_xyxy": [
+            287,
+            119,
+            312,
+            156
+          ]
+        },
+        {
+          "class_name": "blue_cube",
+          "bbox_xyxy": [
+            503,
+            200,
+            543,
+            248
+          ]
+        }
+      ],
+      "reviewer": "Maher"
+    },
+    {
+      "image_id": "V06",
+      "group": "V06",
+      "split": "val",
+      "source_file": "/home/maher/maher_ws/src/Recognition-of-Different-Colored-Cubes/evaluation/camera_samples/cube_training_validation_2026-09-12/raw/new_training/2026-09-12/V06/V06_0001.jpg",
+      "sha256": "90d543105b9795f29ad3241dd10bdca43247fc664449e32ac7f2516aca4ace29",
+      "width": 640,
+      "height": 360,
+      "image": "images/val/V06__V06_0001.jpg",
+      "label": "labels/val/V06__V06_0001.txt",
+      "objects": [
+        {
+          "class_name": "red_cube",
+          "bbox_xyxy": [
+            228,
+            110,
+            256,
+            146
+          ]
+        },
+        {
+          "class_name": "blue_cube",
+          "bbox_xyxy": [
+            376,
+            122,
+            403,
+            153
+          ]
+        },
+        {
+          "class_name": "green_cube",
+          "bbox_xyxy": [
+            302,
+            186,
+            333,
+            226
+          ]
+        }
+      ],
+      "reviewer": "Maher"
+    },
+    {
+      "image_id": "V07",
+      "group": "V07",
+      "split": "val",
+      "source_file": "/home/maher/maher_ws/src/Recognition-of-Different-Colored-Cubes/evaluation/camera_samples/cube_training_validation_2026-09-12/raw/new_training/2026-09-12/V07/V07_0001.jpg",
+      "sha256": "f0c728dcbe4632b1cda2c5d016666fa998c47ea6dd3c678877b6b8e9952db618",
+      "width": 640,
+      "height": 360,
+      "image": "images/val/V07__V07_0001.jpg",
+      "label": "labels/val/V07__V07_0001.txt",
+      "objects": [],
+      "reviewer": "Maher"
+    },
+    {
+      "image_id": "V08",
+      "group": "V08",
+      "split": "val",
+      "source_file": "/home/maher/maher_ws/src/Recognition-of-Different-Colored-Cubes/evaluation/camera_samples/cube_training_validation_2026-09-12/raw/new_training/2026-09-12/V08/V08_0001.jpg",
+      "sha256": "e77c5fca0c5653b987852c53e4fe769192d8975e9c7d965e98c4ae5c50878ea9",
+      "width": 640,
+      "height": 360,
+      "image": "images/val/V08__V08_0001.jpg",
+      "label": "labels/val/V08__V08_0001.txt",
+      "objects": [],
+      "reviewer": "Maher"
+    }
+  ]
+}

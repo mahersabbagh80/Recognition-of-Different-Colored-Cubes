@@ -8,9 +8,11 @@ import yaml
 from datetime import datetime
 import torch
 from ultralytics import YOLO
-from run_robot_training_smoke import ROOT, EVIDENCE, CHECKPOINT, RUNS, sha
+from run_robot_training_smoke import ROOT, CHECKPOINT, sha
 
-DATA = ROOT / "evaluation/results/robot_training_2026-09-09/data_selected13.yaml"
+EVIDENCE = ROOT / "evaluation/robot_dataset_2026-09-12"
+DATA = ROOT / "evaluation/results/robot_training_2026-09-12/data.yaml"
+RUNS = ROOT / "runs/robot_2026-09-12"
 
 def reserve_run_directory(parent, timestamp=None):
     """Atomically reserve a fresh directory, even for simultaneous launches."""
@@ -80,7 +82,10 @@ def main():
         checkpoint=str(best), checkpoint_sha256=sha(best), validation_metrics=reported,
         manifest_sha256=sha(EVIDENCE/'development_split.json'),
         output_shape=list(tensor.shape), class_names=trained.names,
-        limitation='Four same-session validation images; no independent test or robot acceptance.')
+        limitation=(
+            'Eight same-room validation images from one capture session; '
+            'live robot testing remains separate.'
+        ))
     (run/'summary.json').write_text(json.dumps(summary,indent=2)+'\n')
     print(json.dumps(summary,indent=2))
 

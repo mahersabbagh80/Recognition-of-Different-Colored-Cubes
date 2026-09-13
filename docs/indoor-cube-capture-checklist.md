@@ -34,10 +34,12 @@ Use position A for T01–T06 and position B for T07–T10. Left and right mean r
 | T06 | Red alone, right, about 75 cm | Red at another location and size. |
 | T07 | Blue left at about 45 cm, red center at 65 cm, green right at 75 cm | Position B; blue on the left, different relative depths and background framing. Keep outlines separate. |
 | T08 | Green left at about 45 cm, blue center at 75 cm, red right at 60 cm | Blue farther back between its partners. Use a second ordinary demo lighting condition if practical; keep colors visible. |
-| T09 | No cubes; one ordinary non-cube object such as a shoe clearly on the floor | Position B with different framing; adds a deliberate foreground negative example. |
-| T10 | No cubes; remove that foreground object | Another slightly shifted framing under the second normal lighting condition. |
+| T09 | No cubes | Position B with different framing; adds an empty negative example. |
+| T10 | No cubes; one ordinary non-cube object clearly on the floor | Another slightly shifted framing; adds a deliberate foreground negative example. |
 
 If a placement falls outside the camera view, adjust until the whole cube is visible and note the approximate actual distance. New positions and appearance matter more than matching the nominal centimeter values. These additions target observed coverage gaps; improvement remains to be measured.
+
+Capture status on 12 September: **T01-T10 completed and human-reviewed** under the room's normal yellow lighting. T09 is the empty-floor negative, and T10 contains an ordinary non-cube spray container with no cubes. Maher reviewed the annotation gallery and confirmed the proposed bounding boxes and class names. All raw JPGs and metadata remain on the JetRover under `new_training/2026-09-12/`; desktop copies are under `evaluation/camera_samples/cube_training_validation_2026-09-12/raw/new_training/2026-09-12/` and remain ignored by Git.
 
 ## Reset before validation
 
@@ -63,6 +65,8 @@ Do not train on these photos or nearby frames from their setups. They will be la
 
 Each color appears in six validation photos. That is still a small sample: one missed cube changes that color's recall by about 17 percentage points. Report counts and examples with the percentages.
 
+Capture status on 12 September: V01-V08 were captured and human-reviewed after transfer to the desktop. V01-V06 contain three visible cubes each; V07 is empty; V08 contains a large ordinary non-cube object. Maher reviewed the annotation gallery and confirmed the proposed bounding boxes and class names. V09 was deliberately omitted because the room had only one normal lighting condition. This leaves eight validation images, including two negative scenes. Although the V-prefixed raw files were saved under the robot's `new_training` directory, their prefixes preserve the intended split; they must be imported only into the validation dataset.
+
 ## Save, review, then train
 
 - Keep raw captures in two clearly named batches, for example `new_training` and `new_validation`, with the row IDs in filenames or a capture note. These are proposed batch names; no directories or captures have been created by this document.
@@ -74,14 +78,22 @@ Each color appears in six validation photos. That is still a small sample: one m
 
 ## First action when ready
 
+### Live preview before capture
+
+Verified on 12 September: the JetRover already runs `web_video_server`. Open its [RGB live preview](http://192.168.2.138:8080/stream_viewer?topic=/depth_cam/rgb/image_raw) in the desktop browser. The robot must be powered on and reachable on the LAN. This IP was checked during this session; if it changes, confirm the current robot address before using the link.
+
+The browser preview displays the robot's RGB topic without requiring desktop ROS discovery. Check framing here, then use the capture script below to save the original image. Opening the preview does not add an image to the training dataset.
+
+For the optional desktop rqt route, use the setup script matching the terminal shell: `source /opt/ros/humble/setup.zsh` for zsh, or `source /opt/ros/humble/setup.bash` for bash, followed by `ros2 run rqt_image_view rqt_image_view`. Desktop discovery was incomplete in this session; the browser route was visually verified.
+
 ### How to save one photo
 
-Use the existing `scripts/capture_frames.py` on the robot, with its camera bringup running and ROS environment loaded. The robot checkout path below is documented in `docs/m3d-revived-plan.md`; verify it and the camera connection when starting the session. The robot was not contacted during preparation of these instructions.
+Use the repository's `scripts/capture_frames.py` with the camera bringup running and ROS environment loaded. On 12 September, the documented robot checkout path was absent, so Maher copied the script to `/tmp/capture_frames.py` on the JetRover and used that verified temporary path.
 
 Once the scene is ready and hands are out of view, run this in the **robot terminal**:
 
 ```bash
-python3 /home/ubuntu/jetson_ws/src/Recognition-of-Different-Colored-Cubes/scripts/capture_frames.py \
+python3 /tmp/capture_frames.py \
   --topic /depth_cam/rgb/image_raw \
   --out-dir /home/ubuntu/cube_camera_samples/new_training \
   --max-frames 1 \
@@ -91,9 +103,9 @@ python3 /home/ubuntu/jetson_ws/src/Recognition-of-Different-Colored-Cubes/script
 
 Pressing Enter starts the subscriber. It saves the first successfully converted camera frame and exits; there is no countdown or second shutter key. Confirm the terminal reports one saved frame, then open the JPG to check it. A timeout with zero frames is not a captured photo.
 
-The output is under `new_training/<robot-date>/T01_take1/`, containing `T01_take1_0001.jpg` and a metadata JSON file. Change the prefix for each scene. For a retake, use a new take suffix, such as `T01_take2`, because reusing the same prefix and date can overwrite the previous capture. Validation uses `--out-dir /home/ubuntu/cube_camera_samples/new_validation` and prefixes such as `V01_take1`. Images are saved on the robot first; transfer and annotation follow later.
+The output is under `new_training/<robot-date>/T01_take1/`, containing `T01_take1_0001.jpg` and a metadata JSON file. Change the prefix for each scene. For a retake, use a new take suffix, such as `T01_take2`, because reusing the same prefix and date can overwrite the previous capture. Validation should use `--out-dir /home/ubuntu/cube_camera_samples/new_validation` and prefixes such as `V01_take1`. During the 12 September session, V01-V08 were instead saved under `new_training`; the prefixes keep them identifiable, and they will be separated during curated import. Images are saved on the robot first; transfer and annotation follow later.
 
-This command is a prepared example, not an executed capture. Before the first photo, we will establish the robot terminal, verify the script and camera topic, and review the preview together.
+This command was executed successfully for T01 and then reused with new prefixes for later captures. The robot terminal, script, camera topic, and browser preview were verified during the session.
 
 Set up the robot at A and arrange **T01: one blue cube on the left of the preview, roughly 40 cm away, fully visible**. Check framing together before capturing the whole batch. Then proceed row by row.
 
