@@ -4,77 +4,37 @@ Detect and classify red, green, and blue cubes in real time using the JetRover o
 
 ---
 
-## What it does
+## Current state — 13 September 2026
 
-This project runs real-time cube detection on a live camera feed from a HiWonder JetRover. A YOLOv5s model finds cube-shaped objects and classifies them as `red_cube`, `green_cube`, or `blue_cube` — not just any colored region in the scene. Inference runs on the Jetson GPU via TensorRT; results are published as ROS 2 `vision_msgs/Detection2DArray` plus an annotated debug image for visualization. A geometry post-filter (raised-fraction + aspect + planar-top stddev) sits on top of the YOLO output at confidence ≥ 0.50 so flat-colored distractors and tall non-cube objects in the JetRover room are suppressed before any detection is published.
+A general pretrained YOLOv5u-small model was fine-tuned on **23 reviewed robot-camera images**, with **8 separate validation images**, and converted to TensorRT FP16 for NVIDIA Jetson hardware.
 
-Pretrained Roboflow weights are used by default; optional local fine-tuning on a dev PC (NVIDIA RTX 4070 Ti) applies only if accuracy on the robot camera needs improvement. Target operating distance: **20–80 cm** from the camera.
+- Saved validation views: 17 of 18 cubes visibly detected, one red cube missed, no additional visible boxes.
+- Live diagnostic with geometry filter disabled: all three colors detected together; an empty scene produced no detection.
+- With geometry filtering enabled, the tested candidates—including real cubes—were rejected as flat. The rejection stage is known; its root cause is not yet diagnosed.
+- Broad reliability, full 20–80 cm coverage, and reliable depth-based localization remain unverified.
 
-Built on a HiWonder JetRover with NVIDIA Jetson Orin Nano.
+These are development results and brief live observations. The full filtered perception pipeline is **not complete**. The new engine was selected explicitly for a temporary test; the older default engine was not replaced.
 
----
+## What the project implements
 
-## What I built
+The ROS 2 node consumes vendor RGB, depth and camera information, runs TensorRT detection, optionally applies geometry checks, and publishes standard and vendor-compatible detections plus a debug image. Maher captured and reviewed data, ran the training/deployment steps, and interpreted outputs; Codex assisted with code, checks and documentation. Vendor camera software and ML libraries are reused.
 
-- Real-time object detection on edge hardware (Jetson Orin Nano)
-- ML deployment pipeline: PyTorch weights → ONNX → TensorRT FP16
-- ROS 2 perception node (`cube_detection_node`) subscribing to the vendor RGB + depth streams, publishing standard `vision_msgs/Detection2DArray` and vendor `interfaces/ObjectsInfo` plus an annotated debug image
-- M4c1 geometry post-filter (raised-fraction + aspect + planar-top stddev) layered on top of the YOLO output at `confidence_threshold = 0.50` — gates flat-color and tall-non-cube distractors in the JetRover room (5/5 testable distractors + empty scene → 622 input detections / 0 kept, replicated live 2026-06-28)
-- Documented fine-tune path: the active next step is M3d-revived (positive fine-tune on real JetRover-room cubes) — see [`docs/m3d-revived-plan.md`](docs/m3d-revived-plan.md) and "Current status" under [Results](#results) below
+## Architecture and workflow
 
----
+[System architecture](docs/architecture.md) · [Training and validation workflow](docs/training-and-validation-workflow.md) · [Technical stack and model identity](docs/technical-stack.md)
 
-## Architecture
+## Results and evidence
 
-![Inference pipeline](assets/concept2_inference_pipeline.png)
+| Evidence | Location |
+|---|---|
+| Completed training and exact settings | [Saturday walkthrough](docs/development-learning-journal/2026-09-12-saturday.md) |
+| Reviewed validation predictions | [Eight-image comparison](docs/validation-prediction-review-2026-09-13.md) |
+| Conversion, engine checks, live observations and filter limitation | [Sunday walkthrough](docs/development-learning-journal/2026-09-13-sunday.md) |
+| Current evaluation summary and remaining tests | [Evaluation](docs/evaluation.md) |
+| English slides, notes and tutor questions | [Presentation package v8](artifacts/presentation/README.md) |
+| Earlier June live tests | [Historical M5 report](evaluation/m5_live/report.md) |
 
-Full pipeline details, ROS 2 topics, and training/export path → [`docs/architecture.md`](docs/architecture.md)
-
----
-
-## Results
-
-### Current status — M5 PARTIAL
-
-The M5 ROS 2 node and the M4c1 geometry filter are **implemented and live on
-the Jetson**: 29 runtime parameters, TensorRT FP16 engine loads, sync
-p50 within `sync_slop_sec = 0.05`. The geometry filter cleanly
-suppresses flat-color and tall-non-cube distractors in the JetRover room
-(empty scene: KEEP=0/439 at conf=0.50, no false positives).
-
-The blocker is **model accuracy on real JetRover-room cubes** — at conf=0.50
-the model fires only on floor texture, not on the actual cubes (M5c:
-KEEP=0/414 with sticker on; M5c2: KEEP=0/460 with sticker removed). At
-conf=0.25 the model partially responds (green_cube only, 2/439). The
-geometry filter cannot fix this — it is a model-accuracy issue, not a
-filter issue.
-
-**M5 acceptance is PARTIAL. Next step:** fine-tune `models/best.pt` on
-real JetRover-room positives per [`docs/m3d-revived-plan.md`](docs/m3d-revived-plan.md),
-then re-run the M5c2 bag and re-check the M5 acceptance bar. Full
-evidence: [`evaluation/m5_live/report.md`](evaluation/m5_live/report.md).
-
-### Live numbers (M5, 2026-06-28)
-
-| Bag | KEEP at conf=0.50 | YOLO p50 | Filter p50 | Publish rate |
-|---|---|---|---|---|
-| Empty scene | 0/439 ✅ PASS | 26.6 ms | 1.53 ms | 15.78 Hz |
-| Cubes in frame (sticker on) | 0/414 ❌ FAIL | 26.6 ms | 2.57 ms | 15.52 Hz |
-| Cubes in frame (sticker off) | 0/460 ❌ FAIL | 26.6 ms | 1.27 ms | 15.86 Hz |
-| Cubes (sticker off, conf=0.25) | 2/439 (green only) ❌ FAIL | 26.6 ms | 4.83 ms | 15.21 Hz |
-
-50-frame per-class evaluation is pending the M3d-revived fine-tune.
-
-### Demo
-
-Annotated debug overlays from the 2026-06-28 live bags live at
-[`evaluation/m5_live/empty_2026-06-28/preview/debug_overlay.png`](evaluation/m5_live/empty_2026-06-28/preview/debug_overlay.png)
-(empty scene, HUD `keep=0` — no false positives on the bare JetRover floor)
-and [`evaluation/m5_live/cubes_2026-06-28/peek_debug_live.png`](evaluation/m5_live/cubes_2026-06-28/peek_debug_live.png)
-(three cubes visible in the RGB frame, HUD `keep=0` at conf=0.50 — the
-filter is correctly rejecting; the model is the bottleneck, see above).
-
-_Evaluation protocol and per-class breakdown: [`docs/evaluation.md`](docs/evaluation.md)_
+The historical June model and filter tests must not be substituted for the September model's results.
 
 ---
 
@@ -82,7 +42,7 @@ _Evaluation protocol and per-class breakdown: [`docs/evaluation.md`](docs/evalua
 
 | | Jetson (robot) | Dev machine |
 |--|----------------|-------------|
-| **Role** | Runs detection | Edit code, optional fine-tune, visualize (RViz2) |
+| **Role** | Runs detection | Edit code, fine-tune and export, inspect results |
 | **OS / ROS / Python** | 22.04 / Humble / 3.10 | 22.04 / Humble / 3.10 |
 | **Hardware** | JetRover, Orbbec depth camera | NVIDIA RTX 4070 Ti (CUDA training) |
 | **Key software** | TensorRT, YOLOv5, OpenCV, cv_bridge | PyTorch + CUDA, RViz2 (optional) |
@@ -93,67 +53,44 @@ Full dependencies and model artifacts → [`docs/technical-stack.md`](docs/techn
 
 ## Quick Start
 
-The detection node runs live on the Jetson. The M4c1 geometry filter is
-on by default; flip `filter_enabled` to `false` to bypass it for
-debugging. **Heads-up: M5 acceptance is PARTIAL — the model does not
-yet fire on real cubes in the JetRover room at conf≥0.50.** See the
-"Current status" subsection under [Results](#results) below for the
-2026-06-28 live-bag numbers and the next step (M3d-revived fine-tune).
+The following is the September diagnostic configuration. It assumes the JetRover's vendor camera is already running, the workspace is built, and the dated engine has been transferred and verified. A Git pull does not transfer model weights.
 
-### Build the package (dev machine — works now)
+### Build when source code changes
+
+Run inside the intended machine's workspace (not during an active detector session):
 
 ```zsh
 cd ~/maher_ws
 colcon build --packages-select recognition_of_different_colored_cubes --symlink-install
-source install/setup.bash
+source install/setup.zsh
 ```
 
-### Run on the Jetson (live)
+### Start the tested configuration on the JetRover
+
+In an SSH session on the robot:
 
 ```zsh
-ssh ubuntu@192.168.2.138   # DHCP — update if changed
-
-sudo systemctl stop start_app_node.service
-
-cd ~/jetson_ws/src
-git clone <repo-url> Recognition-of-Different-Colored-Cubes
-
-cd ~/jetson_ws
-rosdep install --from-paths src --ignore-src -r -y
-colcon build --packages-select recognition_of_different_colored_cubes --symlink-install
-source install/setup.bash
-
-# 1. Start the vendor camera bringup (depth camera + RGB + color-registered depth)
-export need_compile=True
-export MACHINE_TYPE=JetRover_Mecanum
-export LIDAR_TYPE=LD19
-export HOST=/
-export MASTER=
-export DEPTH_CAMERA_TYPE=Dabai
-ros2 launch peripherals depth_camera.launch.py &
-
-# 2. Verify the two upstream topics before starting the detector
-ros2 topic hz /depth_cam/rgb/image_raw
-ros2 topic hz /depth_cam/depth/image_raw
-ros2 topic info /depth_cam/rgb/camera_info -v
-
-# 3. Start the cube detector (loads models/best.engine + M4c1 geometry filter)
-ros2 launch recognition_of_different_colored_cubes detection.launch.py
+source /opt/ros/humble/setup.zsh
+source /home/ubuntu/maher_ws/install/setup.zsh
+ros2 run recognition_of_different_colored_cubes cube_detection_node \
+  --ros-args \
+  --params-file /home/ubuntu/maher_ws/src/Recognition-of-Different-Colored-Cubes/config/params.yaml \
+  -p model_path:=/home/ubuntu/maher_ws/best_2026-09-12.engine \
+  -p confidence_threshold:=0.25 \
+  -p filter_enabled:=false
 ```
 
-View detections: `ros2 run rqt_image_view rqt_image_view` → topic `/cube_detections/debug_image`.
+Open the existing web-video service at
+[the debug view](http://192.168.2.138:8080/stream_viewer?topic=/cube_detections/debug_image).
+The address is LAN-specific and may change with DHCP. The vendor camera and web-video service must be running. Desktop rqt topic discovery was not fully repaired; the browser was the working preview route.
 
-#### M5 runtime parameters (tunable at runtime)
+Stop the foreground node with Ctrl+C before restarting it. To compare the geometry filter, restart the same command with `filter_enabled:=true`; the September test then rejected the real cubes. This is a diagnostic comparison, not an accepted production configuration.
 
-All of these are declared via `rclpy` and can be inspected or changed at runtime:
+### Parameters
 
-```zsh
-ros2 param get /cube_detection_node confidence_threshold
-ros2 param set /cube_detection_node confidence_threshold 0.25   # takes effect on the next frame
-ros2 param set /cube_detection_node filter_enabled false       # bypass geometry filter entirely
-```
+Defaults live in [config/params.yaml](config/params.yaml). They still use confidence 0.50, filter enabled, and an automatic default model path. The explicit command above overrides them without changing the defaults.
 
-Defaults live in [`config/params.yaml`](config/params.yaml).
+The current node reads these settings during initialization. Use a restart to apply changes: `ros2 param set` alone is not a verified way to update the running detector's cached settings. Model files are local artifacts; see [model inventory](models/README.md).
 
 **Topics**
 
@@ -206,7 +143,7 @@ The filter is a pure-numpy helper ([`recognition_of_different_colored_cubes/geom
 | `publish_vendor_objects` | `true` | Toggle the vendor-compatible output. |
 | `publish_debug_image` | `true` | Toggle the annotated debug overlay. |
 
-Full reasoning behind every default and the V2/V3/V4 evidence gate → [`docs/milestones.md`](docs/milestones.md) M5 + [`evaluation/m4c_geometry_filter/report.md`](evaluation/m4c_geometry_filter/report.md).
+Historical geometry-filter parameter rationale and the V2/V3/V4 evidence gate → [`docs/milestones.md`](docs/milestones.md) and [`evaluation/m4c_geometry_filter/report.md`](evaluation/m4c_geometry_filter/report.md).
 
 ### Verify camera (first hardware step)
 
@@ -216,7 +153,7 @@ ros2 topic hz /depth_cam/rgb/image_raw
 ros2 run rqt_image_view rqt_image_view
 ```
 
-Full ordered setup steps → [`docs/milestones.md`](docs/milestones.md)
+Current milestone status → [`docs/milestones.md`](docs/milestones.md)
 
 ---
 
@@ -230,7 +167,7 @@ Full ordered setup steps → [`docs/milestones.md`](docs/milestones.md)
 | `scripts/` | Capture, inference smoke tests, M4c/M5 eval harnesses — see [`scripts/README.md`](scripts/README.md) |
 | `models/` | `best.pt`, `best.onnx`, `.engine` — gitignored, not committed |
 | `training/` | Optional local fine-tune notebook (`train.ipynb`) |
-| `evaluation/` | 50-frame structured test script |
+| `evaluation/` | Dataset manifests, reviews and evaluation reports |
 | `assets/` | Pipeline diagrams; `assets/results/` for evaluation screenshots |
 | `docs/` | Architecture, milestones, logbook, evaluation protocol |
 | `vendor/` | Reference notes for Hiwonder vendor code (not copied) |
@@ -257,7 +194,7 @@ Browse the full tree on GitHub — this table only highlights non-obvious layout
 | [`docs/project-definition.md`](docs/project-definition.md) | Problem definition, classes, constraints |
 | [`docs/technical-stack.md`](docs/technical-stack.md) | Runtime stack, dependencies, model artifacts |
 | [`docs/milestones.md`](docs/milestones.md) | Implementation milestones and ordered steps |
-| [`docs/m3d-revived-plan.md`](docs/m3d-revived-plan.md) | Active fine-tune plan (M3d-revived, positive-detection scope) |
+| [`docs/m3d-revived-plan.md`](docs/m3d-revived-plan.md) | Historical fine-tune proposal; see the current training workflow |
 | [`docs/LOGBOOK.md`](docs/LOGBOOK.md) | Session-by-session development log |
 
 ### Script index

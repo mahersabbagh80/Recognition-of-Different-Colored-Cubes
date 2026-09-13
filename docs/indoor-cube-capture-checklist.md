@@ -1,5 +1,8 @@
 # Indoor cube capture checklist
 
+> Capture outcome (13 September): T01–T10 were retained for training; V01–V08 for validation. V09 was omitted because another lighting condition was unavailable. The resulting export has 23 training images (13 earlier + 10 new) and 8 validation images. The instructions below preserve the capture plan; they are not a pending task list. See [the completed workflow](training-and-validation-workflow.md).
+
+
 Prepared 12 September 2026. Planned captures, not completed work.
 
 ## Target

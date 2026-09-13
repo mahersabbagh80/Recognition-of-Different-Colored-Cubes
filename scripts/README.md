@@ -3,7 +3,23 @@
 Index for every tracked script under `scripts/`. Use this to find the
 right script for a given task.
 
-Last updated: 2026-07-05 (repo cleanup).
+Last updated: 2026-09-13 (current workflow added; historical harnesses retained).
+
+## Current September workflow
+
+Use [the completed workflow](../docs/training-and-validation-workflow.md) for the selected data and [Sunday's journal](../docs/development-learning-journal/2026-09-13-sunday.md) for the exact dated export and live commands.
+
+| Script | Role |
+|---|---|
+| [capture_frames.py](capture_frames.py) | Save ROS camera images and metadata |
+| [build_annotation_review.py](build_annotation_review.py) | Build the human annotation review gallery |
+| [prepare_reviewed_robot_dataset.py](prepare_reviewed_robot_dataset.py) | Export approved image/label splits and manifest |
+| [run_robot_training_experiment.py](run_robot_training_experiment.py) | Run the reviewed-data training experiment |
+| [run_robot_training_smoke.py](run_robot_training_smoke.py) | Earlier bounded training smoke check |
+| [test_inference.py](test_inference.py) | Check an exported engine on saved images |
+| [capture_rgb_depth_sync.py](capture_rgb_depth_sync.py) | Capture synchronized evidence for future depth diagnosis |
+
+The commands below describe older milestone recipes; do not substitute their generic best paths for the verified September engine. Model conversion and training are not started by reading this index.
 
 Categories:
 

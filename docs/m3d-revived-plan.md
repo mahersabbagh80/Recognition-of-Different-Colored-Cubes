@@ -1,3 +1,5 @@
+> Historical fine-tuning proposal. Superseded by the completed September own-data run; use [the current workflow](training-and-validation-workflow.md) and [evaluation](evaluation.md).
+
 # M3d-revived — Minimum positive-detection fine-tune plan for M5 PARTIAL
 
 Date: 2026-06-28

@@ -97,3 +97,15 @@ assets/generated/*.prompt.txt
 #   but are not part of the tracked evidence.
 .local-bin/
 evaluation/m5_live/**/*.before-rerun
+
+# Local presentation authoring cache and superseded slide binaries
+.codex-presentation-build/
+artifacts/presentation/*.pptx
+artifacts/presentation/*.pdf
+artifacts/presentation/slide-overview-*.png
+!artifacts/presentation/colored-cube-detection-presentation-v8.pptx
+!artifacts/presentation/colored-cube-detection-presentation-v8.pdf
+
+# Model exports are transferred separately, including outside models/
+*.onnx
+*.engine

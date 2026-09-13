@@ -1,56 +1,66 @@
 # Training and validation workflow
 
-Agreed on 12 September 2026. This is a guide for the next run, not a record of completed training or deployment.
+**Updated:** 13 September 2026. This records the completed experiment with 23 training images and eight development-validation images, its ONNX/TensorRT export, and the live ROS smoke checks. The geometry filter, a repeatable reliability study, and an independent final test remain unfinished.
 
-**Selection revision:** Maher subsequently chose one first frame per setup within the existing training folder: 11 kept and 11 excluded. Selection of the four validation-folder images is still pending. See the [keep/exclude record](../evaluation/robot_dataset_2026-09-09/first-frame-selection-2026-09-12.md). The all-26 configuration described below is superseded; the next configuration must reference only the selected images. The training/check/live-evaluation sequence remains applicable.
+**Local artifacts:** Links into `../runs/` point to generated files in this checkout. The `runs/` directory is Git-ignored, so those run artifacts are not included in the tracked documentation.
 
-## Objective and working method
+## Data and split used
 
-Fine-tune a general pretrained YOLO model on our own approved cube images, then run it live on the JetRover to detect and locate blue, green, and red cubes. Maher edits and runs the commands; Codex explains each step, checks the result with him, and documents completed work in the daily technical walkthrough. We pause between meaningful steps.
+The reviewed dataset contains 31 images with human-confirmed annotations. The two roles use separate photographed arrangements:
 
-## Training workflow
+| Role | Images | Contents | Use |
+|---|---:|---|---|
+| Training | 23 | 13 retained first-frame images from the earlier approved set, plus new captures T01–T10; 39 cube boxes (13 per color) and three negative/background images | Update model weights |
+| Development validation | 8 | New, held-out arrangements V01–V08; V01–V06 each show all three colors, V07 is empty, and V08 contains a bottle; 18 cube boxes (six per color) | Compare predictions and select the checkpoint |
 
-1. **Inspect the current inputs.** Open the dataset configuration and identify its image folders and class mapping. Each photo is paired with a same-named text label containing the expected class and box coordinates. The existing experiment used 22 training images and four development-validation images.
-2. **Prepare a separate configuration for all 26 approved images.** Include the former four validation photos in training. Preserve the original configuration, labels, and experiment results. These 26 images represent two frames from each of 13 setups; the remaining photos are not automatically included.
-3. **Adapt the training script together.** Point it at the new configuration and check its data checks and result descriptions. Review the pretrained checkpoint, epochs, batch size, learning rate, augmentations, and output naming. The existing script still assumes the original split and must be adapted before this run.
-4. **Decide how training stops and which checkpoint to use.** With no held-out photos, a score measured on reused training images cannot select a model on independent validation evidence. Agree explicitly on the stopping and checkpoint-selection rules before running; do not silently inherit the previous early-stopping interpretation.
-5. **Launch training manually.** Maher runs the agreed command in the project environment. For each batch, the training library makes predictions, compares them with approved labels, computes an error and its gradients, and uses the optimizer to adjust weights. An epoch is one pass through the training set.
-6. **Inspect the saved outputs.** Check the run folder, requested settings, logs, completed epoch count, saved checkpoints, and class mapping. A successful run shows that training executed; it does not establish live detection quality.
+The manifest records disjoint image and setup groups. All eight validation images were captured in the same room and session, so they test held-out arrangements under similar conditions; they do not represent a separate-session or independent final test. The class mapping is `0=blue_cube`, `1=green_cube`, `2=red_cube`.
 
-The starting point is a general pretrained checkpoint. Our further training is fine-tuning. We are not performing the original general pretraining ourselves.
+Evidence: the [dataset configuration](../evaluation/results/robot_training_2026-09-12/data.yaml), [31-image split manifest](../evaluation/robot_dataset_2026-09-12/development_split.json), [confirmed annotations](../evaluation/robot_dataset_2026-09-12/human_review.json), and [record of the retained earlier frames](../evaluation/robot_dataset_2026-09-09/first-frame-selection-2026-09-12.md).
 
-## Validation and evaluation workflow
+## Fine-tuning run
 
-### A. Check whether the model learned its training examples
+The run started from the general pretrained [YOLOv5u-small checkpoint](../models/pretrained/yolov5su.pt). Fine-tuning updates those existing weights using the project images; it is not general pretraining from scratch. Maher launched the checked script manually:
 
-1. Load the new run's selected checkpoint explicitly.
-2. Run predictions on the approved photos and inspect the boxes, colors, and confidence scores beside the annotations.
-3. Use an explicit confidence cutoff and box-overlap matching rule. Count correct matches, extra predictions, and missed cubes.
-4. Label these results **training-set checks** because the images were used for learning. Even excellent results here do not demonstrate performance on unseen scenes.
+```bash
+.venv-m2/bin/python scripts/run_robot_training_experiment.py
+```
 
-### B. Deploy and evaluate on fresh live scenes
+The [run summary](../runs/robot_2026-09-12/experiment_60ep_20260912_221210+0200/summary.json) records all 60 configured epochs. The best checkpoint was selected at epoch 45 by validation fitness (`mAP50-95`); `last.pt` preserves epoch 60. Key settings were 640-pixel input, batch size 4, AdamW, initial learning rate 0.001, seed 42, and patience 15. The exact requested settings and library arguments are saved in [requested_settings.json](../runs/robot_2026-09-12/experiment_60ep_20260912_221210+0200/requested_settings.json) and [args.yaml](../runs/robot_2026-09-12/experiment_60ep_20260912_221210+0200/args.yaml). The [training log](../runs/robot_2026-09-12/experiment_60ep_20260912_221210+0200/terminal_output.txt) and [epoch results](../runs/robot_2026-09-12/experiment_60ep_20260912_221210+0200/results.csv) preserve the run details.
 
-1. Convert the selected checkpoint into the format required by the robot runtime. Verify the input/output structure and color-class mapping, then configure the live detector to load the new artifact.
-2. Check that the live camera pipeline actually uses the new model. This verifies replacement-model integration; the earlier basic camera and robot setup need not be repeated without a reason.
-3. Prepare manageable indoor scenes with changed cube positions and arrangements, each color represented, all three together, and an empty scene. Give precise placement instructions before each setup. No separate photo-collection session is required for the agreed training run.
-4. Inspect the live predictions and reported locations. Compare boxes and colors against the visible cubes; check depth/location outputs separately from color detection.
-5. Record conditions, model identity, thresholds, correct detections, false detections, and misses. Use a defined set of scenes or sampled frames; repeatedly counting nearly identical video frames would exaggerate the amount of evidence.
-6. Review whether the model meets the intended demonstration needs. If it fails, identify whether the problem is detection, model conversion, runtime integration, or location/depth filtering before choosing a remedy.
+The selected [best.pt](../runs/robot_2026-09-12/experiment_60ep_20260912_221210+0200/weights/best.pt) was exported in the next step. The automated validation metrics and their limitations are summarized in [Evaluation](evaluation.md).
 
-Fresh live scenes provide evidence beyond the training photos. If we use those scenes to tune settings or retrain, they become development examples; a later untouched test is needed for an independent final assessment. Simply deploying the model is not itself validation.
+## Export and live integration
 
-## Reading the counts
+The selected checkpoint was exported on the desktop to static-batch ONNX at 640×640, opset 13, without graph simplification or dynamic dimensions. The exported graph passed the ONNX checker and has input shape `[1, 3, 640, 640]` and output shape `[1, 7, 8400]`. The [verified ONNX file](../runs/robot_2026-09-12/experiment_60ep_20260912_221210+0200/weights/best.onnx) was copied to the JetRover with its SHA-256 checked. TensorRT 8.6.2 built a separate FP16 engine at `/home/ubuntu/maher_ws/best_2026-09-12.engine`; the previous engine was left in place.
+
+The dated engine was loaded by the ROS detection node for smoke checks at confidence 0.25. With `filter_enabled=false`, live views showed one red cube detection, then one correct detection for each of blue, green, and red, and no detection in one empty-room view. These are successful smoke observations, not a measured reliability rate. A TensorRT smoke run on validation image V03 found blue and green but missed red, matching the PyTorch validation result.
+
+With `filter_enabled=true`, a live scene containing all three cubes and a carton produced no kept detections. The node continued to produce candidates, but every rejection accumulated in the `flat` geometry bucket: 2,400 rejections over 600 frames. The underlying filter cause has not been isolated. This result leaves the full filtered detection and depth-localization path unfinished; it must not be hidden by changing a threshold without diagnosing the measurements.
+
+The live observations and deployment checks are recorded in the [Sunday walkthrough](development-learning-journal/2026-09-13-sunday.md), including the [saved red-cube frame](assets/live-test-2026-09-13/red-single-filter-off.png), the [three-color observation](development-learning-journal/2026-09-13-sunday.md#three-color-live-frame-reviewed), the [empty-scene check](development-learning-journal/2026-09-13-sunday.md#empty-live-scene-checked), and the [filter failure](development-learning-journal/2026-09-13-sunday.md#geometry-filter-rejects-the-live-cube-scene).
+
+## Remaining work
+
+1. Capture synchronized RGB and depth data for the live cube scene and record each candidate's geometry values. Diagnose the flat-surface rejection, depth alignment, and box-to-depth sampling assumptions before changing the filter.
+2. Correct and verify the filter on cube and non-cube scenes. Confirm that detections and depth-based locations reach the ROS outputs.
+3. Measure live reliability with a defined set of varied scenes and recorded ground truth. Repeated frames of one unchanged camera view are not independent scene trials.
+4. After model or threshold choices are finished, run a later untouched test from new scenes or a separate session. The current same-room validation set and live debugging observations have already served development and integration checks.
+
+No system-level pass/fail threshold or acceptance decision is established by this workflow. It reports completed work and the next evidence needed.
+
+## Reading the evaluation terms
 
 - **True positive (TP):** a prediction matched to a real cube with the correct color and sufficient box overlap.
-- **False positive (FP):** an unmatched prediction, such as a background object reported as a cube.
-- **False negative (FN):** a real cube with no qualifying matched prediction.
-- **Precision = TP / (TP + FP):** how many reported detections were correct.
-- **Recall = TP / (TP + FN):** how many real cubes were found.
+- **False positive (FP):** an unmatched cube prediction.
+- **False negative (FN):** a real cube without a qualifying prediction.
+- **Precision = TP / (TP + FP):** the share of reported detections that are correct.
+- **Recall = TP / (TP + FN):** the share of real cubes that are detected.
 
-Report the counts and test conditions alongside percentages. The earlier proposed target was at least 80% precision and recall for each color; results on reused training images cannot establish that target for live operation.
+Always include the data split, model, test conditions, and measurement method with these values. A validation score, a visual count from saved predictions, and a live smoke test answer different questions.
 
-## Documentation and current checkpoint
+## Evidence index
 
-After each completed step, record actual edits, commands, inputs, outputs, checks, and limitations in the [daily technical walkthrough](development-learning-journal.md).
-
-**Current checkpoint:** the project and dataset configuration are open in VS Code. Preparing the new configuration is the next guided step. No new 26-image training run or live deployment has been executed as part of this workflow.
+- [Run summary](../runs/robot_2026-09-12/experiment_60ep_20260912_221210+0200/summary.json), [plots](../runs/robot_2026-09-12/experiment_60ep_20260912_221210+0200/results.png), and [confusion matrix](../runs/robot_2026-09-12/experiment_60ep_20260912_221210+0200/confusion_matrix.png)
+- [Approved and predicted validation mosaics](../runs/robot_2026-09-12/experiment_60ep_20260912_221210+0200/val_batch0_labels.jpg) and [predictions](../runs/robot_2026-09-12/experiment_60ep_20260912_221210+0200/val_batch0_pred.jpg)
+- [Image-by-image validation review](validation-prediction-review-2026-09-13.md)
+- [Saturday walkthrough](development-learning-journal/2026-09-12-saturday.md) and [Sunday walkthrough](development-learning-journal/2026-09-13-sunday.md)

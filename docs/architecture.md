@@ -1,195 +1,57 @@
-# Architecture
+# System architecture
 
-This revision is vendor-first: project code remains in `src/Recognition-of-Different-Colored-Cubes`, while HiWonder packages under `src/vendor` provide camera bring-up, topic conventions, and the vendor object-message compatibility contract. Do not modify `src/vendor`.
+Updated 13 September 2026 against the current node, launch and configuration. The pipeline is implemented, but the geometry-filtered output is not accepted as reliable.
 
-Upstream research handoff: [`vendor-audit.md`](vendor-audit.md). Main vendor references: `src/vendor/peripherals/launch/depth_camera.launch.py`, `src/vendor/example/example/yolov5_detect/yolov5_node.py`, and `src/vendor/interfaces/msg/{ObjectInfo,ObjectsInfo}.msg`.
-
----
-
-## Vendor-aligned inference pipeline
+## Runtime flow
 
 ```mermaid
 flowchart LR
-    subgraph Vendor_HiWonder_stack[HiWonder vendor stack under src/vendor]
-        A[peripherals/depth_camera.launch.py] --> B["/depth_cam/rgb/image_raw<br/>sensor_msgs/Image"]
-        A --> C["/depth_cam/rgb/camera_info<br/>sensor_msgs/CameraInfo"]
-    end
-
-    subgraph Project_package[recognition_of_different_colored_cubes]
-        B --> D[cube_detection_node]
-        D --> E["cv_bridge<br/>ROS Image to OpenCV BGR"]
-        E --> F["YOLOv5s TensorRT FP16<br/>red_cube / green_cube / blue_cube"]
-        F --> G[confidence + class filter]
-        G --> H["/cube_detections<br/>vision_msgs/Detection2DArray"]
-        G --> I["/cube_detections/vendor_objects<br/>interfaces/ObjectsInfo"]
-        D --> J["/cube_detections/debug_image<br/>sensor_msgs/Image"]
-    end
-
-    H --> K[standard ROS 2 vision consumers / RViz2]
-    I --> L[JetRover vendor-style downstream demos/adapters]
-    J --> M[rqt_image_view / RViz2]
+    RGB["Vendor RGB image"] --> SYNC["Approximate RGB/depth synchronization"]
+    DEPTH["Vendor depth image"] --> SYNC
+    SYNC --> CV["cv_bridge conversion"]
+    CV --> PRE["Letterbox 640 / normalize / CHW"]
+    PRE --> TRT["TensorRT engine"]
+    TRT --> DEC["Decode / confidence / duplicate suppression"]
+    DEC --> FILTER["Optional geometry check"]
+    CV --> FILTER
+    INFO["RGB camera intrinsics"] --> FILTER
+    FILTER --> OUT["Kept detections"]
+    OUT --> STD["Detection2DArray"]
+    OUT --> VENDOR["ObjectsInfo"]
+    OUT --> DEBUG["Annotated debug image"]
 ```
 
-Design rationale:
+The current node synchronizes RGB and depth even with the geometry filter disabled. Depth is expected to be aligned to the RGB view; the observed filter failure does not establish that this assumption holds correctly in every tested frame.
 
-- Use vendor `peripherals` for camera ownership. The project node should subscribe to the vendor RGB stream instead of opening the camera directly.
-- Keep `cube_detection_node` as one small perception node for this project scope: subscribe, infer, filter, publish standard + vendor-compatible outputs.
-- Reuse vendor-proven patterns from `example/yolov5_detect/yolov5_node.py`: `/depth_cam/rgb/image_raw`, `cv_bridge`, bounded frame queue that drops stale frames, TensorRT YOLO reference path, debug image publisher, and `interfaces/ObjectsInfo` shape.
-- Do not make vendor LAB color detection the main path. It is useful as a camera/lighting diagnostic and baseline, but it detects colored blobs rather than learned cube objects.
+## Inputs and outputs
 
----
-
-## Camera input and launch boundary
-
-Recommended default: assume the vendor camera stack is already running, and keep this package's default launch focused on `cube_detection_node`.
-
-Why:
-
-- Vendor camera launch depends on environment variables (`need_compile=True`, `DEPTH_CAMERA_TYPE=Dabai`, plus workspace-level `MACHINE_TYPE`, `LIDAR_TYPE`, `HOST`, `MASTER`). Keeping it outside the default project launch makes failures easier to diagnose.
-- Camera bring-up is shared robot infrastructure. A recognition node should not own the camera process by default because other JetRover demos or diagnostics may also rely on the same stream.
-- This matches the current M1 verification flow: first prove `/depth_cam/rgb/image_raw` exists and has sane QoS/fps, then run detection.
-
-Optional implementer addition, after Maher confirms the desired operator workflow: add a separate convenience launch such as `launch/detection_with_vendor_camera.launch.py` that includes `peripherals/depth_camera.launch.py` before starting `cube_detection_node`.
-
-Do not make the convenience launch the only path. It should be opt-in because the vendor launch raises immediately if required environment variables are missing.
-
-Required vendor camera environment before using `peripherals/depth_camera.launch.py` in this workspace:
-
-```bash
-cd ~/maher_ws
-source install/setup.bash
-export need_compile=True
-export MACHINE_TYPE=JetRover_Mecanum
-export LIDAR_TYPE=LD19
-export HOST=/
-export MASTER=
-export DEPTH_CAMERA_TYPE=Dabai
-ros2 launch peripherals depth_camera.launch.py
-```
-
-Expected RGB input topic: `/depth_cam/rgb/image_raw` (`sensor_msgs/Image`). Verify on hardware with:
-
-```bash
-ros2 topic list | sort
-ros2 topic info /depth_cam/rgb/image_raw -v
-ros2 topic hz /depth_cam/rgb/image_raw
-```
-
-Use sensor-data QoS for the image subscription unless hardware topic inspection proves a different QoS is required.
-
----
-
-## Output contract decision
-
-Recommendation: publish both standard and vendor-compatible detection topics.
-
-| Topic | Message Type | Status | Purpose |
-|---|---|---|---|
-| `/cube_detections` | `vision_msgs/Detection2DArray` | Primary public API | Standard ROS 2 vision contract for RViz/future non-vendor consumers |
-| `/cube_detections/vendor_objects` | `interfaces/ObjectsInfo` | Compatibility API | Vendor-shaped output matching HiWonder `example/yolov5_detect` conventions |
-| `/cube_detections/debug_image` | `sensor_msgs/Image` | Debug API | Human visualization with boxes/labels/fps overlay |
-
-Rationale:
-
-- `vision_msgs/Detection2DArray` keeps the project aligned with standard ROS 2 vision tooling and the existing portfolio-facing docs.
-- `interfaces/ObjectsInfo` makes the project vendor-aligned without forcing every consumer to understand `vision_msgs`. Its `ObjectInfo` shape is `class_name`, `box=[x_min,y_min,x_max,y_max]`, `score`, `width`, `height`, which matches the vendor YOLOv5 demo.
-- Publishing only `vision_msgs` ignores the JetRover vendor object-detection contract.
-- Publishing only `ObjectsInfo` would reduce portability and require rewriting the existing standard ROS 2 integration plan.
-
-Mapping from model output:
-
-| Model field | `vision_msgs/Detection2DArray` | `interfaces/ObjectInfo` |
+| Topic | Message | Role |
 |---|---|---|
-| Class label | `results[].hypothesis.class_id` | `class_name` |
-| Confidence | `results[].hypothesis.score` | `score` |
-| Bounding box | `bbox.center`, `bbox.size_x`, `bbox.size_y` | `box=[x_min,y_min,x_max,y_max]` |
-| Source image size | Not required by the core bbox fields | `width`, `height` |
-| Header/frame/time | Top-level `header` | Not present in vendor message; consumers infer from image stream timing |
+| /depth_cam/rgb/image_raw | sensor_msgs/Image | Camera image |
+| /depth_cam/depth/image_raw | sensor_msgs/Image | Depth sampled by geometry stage |
+| /depth_cam/rgb/camera_info | sensor_msgs/CameraInfo | Intrinsics loaded into filter parameters |
+| /cube_detections | vision_msgs/Detection2DArray | Kept image-space detections |
+| /cube_detections/vendor_objects | interfaces/ObjectsInfo | Vendor-compatible output |
+| /cube_detections/debug_image | sensor_msgs/Image | Visible boxes, scores and status |
 
-Trade-off: dual publishing adds a small amount of conversion and test surface, but it avoids choosing between ROS-standard tooling and vendor compatibility.
+The output interface's existence does not prove correct physical localization. That needs its own validation.
 
----
+## Ownership and configuration
 
-## ROS 2 node specification
+Vendor software owns camera startup. The project [cube_detection_node.py](../recognition_of_different_colored_cubes/cube_detection_node.py) performs conversion, inference, filtering and publication. [geometry_filter.py](../recognition_of_different_colored_cubes/geometry_filter.py) implements geometric statistics and decisions.
 
-| Property | Value |
-|---|---|
-| Package | `recognition_of_different_colored_cubes` |
-| Node name | `cube_detection_node` |
-| Default launch | `launch/detection.launch.py` |
-| Config | `config/params.yaml` |
-| Main input | `/depth_cam/rgb/image_raw` |
-| Main outputs | `/cube_detections`, `/cube_detections/vendor_objects`, `/cube_detections/debug_image` |
+[detection.launch.py](../launch/detection.launch.py) starts only the detector. [package.xml](../package.xml) already declares interfaces and message_filters. The previously proposed vendor-camera convenience launch is not implemented and is not required for the recorded test.
 
-Suggested parameters:
+[config/params.yaml](../config/params.yaml) supplies startup settings. The node caches parameter values during initialization: restart it with explicit overrides to change model, confidence or filter state. The current default configuration and the September diagnostic configuration differ; see the [tested start command](../README.md#quick-start).
 
-| Parameter | Default | Purpose |
-|---|---:|---|
-| `image_topic` | `/depth_cam/rgb/image_raw` | Vendor RGB image input |
-| `detections_topic` | `/cube_detections` | Standard `vision_msgs` output |
-| `vendor_objects_topic` | `/cube_detections/vendor_objects` | Vendor `interfaces` output |
-| `debug_image_topic` | `/cube_detections/debug_image` | Annotated debug image |
-| `confidence_threshold` | `0.5` | Minimum detection confidence |
-| `model_path` | `""` | TensorRT engine path once available |
-| `publish_vendor_objects` | `true` | Allow disabling vendor compatibility output for tests |
-| `publish_debug_image` | `true` | Allow disabling overlay work on resource-constrained runs |
+## Model preparation
 
-Suggested internal flow:
+Desktop capture review and fine-tuning → selected PyTorch checkpoint → ONNX export → TensorRT engine built on Jetson → explicit engine path supplied to the ROS node. Training does not run inside live inference.
 
-1. Subscribe to `image_topic` using sensor-data QoS.
-2. Convert each frame with `cv_bridge` to BGR OpenCV format.
-3. Use a bounded queue of size 1–2 and drop stale frames under load; do not let inference backlog grow.
-4. Run TensorRT YOLOv5 inference on the newest frame.
-5. Filter to `red_cube`, `green_cube`, `blue_cube` above `confidence_threshold`.
-6. Publish the same filtered detection set as both `Detection2DArray` and `ObjectsInfo`.
-7. Publish an annotated debug image if enabled.
+The verified engine contract is input [1,3,640,640] and output [1,7,8400]. Classes are 0 blue_cube, 1 green_cube, 2 red_cube. See [technical stack](technical-stack.md) for paths and fingerprints.
 
-No ROS services/actions are required for the first recognition-only milestone. A future manipulation phase can add start/stop or ROI services following the vendor `color_detect` pattern.
+## Geometry filter and current limitation
 
----
+The filter evaluates depth support, raised fraction, shape ratio and planar-top variation. With it disabled, model candidates pass through. With it enabled in September's test, all observed candidates were rejected as flat, including genuine cubes. Depth alignment, box coverage and filter assumptions remain possible causes, not established diagnoses.
 
-## Topics
-
-| Topic | Message Type | Publisher | Subscriber(s) |
-|---|---|---|---|
-| `/depth_cam/rgb/image_raw` | `sensor_msgs/Image` | Vendor `peripherals` camera launch | `cube_detection_node` |
-| `/depth_cam/rgb/camera_info` | `sensor_msgs/CameraInfo` | Vendor `peripherals` camera launch | Optional future calibration/evaluation tools |
-| `/cube_detections` | `vision_msgs/Detection2DArray` | `cube_detection_node` | Robot systems (future), RViz2/adapters/tests |
-| `/cube_detections/vendor_objects` | `interfaces/ObjectsInfo` | `cube_detection_node` | JetRover vendor-style consumers/adapters |
-| `/cube_detections/debug_image` | `sensor_msgs/Image` | `cube_detection_node` | RViz2, `rqt_image_view` |
-
----
-
-## Dependency impact
-
-Implementation should add the vendor `interfaces` package as a declared ROS dependency before publishing `/cube_detections/vendor_objects`.
-
-Expected package dependency set:
-
-- existing: `rclpy`, `sensor_msgs`, `vision_msgs`, `cv_bridge`, `std_msgs`
-- add: `interfaces`
-- likely already needed by implementation/runtime environment: OpenCV, TensorRT, PyTorch/YOLOv5 export tooling, ONNX/ONNX Runtime fallback
-
-Because this is an `ament_python` package, `interfaces` should be an `exec_depend` in `package.xml` when the implementer updates code.
-
----
-
-## Decisions requiring Maher's review before implementation resumes
-
-1. Approve dual output publishing: `/cube_detections` (`vision_msgs/Detection2DArray`) plus `/cube_detections/vendor_objects` (`interfaces/ObjectsInfo`). This is my recommendation.
-2. Approve launch split: default detection launch assumes vendor camera is already running; optional convenience launch may include `peripherals/depth_camera.launch.py`. This is my recommendation.
-3. Confirm whether the implementer should update `package.xml` immediately to add `<exec_depend>interfaces</exec_depend>` while adding the vendor output publisher.
-4. Confirm whether runtime start/stop services are desired now. I recommend deferring them until after M5 live detection works.
-
----
-
-## Legacy diagram references
-
-The existing generated PNG diagrams remain useful for the high-level model/export story:
-
-- Inference pipeline: [`assets/concept2_inference_pipeline.png`](../assets/concept2_inference_pipeline.png)
-- Source: [`assets/concept2_inference_pipeline.dot`](../assets/concept2_inference_pipeline.dot)
-- Training pipeline: [`assets/concept2_training_pipeline.png`](../assets/concept2_training_pipeline.png)
-- Source: [`assets/concept2_training_pipeline.dot`](../assets/concept2_training_pipeline.dot)
-
-The Mermaid diagram above is the current vendor-first architecture reference for implementer work.
+The [Sunday walkthrough](development-learning-journal/2026-09-13-sunday.md) contains the detailed architecture sketch, commands and observations. The previous proposal is preserved in [the historical snapshot](archive/pre-september-refresh/architecture.md).

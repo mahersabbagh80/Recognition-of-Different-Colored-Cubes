@@ -1,6 +1,12 @@
 # Sunday presentation plan — 9–13 September 2026
 
-Prepared on 8 September; revised on 9 September after Maher clarified his instructor’s dataset requirement. Technical execution has not started.
+## Selected presentation message — 13 September
+
+> The system now detects red, green, and blue cubes live with a fine-tuned YOLO model running through TensorRT on NVIDIA Jetson hardware. The next engineering step is to correct the geometry filter so the detections can reliably continue into the depth-based localization pipeline.
+
+This is the presentation's central claim. It is deliberately limited to the verified live RGB-detection result. It does not claim that the current geometry filter or the final depth-based location output is complete.
+
+Prepared on 8 September; revised through 13 September. Dataset preparation, training, validation, TensorRT deployment, and the bounded live test are complete. Presentation v8 and supporting documentation are prepared. Maher removed rehearsal from scope. The day-by-day plan below is retained as planning history; see sunday-progress.md for completed actions.
 
 **Presentation:** Sunday, 13 September, 18:00 Europe/Berlin (CEST).
 **Time budget:** three hours daily Wednesday–Sunday: 12 preparation hours before Sunday, plus three Sunday hours. Optional extra hours are contingency, not required capacity. No work session is planned for Tuesday.

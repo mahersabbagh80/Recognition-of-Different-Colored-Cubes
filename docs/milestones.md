@@ -1,66 +1,27 @@
 # Milestones
 
-This file is a short roadmap, not a second logbook. Detailed commands, measurements,
-decisions, and failure analysis belong in [`LOGBOOK.md`](LOGBOOK.md). The user-facing
-setup and run instructions belong in [`../README.md`](../README.md).
+Current status: 13 September 2026. Detailed evidence is in the [daily journal](development-learning-journal.md); earlier milestones retain their historical evidence in the [logbook](LOGBOOK.md).
 
-## Project goal
+## Goal
 
-Detect these three classes from the JetRover camera and make the detections available
-through ROS 2:
+Recognize blue, green and red cubes in a live indoor camera view on NVIDIA Jetson hardware, publish their detections through ROS 2, and verify useful depth-based location. Intended range is 20–80 cm. Navigation, manipulation and production monitoring are outside scope.
 
-- `red_cube`
-- `green_cube`
-- `blue_cube`
-
-The project is finished when the model detects the cubes reasonably reliably in the
-room and the live ROS 2 demonstration works. Navigation, manipulation, tracking, and
-production monitoring are out of scope.
-
-## Fixed boundaries
-
-- Model: YOLOv5s
-- Export path: `best.pt` → `best.onnx` → TensorRT FP16 `best.engine`
-- Platform: Ubuntu 22.04, ROS 2 Humble, HiWonder JetRover
-- Input: `/depth_cam/rgb/image_raw`
-- Outputs: `/cube_detections`, `/cube_detections/vendor_objects`, and
-  `/cube_detections/debug_image`
-- Vendor packages and vendor files remain reference-only and must not be modified.
-- Fine-tuning is conditional: use it only if the existing model is not reliable on
-  the actual room images.
-
-## Status
-
-| Milestone | Status | Meaning |
+| Milestone | Status | Evidence and remaining boundary |
 |---|---|---|
-| M1 — Environment | Complete | Camera topic, ROS 2 package, and required runtime environment were verified. |
-| M2 — Model weights | Complete | `models/best.pt` was produced and verified. |
-| M3 — ONNX export | Complete | `models/best.onnx` was exported and checked. |
-| M4 — Jetson inference | Complete* | TensorRT inference works on the Jetson and on saved robot-camera images. *This does not prove reliable detection in the final room setup. |
-| M5 — ROS 2 live node | Partial | The node runs and publishes, but the current model does not reliably detect the room cubes. |
-| M6 — Final demonstration | Pending | Confirm reasonable detection of all three classes on representative room images and in the live ROS 2 view. |
-| M7 — Documentation | Ongoing | Keep the project understandable and record the final result honestly. |
+| M1 — Environment | Verified for September live test | Vendor camera, ROS environment and workspace worked. Desktop rqt discovery remains unresolved; browser preview worked. |
+| M2 — Model weights | Completed candidate | General pretrained YOLOv5u-small fine-tuned on 23 images, 8 held-out validation images. |
+| M3 — ONNX export | Completed | Static export transferred and checksum verified. |
+| M4 — Jetson inference | Completed initial checks | TensorRT 8.6.2 engine built; one saved-image conversion check completed. |
+| M5 — ROS 2 live node | Partial acceptance | New engine ran live; three colors detected with filter off. Filter on rejected genuine cubes. |
+| M6 — Final demonstration/evaluation | Limited demonstration completed | Broad reliability, full-range coverage and depth localization remain unverified. |
+| M7 — Documentation | Current completed-work record prepared | Presentation v8, methods, evidence, commands and limitations documented; future tests will need new entries. |
 
-The current blocker is model accuracy on the real room scene, not ROS 2 wiring or
-TensorRT execution. The 2026-06-28 live test recorded `0/460` kept detections at
-confidence `0.50`; at `0.25`, only a small number of green detections appeared.
-See the corresponding `LOGBOOK.md` entry and `evaluation/m5_live/report.md` for the
-full evidence.
+## Next engineering work — not performed
 
-## Short path to completion
+1. Save aligned RGB/depth evidence and diagnose why real cube candidates fail geometry checks.
+2. Verify location output separately from visible color boxes.
+3. Repeat predefined cube/background scenes across the intended distances and conditions.
+4. Measure complete-system timing and per-class detection errors on untouched test scenes.
+5. Update acceptance status from those results.
 
-1. Test the current model on representative room images.
-2. If it is reliable enough, keep the model and continue to the live demonstration.
-3. If it is not reliable enough, fine-tune with a small set of representative room
-   images, then repeat the export chain and live test.
-4. Verify the three ROS 2 output topics and the annotated debug image.
-5. Record the final result, limitations, and the exact model artifact in the logbook.
-
-## Definition of done
-
-- `red_cube`, `green_cube`, and `blue_cube` are detected with reasonable reliability
-  in the intended room setup.
-- The detector runs live from the JetRover camera.
-- Detections are visible through the ROS 2 output and debug-image topics.
-- The model path and run command are documented in `README.md`.
-- The final result is recorded in `LOGBOOK.md`.
+The earlier proposed accuracy/frame-rate targets are not recorded as passed. A successful single-frame demonstration and synthetic engine benchmark do not establish full-system acceptance. See [evaluation](evaluation.md) and [project definition](project-definition.md).

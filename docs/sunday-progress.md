@@ -3,6 +3,30 @@
 Deadline: 13 September 2026, 18:00 Europe/Berlin.
 Plan: [sunday-presentation-plan.md](sunday-presentation-plan.md).
 
+Latest presentation: **version 8**, with 16 main slides and two appendix slides. [Engineering review and outline](../artifacts/presentation/revision-outline-v8.md). Fundamentals, rationale and workflows precede results, which start on slide 12. Slides 2 and 3 have no images. All 18 slides were visually inspected; notes, PDF and 18 tutor answers are prepared. Maher considers v8 good enough for now. Documentation consistency was subsequently updated. Earlier completion entries below describe prior deliveries.
+
+## Active seven-step completion plan — 13 September
+
+Maher clarified on 13 September that today covers document preparation only. A live rehearsal and spoken question practice are outside today's scope. The original plan included participation; the revised steps below prepare those activities as written materials without claiming they happened.
+
+| Step | Deliverable | Current status |
+|---:|---|---|
+| 1 | Finalize the revised slide structure and evidence-bounded story | Complete: structure and central message agreed with Maher |
+| 2 | Create the English presentation using verified project evidence | Complete: v8 has 16 main slides and two appendix slides |
+| 3 | Add English speaker notes that explain each slide and its technical meaning | Complete: embedded in the PowerPoint and exported as a separate Markdown guide |
+| 4 | Render and visually inspect every slide, repair issues, and create a PDF | Complete: all 18 v8 slides inspected and 18-page PDF verified |
+| 5 | Rehearsal | Removed from scope at Maher's explicit request; no rehearsal required |
+| 6 | Prepare likely tutor questions and suggested English answers | Complete: tutor-questions.md; no spoken practice conducted |
+| 7 | Prepare the final package: PowerPoint, PDF, notes, evidence links, and fallback material | Complete for the revised document-preparation scope: version 8 and supporting guides |
+
+The selected central message is: the system detects red, green, and blue cubes live with a fine-tuned YOLO model running through TensorRT on NVIDIA Jetson hardware. Correcting the geometry filter is the next engineering step before reliable depth-based localization. The completed live evidence uses the filter-disabled diagnostic configuration; the full filtered localization pipeline remains unfinished.
+
+Presentation package: [`../artifacts/presentation/README.md`](../artifacts/presentation/README.md). This revised scope supersedes the earlier requirement to perform Steps 5 and 6 together today. The original Goal text records the earlier scope; completion is assessed against Maher's explicit revision to document preparation, with rehearsal removed. No rehearsal or spoken question practice is claimed as completed.
+
+## Completion — revised preparation scope
+
+The requested presentation preparation is complete: 12-slide English PowerPoint (v5), 12-page PDF, embedded and separate speaker notes, 13 tutor questions with suggested answers, saved-evidence fallback, and package index. The final files were checked for slide/page/note coverage. All slides were visually reviewed; the revised slide 2 explicitly identifies its validation image. The geometry-filter limitation remains disclosed. Rehearsal was removed by Maher and is not a pending gate.
+
 ## Current status — 9 September
 
 - Plan revised after Wednesday’s discussion. Wednesday preparation started: existing images and provisional annotations verified; training has not started.

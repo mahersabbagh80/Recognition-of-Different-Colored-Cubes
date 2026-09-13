@@ -61,6 +61,20 @@ Copy the template block for each new entry. Replace `YYYY-MM-DD` with the sessio
 
 ## Entries
 
+## 2026-09-13 — New detector demonstrated; documentation consolidated
+
+The September work is recorded in the [daily learning journal](development-learning-journal.md), which now owns detailed commands and reasoning.
+
+- [Saturday](development-learning-journal/2026-09-12-saturday.md): reviewed own-data export, 23 training / 8 validation images, 60-epoch run.
+- [Sunday](development-learning-journal/2026-09-13-sunday.md): validation review, ONNX transfer/checksum, TensorRT build, saved-image conversion check and live ROS detection.
+- Raw live detection found all three colors in the observed scene; geometry filtering rejected real cubes. The root cause and full reliability/localization acceptance remain open.
+- [Evaluation summary](evaluation.md) separates these observations from the unperformed full-range tests.
+- [Presentation v8](../artifacts/presentation/README.md): 16 main slides, two appendices, English notes and tutor answers. Maher considered this version good enough for now; no rehearsal was requested.
+
+The June entries below describe older models and must not be read as the current detector's result.
+
+
+
 <!-- New entries go below this line, newest at the top. -->
 
 ## 2026-07-05 — M7a: repo hygiene indexes + conservative cleanup (card t_8c12d527)

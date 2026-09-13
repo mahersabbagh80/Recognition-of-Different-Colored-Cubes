@@ -1,6 +1,8 @@
 # models/ — YOLOv5s weights for the cube-detection pipeline
 
-> **Current status — 9 September 2026:** At Maher’s explicit request, the old cube-trained weights, ONNX export, TensorRT engine, and related local training checkpoints were removed. An initial replacement smoke checkpoint has now been trained under `runs/robot_2026-09-09/smoke_3ep/weights/`; it is not an accepted or deployed detector. The artifact descriptions below are historical records, not a current inventory. That smoke run used reviewed self-captured images and a verified general pretrained YOLOv5u-small checkpoint. See `docs/sunday-progress.md` for the deletion record. Robot-side copies were not changed.
+> **Current inventory — 13 September 2026:** The selected replacement checkpoint is `runs/robot_2026-09-12/experiment_60ep_20260912_221210+0200/weights/best.pt` on the desktop. It was fine-tuned from general pretrained YOLOv5u-small on 23 reviewed training images with 8 validation images; selected epoch 45. Its ONNX export was transferred and built into `/home/ubuntu/maher_ws/best_2026-09-12.engine` on the robot. This dated engine was tested explicitly; the older default engine was not replaced. See [technical stack](../docs/technical-stack.md) for verified hashes and [Sunday evidence](../docs/development-learning-journal/2026-09-13-sunday.md) for commands and limitations.
+>
+> The tables and commands below are **historical June artifact records**, not the current inventory or training recipe. Model files remain local and are not supplied by Git.
 
 This directory holds the trained detection artifacts. Both files are git-ignored
 along with everything else under `models/` except this `README.md` and `.gitkeep`.
